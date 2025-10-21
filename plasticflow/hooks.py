@@ -1,7 +1,7 @@
 app_name = "plasticflow"
 app_title = "PlasticFlow"
 app_publisher = "VuleroTech"
-app_description = "PET stock and sales workflow"
+app_description = "End-to-end plastic raw material import and distribution workflow"
 app_email = "mezmure.dawit@vulero.et"
 app_license = "mit"
 
@@ -86,7 +86,7 @@ app_license = "mit"
 # ------------
 
 # before_install = "plasticflow.install.before_install"
-# after_install = "plasticflow.install.after_install"
+after_install = "plasticflow.install.after_install"
 
 # Uninstallation
 # ------------
@@ -244,4 +244,3 @@ app_license = "mit"
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
-

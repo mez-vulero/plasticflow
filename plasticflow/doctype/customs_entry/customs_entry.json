@@ -1,0 +1,230 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "format:CE-{YYYY}-{#####}",
+ "creation": "2024-01-01 00:00:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "document_type": "Transaction",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "shipment_reference",
+  "supplier",
+  "arrival_date",
+  "customs_station",
+  "column_break_general",
+  "bill_of_lading",
+  "container_no",
+  "incoterm",
+  "clearance_status",
+  "cleared_on",
+  "destination_warehouse",
+  "total_declared_value",
+  "stock_batch",
+  "section_break_items",
+  "items",
+  "total_quantity",
+  "total_weight",
+  "section_break_documents",
+  "clearance_package",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "shipment_reference",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Shipment Reference",
+   "reqd": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Supplier",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "arrival_date",
+   "fieldtype": "Date",
+   "label": "Arrival Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customs_station",
+   "fieldtype": "Data",
+   "label": "Customs Station"
+  },
+  {
+   "fieldname": "column_break_general",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "bill_of_lading",
+   "fieldtype": "Data",
+   "label": "Bill of Lading"
+  },
+  {
+   "fieldname": "container_no",
+   "fieldtype": "Data",
+   "label": "Container Number"
+  },
+  {
+   "fieldname": "incoterm",
+   "fieldtype": "Data",
+   "label": "Incoterm"
+  },
+  {
+   "default": "Received",
+   "fieldname": "clearance_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Clearance Status",
+   "options": "\nReceived\nUnder Clearance\nCleared\nOn Hold",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.clearance_status===\"Cleared\"",
+   "fieldname": "cleared_on",
+   "fieldtype": "Date",
+   "label": "Cleared On"
+  },
+  {
+   "fieldname": "destination_warehouse",
+   "fieldtype": "Link",
+   "label": "Destination Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "total_declared_value",
+   "fieldtype": "Currency",
+   "label": "Declared Value",
+   "options": "currency"
+  },
+  {
+   "fieldname": "stock_batch",
+   "fieldtype": "Link",
+   "label": "Generated Stock Batch",
+   "options": "Stock Batch",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_items",
+   "fieldtype": "Section Break",
+   "label": "Batch Details"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Customs Entry Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_quantity",
+   "fieldtype": "Float",
+   "label": "Total Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_weight",
+   "fieldtype": "Float",
+   "label": "Total Weight (kg)",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_documents",
+   "fieldtype": "Section Break",
+   "label": "Clearance Documents"
+  },
+  {
+   "fieldname": "clearance_package",
+   "fieldtype": "Attach",
+   "label": "Clearance Package"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Customs",
+ "name": "Customs Entry",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Management",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "state": "Received"
+  },
+  {
+   "state": "Under Clearance"
+  },
+  {
+   "state": "Cleared"
+  },
+  {
+   "state": "On Hold"
+  }
+ ],
+ "track_changes": 1,
+ "workflow_state_field": "clearance_status"
+}

@@ -1,0 +1,247 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "format:SO-{YYYY}-{#####}",
+ "creation": "2024-01-01 00:00:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "document_type": "Transaction",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "order_date",
+  "customer",
+  "delivery_source",
+  "payment_status",
+  "column_break_meta",
+  "status",
+  "currency",
+  "sales_manager",
+  "external_payment_reference",
+  "section_break_items",
+  "items",
+  "total_quantity",
+  "total_amount",
+  "section_break_links",
+  "invoice",
+  "gate_pass",
+  "delivery_note",
+  "notes"
+ ],
+ "fields": [
+  {
+   "default": "Today",
+   "fieldname": "order_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Order Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "default": "Warehouse",
+   "fieldname": "delivery_source",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Delivery Source",
+   "options": "\nWarehouse\nDirect from Customs",
+   "reqd": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "payment_status",
+   "fieldtype": "Select",
+   "label": "Payment Status",
+   "options": "\nDraft\nPayment Pending\nPayment Verified\nPayment Failed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_meta",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Order Status",
+   "options": "\nDraft\nPayment Pending\nPayment Verified\nInvoiced\nReady for Delivery\nCompleted\nCancelled",
+   "reqd": 1
+  },
+  {
+   "default": "ETB",
+   "fieldname": "currency",
+   "fieldtype": "Data",
+   "label": "Currency"
+  },
+  {
+   "fieldname": "sales_manager",
+   "fieldtype": "Link",
+   "label": "Sales Manager",
+   "options": "User"
+  },
+  {
+   "fieldname": "external_payment_reference",
+   "fieldtype": "Data",
+   "label": "Payment Reference"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_items",
+   "fieldtype": "Section Break",
+   "label": "Items"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Order Items",
+   "options": "Sales Order Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_quantity",
+   "fieldtype": "Float",
+   "label": "Total Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_links",
+   "fieldtype": "Section Break",
+   "label": "Linked Documents"
+  },
+  {
+   "fieldname": "invoice",
+   "fieldtype": "Link",
+   "label": "Invoice",
+   "options": "Plasticflow Invoice",
+   "read_only": 1
+  },
+  {
+   "fieldname": "gate_pass",
+   "fieldtype": "Link",
+   "label": "Gate Pass",
+   "options": "Gate Pass",
+   "read_only": 1
+  },
+  {
+   "fieldname": "delivery_note",
+   "fieldtype": "Link",
+   "label": "Delivery Note",
+   "options": "Delivery Note",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Internal Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Sales",
+ "name": "Sales Order",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Finance Officer",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Management",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "state": "Draft"
+  },
+  {
+   "state": "Payment Pending"
+  },
+  {
+   "state": "Payment Verified"
+  },
+  {
+   "state": "Invoiced"
+  },
+  {
+   "state": "Ready for Delivery"
+  },
+  {
+   "state": "Completed"
+  },
+  {
+   "state": "Cancelled"
+  }
+ ],
+ "track_changes": 1,
+ "workflow_state_field": "status"
+}
