@@ -26,11 +26,13 @@ app_license = "mit"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/plasticflow/css/plasticflow.css"
-# app_include_js = "/assets/plasticflow/js/plasticflow.js"
+app_include_js = "/assets/plasticflow/js/pwa.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/plasticflow/css/plasticflow.css"
 # web_include_js = "/assets/plasticflow/js/plasticflow.js"
+
+website_manifest = "plasticflow/public/manifest.json"
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "plasticflow/public/scss/website"
@@ -52,6 +54,27 @@ app_license = "mit"
 # ------------------
 # include app icons in desk
 # app_include_icons = "plasticflow/public/icons.svg"
+
+pwa = {
+	"theme_color": "#0b3d91",
+	"background_color": "#ffffff",
+	"display": "standalone",
+	"start_url": "/app",
+	"scope": "/",
+	"short_name": "PlasticFlow",
+	"icons": [
+		{
+			"src": "/assets/plasticflow/pwa-icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+		},
+		{
+			"src": "/assets/plasticflow/pwa-icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+		},
+	],
+}
 
 # Home Pages
 # ----------
