@@ -157,7 +157,7 @@
  "links": [],
  "modified": "2024-01-01 00:00:00.000000",
  "modified_by": "Administrator",
- "module": "Customs",
+ "module": "PlasticFlow",
  "name": "Customs Entry",
  "naming_rule": "Expression",
  "owner": "Administrator",

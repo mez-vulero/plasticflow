@@ -1,0 +1,249 @@
+{
+ "app": "plasticflow",
+ "charts": [],
+ "content": "[{\"id\": \"hdr_ops\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Operations Overview</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_customs\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customs Entries\", \"col\": 3}}, {\"id\": \"shortcut_stock\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Batches\", \"col\": 3}}, {\"id\": \"shortcut_sales_orders\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Orders\", \"col\": 3}}, {\"id\": \"shortcut_invoices\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Invoices\", \"col\": 3}}, {\"id\": \"hdr_logistics\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Logistics</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_gate_pass\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Gate Passes\", \"col\": 3}}, {\"id\": \"shortcut_delivery\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Delivery Notes\", \"col\": 3}}, {\"id\": \"shortcut_dashboard\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Management Dashboard\", \"col\": 3}}]",
+ "creation": "2024-01-01 00:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "project",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "PlasticFlow",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Customs",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Customs Entries",
+   "link_count": 0,
+   "link_to": "Customs Entry",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Batches",
+   "link_count": 0,
+   "link_to": "Stock Batch",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Warehouses",
+   "link_count": 0,
+   "link_to": "Warehouse",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sales",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sales Orders",
+   "link_count": 0,
+   "link_to": "Sales Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Customers",
+   "link_count": 0,
+   "link_to": "Customer",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Finance",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Invoices",
+   "link_count": 0,
+   "link_to": "Plasticflow Invoice",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Logistics",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Gate Passes",
+   "link_count": 0,
+   "link_to": "Gate Pass",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Delivery Notes",
+   "link_count": 0,
+   "link_to": "Delivery Note",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Drivers",
+   "link_count": 0,
+   "link_to": "Driver",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 0,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Management Dashboard",
+   "link_count": 0,
+   "link_to": "PlasticFlow Dashboard",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "PlasticFlow",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Management"
+  },
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Finance Officer"
+  },
+  {
+   "role": "Stock Manager"
+  }
+ ],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "doc_view": "List",
+   "label": "Customs Entries",
+   "link_to": "Customs Entry",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Stock Batches",
+   "link_to": "Stock Batch",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Sales Orders",
+   "link_to": "Sales Order",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Invoices",
+   "link_to": "Plasticflow Invoice",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Gate Passes",
+   "link_to": "Gate Pass",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Delivery Notes",
+   "link_to": "Delivery Note",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "Report",
+   "label": "Management Dashboard",
+   "link_to": "PlasticFlow Dashboard",
+   "type": "Report"
+  }
+ ],
+ "title": "PlasticFlow",
+ "type": "Workspace"
+}

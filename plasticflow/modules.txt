@@ -1,7 +1,1 @@
 PlasticFlow
-Customs
-Stock
-Sales
-Finance
-Logistics
-Reports
