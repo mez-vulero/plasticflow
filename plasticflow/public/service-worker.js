@@ -1,4 +1,4 @@
-const CACHE_NAME = "plasticflow-cache-v1";
+const CACHE_NAME = "plasticflow-cache-v2";
 const OFFLINE_URLS = ["/app"];
 
 self.addEventListener("install", (event) => {
