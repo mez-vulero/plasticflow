@@ -23,7 +23,7 @@
   "total_quantity",
   "total_amount",
   "section_break_links",
-  "table_nexi",
+  "payment_slips",
   "invoice",
   "gate_pass",
   "delivery_note",
@@ -151,11 +151,6 @@
    "label": "Internal Notes"
   },
   {
-   "fieldname": "table_nexi",
-   "fieldtype": "Table",
-   "options": "Payment Slips"
-  },
-  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
@@ -164,12 +159,18 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "payment_slips",
+   "fieldtype": "Table",
+   "label": "Payment Slips",
+   "options": "Payment Slips"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-10-28 18:52:53.773330",
+ "modified": "2025-10-28 18:57:33.660271",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Sales Order",
