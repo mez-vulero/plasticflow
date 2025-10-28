@@ -72,7 +72,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Order Status",
-   "options": "\nDraft\nPayment Pending\nPayment Verified\nInvoiced\nReady for Delivery\nCompleted\nCancelled",
+   "options": "Draft\nPayment Pending\nPayment Verified\nInvoiced\nReady for Delivery\nCompleted\nCancelled\nHeld",
    "reqd": 1
   },
   {
@@ -228,6 +228,9 @@
   },
   {
    "state": "Payment Verified"
+  },
+  {
+   "state": "Held"
   },
   {
    "state": "Invoiced"

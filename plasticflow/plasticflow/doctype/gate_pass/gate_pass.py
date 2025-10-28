@@ -58,7 +58,7 @@ class GatePass(Document):
 					"product_name": item.product_name,
 					"quantity": item.quantity,
 					"uom": item.uom,
-					"stock_batch_item": item.stock_batch_item,
+					"stock_entry_item": item.stock_entry_item,
 					"warehouse": item.warehouse or self.warehouse,
 				},
 			)

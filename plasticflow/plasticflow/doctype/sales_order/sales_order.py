@@ -2,6 +2,8 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import nowdate
 
+from plasticflow.stock import ledger as stock_ledger
+
 
 class SalesOrder(Document):
 	"""Coordinates the commercial process from order capture to delivery."""
@@ -12,17 +14,17 @@ class SalesOrder(Document):
 		self._ensure_status_alignment()
 
 	def before_submit(self):
+		reservations = self._collect_batch_reservations()
+		self._validate_stock_availability(reservations)
 		if self.delivery_source == "Warehouse":
-			reservations = self._collect_batch_reservations()
-			self._validate_stock_availability(reservations)
-		self.status = "Payment Pending"
+			self._enforce_fifo(reservations)
+		self.status = "Held" if self.delivery_source == "Direct from Customs" else "Payment Pending"
 		if self.payment_status in {"Draft", "Payment Pending"}:
 			self.payment_status = "Payment Pending"
 
 	def on_submit(self):
-		if self.delivery_source == "Warehouse":
-			reservations = self._collect_batch_reservations()
-			self._apply_reservations(reservations)
+		reservations = self._collect_batch_reservations()
+		self._apply_reservations(reservations)
 		self.db_set("status", self.status)
 		self.db_set("payment_status", self.payment_status)
 
@@ -30,12 +32,11 @@ class SalesOrder(Document):
 		if self.payment_status == "Payment Verified" and not self.invoice:
 			invoice = self._create_invoice_draft()
 			self.db_set("invoice", invoice.name)
-			self.db_set("status", "Invoiced")
+			self.db_set("status", "Held" if self.delivery_source == "Direct from Customs" else "Invoiced")
 
 	def on_cancel(self):
-		if self.delivery_source == "Warehouse":
-			reservations = self._collect_batch_reservations()
-			self._release_reservations(reservations)
+		reservations = self._collect_batch_reservations()
+		self._release_reservations(reservations)
 		self.db_set("status", "Cancelled")
 
 	def _set_item_defaults(self):
@@ -59,11 +60,17 @@ class SalesOrder(Document):
 		reservations = {}
 		for item in self.items:
 			if not item.batch_item:
-				if self.delivery_source == "Warehouse":
-					frappe.throw(f"Batch allocation is required for product {item.product} when sourcing from Warehouse.")
+				if self.delivery_source in {"Warehouse", "Direct from Customs"}:
+					frappe.throw(f"Stock allocation is required for product {item.product}.")
 				continue
-			child = frappe.get_doc("Stock Batch Item", item.batch_item)
-			reservations.setdefault(child.parent, []).append(
+			child = frappe.get_doc("Plasticflow Stock Entry Item", item.batch_item)
+			parent = frappe.get_doc("Plasticflow Stock Entry", child.parent)
+			entry = reservations.setdefault(
+				child.parent,
+				{"rows": [], "from_customs": parent.status == "At Customs"},
+			)
+			entry["from_customs"] = parent.status == "At Customs"
+			entry["rows"].append(
 				{
 					"child_name": child.name,
 					"qty": item.quantity or 0,
@@ -72,9 +79,9 @@ class SalesOrder(Document):
 		return reservations
 
 	def _validate_stock_availability(self, reservations):
-		for batch_name, entries in reservations.items():
-			batch = frappe.get_doc("Stock Batch", batch_name)
-			for entry in entries:
+		for batch_name, payload in reservations.items():
+			batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
+			for entry in payload["rows"]:
 				child = next((row for row in batch.items if row.name == entry["child_name"]), None)
 				if not child:
 					frappe.throw("Unable to locate batch item for reservation.")
@@ -86,30 +93,67 @@ class SalesOrder(Document):
 					)
 
 	def _apply_reservations(self, reservations):
-		for batch_name, entries in reservations.items():
-			batch = frappe.get_doc("Stock Batch", batch_name)
+		for batch_name, payload in reservations.items():
+			batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
 			updated = False
-			for entry in entries:
+			for entry in payload["rows"]:
 				child = next((row for row in batch.items if row.name == entry["child_name"]), None)
 				if not child:
 					continue
 				child.reserved_qty = (child.reserved_qty or 0) + (entry["qty"] or 0)
 				updated = True
+				stock_ledger.adjust_for_reservation(child, entry["qty"], from_customs=payload["from_customs"])
 			if updated:
 				batch.save(ignore_permissions=True)
 
 	def _release_reservations(self, reservations):
-		for batch_name, entries in reservations.items():
-			batch = frappe.get_doc("Stock Batch", batch_name)
+		for batch_name, payload in reservations.items():
+			batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
 			updated = False
-			for entry in entries:
+			for entry in payload["rows"]:
 				child = next((row for row in batch.items if row.name == entry["child_name"]), None)
 				if not child:
 					continue
 				child.reserved_qty = max((child.reserved_qty or 0) - (entry["qty"] or 0), 0)
 				updated = True
+				stock_ledger.release_reservation(child, entry["qty"], from_customs=payload["from_customs"])
 			if updated:
 				batch.save(ignore_permissions=True)
+
+	def _enforce_fifo(self, reservations):
+		for batch_name, payload in reservations.items():
+			if payload["from_customs"]:
+				continue
+			batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
+			for entry in payload["rows"]:
+				child = next((row for row in batch.items if row.name == entry["child_name"]), None)
+				if not child:
+					continue
+				arrival_marker = batch.arrival_date or batch.creation
+				available_older = frappe.db.sql(
+					"""
+					select sei.name
+					from `tabPlasticflow Stock Entry Item` sei
+					inner join `tabPlasticflow Stock Entry` se on se.name = sei.parent
+					where se.warehouse = %s
+					and sei.product = %s
+					and se.status = 'Available'
+					and (
+						coalesce(se.arrival_date, se.creation) < %s
+						or (
+							coalesce(se.arrival_date, se.creation) = %s
+							and se.creation < %s
+						)
+					)
+					and (sei.received_qty - sei.reserved_qty - sei.issued_qty) > 0
+					limit 1
+					""",
+					(batch.warehouse, child.product, arrival_marker, arrival_marker, batch.creation),
+				)
+				if available_older:
+					frappe.throw(
+						f"FIFO policy violation for {child.product}. Older stock is available in warehouse {batch.warehouse}.",
+					)
 
 	def _create_invoice_draft(self):
 		invoice = frappe.new_doc("Plasticflow Invoice")

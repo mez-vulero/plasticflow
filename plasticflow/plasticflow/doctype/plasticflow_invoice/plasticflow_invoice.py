@@ -53,7 +53,7 @@ class PlasticflowInvoice(Document):
 					"product_name": item.product_name,
 					"quantity": item.quantity,
 					"uom": item.uom,
-					"stock_batch_item": item.batch_item,
+					"stock_entry_item": item.batch_item,
 					"warehouse": item.warehouse or gate_pass.warehouse,
 				},
 			)
@@ -66,7 +66,14 @@ class PlasticflowInvoice(Document):
 			if item.warehouse:
 				return item.warehouse
 			if item.batch_item:
-				parent = frappe.db.get_value("Stock Batch Item", item.batch_item, "parent")
+				parent = frappe.db.get_value("Plasticflow Stock Entry Item", item.batch_item, "parent")
 				if parent:
-					return frappe.db.get_value("Stock Batch", parent, "warehouse")
+					warehouse = frappe.db.get_value("Plasticflow Stock Entry", parent, "warehouse")
+					if warehouse:
+						return warehouse
+					customs_entry = frappe.db.get_value("Plasticflow Stock Entry", parent, "customs_entry")
+					if customs_entry:
+						fallback = frappe.db.get_value("Customs Entry", customs_entry, "destination_warehouse")
+						if fallback:
+							return fallback
 		return None

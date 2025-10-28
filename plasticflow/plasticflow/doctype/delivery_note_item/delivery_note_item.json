@@ -1,7 +1,6 @@
 {
  "actions": [],
- "allow_import": 0,
- "creation": "2024-01-01 00:00:00.000000",
+ "creation": "2024-01-01 00:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -10,7 +9,7 @@
   "product_name",
   "quantity",
   "uom",
-  "stock_batch_item",
+  "stock_entry_item",
   "warehouse",
   "remarks"
  ],
@@ -39,14 +38,15 @@
   },
   {
    "fieldname": "uom",
-   "fieldtype": "Data",
-   "label": "UOM"
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "Unit of Measurement"
   },
   {
-   "fieldname": "stock_batch_item",
+   "fieldname": "stock_entry_item",
    "fieldtype": "Link",
-   "label": "Stock Batch Item",
-   "options": "Stock Batch Item"
+   "label": "Plasticflow Stock Entry Item",
+   "options": "Plasticflow Stock Entry Item"
   },
   {
    "fieldname": "warehouse",
@@ -60,15 +60,15 @@
    "label": "Remarks"
   }
  ],
- "index_web_pages_for_search": 0,
  "istable": 1,
  "links": [],
- "modified": "2024-01-01 00:00:00.000000",
+ "modified": "2025-10-28 14:29:16.174778",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Delivery Note Item",
  "owner": "Administrator",
  "permissions": [],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

@@ -2,6 +2,8 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import nowdate
 
+from plasticflow.stock import ledger as stock_ledger
+
 
 class DeliveryNote(Document):
 	"""Final logistics document that confirms delivery of materials."""
@@ -43,20 +45,22 @@ class DeliveryNote(Document):
 	def _issue_stock(self):
 		batch_map = {}
 		for item in self.items:
-			if not item.stock_batch_item:
+			if not item.stock_entry_item:
 				continue
-			child = frappe.get_doc("Stock Batch Item", item.stock_batch_item)
+			child = frappe.get_doc("Plasticflow Stock Entry Item", item.stock_entry_item)
 			batch_map.setdefault(child.parent, []).append((child.name, item.quantity or 0))
 
 		for batch_name, entries in batch_map.items():
-			batch = frappe.get_doc("Stock Batch", batch_name)
+			batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
 			updated = False
+			from_customs = batch.status == "At Customs"
 			for child_name, qty in entries:
 				child = next((row for row in batch.items if row.name == child_name), None)
 				if not child:
 					continue
 				child.reserved_qty = max((child.reserved_qty or 0) - qty, 0)
 				child.issued_qty = (child.issued_qty or 0) + qty
+				stock_ledger.issue_stock(child, qty, from_customs=from_customs)
 				updated = True
 			if updated:
 				batch.save(ignore_permissions=True)
@@ -64,20 +68,22 @@ class DeliveryNote(Document):
 	def _reverse_stock(self):
 		batch_map = {}
 		for item in self.items:
-			if not item.stock_batch_item:
+			if not item.stock_entry_item:
 				continue
-			child = frappe.get_doc("Stock Batch Item", item.stock_batch_item)
+			child = frappe.get_doc("Plasticflow Stock Entry Item", item.stock_entry_item)
 			batch_map.setdefault(child.parent, []).append((child.name, item.quantity or 0))
 
 		for batch_name, entries in batch_map.items():
-			batch = frappe.get_doc("Stock Batch", batch_name)
+			batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
 			updated = False
+			from_customs = batch.status == "At Customs"
 			for child_name, qty in entries:
 				child = next((row for row in batch.items if row.name == child_name), None)
 				if not child:
 					continue
 				child.issued_qty = max((child.issued_qty or 0) - qty, 0)
 				child.reserved_qty = (child.reserved_qty or 0) + qty
+				stock_ledger.reverse_issue(child, qty, from_customs=from_customs)
 				updated = True
 			if updated:
 				batch.save(ignore_permissions=True)

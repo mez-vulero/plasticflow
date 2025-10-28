@@ -6,7 +6,7 @@
  "display": "standalone",
  "orientation": "portrait-primary",
  "background_color": "#ffffff",
- "theme_color": "#0b3d91",
+ "theme_color": "#f97316",
  "description": "PlasticFlow streamlines plastic raw material import, stock and sales operations.",
  "icons": [
   {

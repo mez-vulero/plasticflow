@@ -1,7 +1,7 @@
 {
  "app": "plasticflow",
  "charts": [],
- "content": "[{\"id\":\"hdr_snapshot\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Management Snapshot</b></span>\",\"col\":12}},{\"id\":\"report_plasticflow\",\"type\":\"report\",\"data\":{\"report_name\":\"PlasticFlow Dashboard\",\"col\":12}}]",
+ "content": "[{\"id\": \"hdr_snapshot\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Management Snapshot</b></span>\", \"col\": 12}}, {\"id\": \"report_plasticflow\", \"type\": \"report\", \"data\": {\"report_name\": \"PlasticFlow Dashboard\", \"col\": 12}}, {\"id\": \"shortcut_plasticflow_stock_ledger_entry\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Ledger\", \"col\": 3}}, {\"id\": \"shortcut_customs_documents\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Customs Documents\", \"col\": 3}}, {\"id\": \"shortcut_unit_of_measurement\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Units of Measure\", \"col\": 3}}, {\"id\": \"shortcut_plasticflow_stock_entry\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Plasticflow Stock Entries\", \"col\": 3}}, {\"id\": \"report_stock_location\", \"type\": \"report\", \"data\": {\"report_name\": \"Plasticflow Stock By Location\", \"col\": 6, \"height\": 280}}]",
  "creation": "2024-01-01 00:00:00.000000",
  "custom_blocks": [],
  "docstatus": 0,
@@ -36,9 +36,9 @@
    "dependencies": "",
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Stock Batches",
+   "label": "Plasticflow Stock Entries",
    "link_count": 0,
-   "link_to": "Stock Batch",
+   "link_to": "Plasticflow Stock Entry",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -102,6 +102,46 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Plasticflow Stock Entry",
+   "link_count": 0,
+   "link_to": "Plasticflow Stock Entry",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Plasticflow Stock Ledger Entry",
+   "link_count": 0,
+   "link_to": "Plasticflow Stock Ledger Entry",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Customs Documents",
+   "link_count": 0,
+   "link_to": "Customs Documents",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Unit of Measurement",
+   "link_count": 0,
+   "link_to": "Unit of Measurement",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
  "modified": "2024-01-01 00:00:00.000000",
@@ -132,8 +172,8 @@
  "shortcuts": [
   {
    "doc_view": "List",
-   "label": "Available Stock Batches",
-   "link_to": "Stock Batch",
+   "label": "Available Plasticflow Stock Entries",
+   "link_to": "Plasticflow Stock Entry",
    "type": "DocType"
   },
   {
@@ -146,6 +186,30 @@
    "doc_view": "List",
    "label": "Deliveries In Transit",
    "link_to": "Delivery Note",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Plasticflow Stock Entries",
+   "link_to": "Plasticflow Stock Entry",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Stock Ledger",
+   "link_to": "Plasticflow Stock Ledger Entry",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Customs Documents",
+   "link_to": "Customs Documents",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Units of Measure",
+   "link_to": "Unit of Measurement",
    "type": "DocType"
   }
  ],

@@ -2,10 +2,10 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "format:CE-{YYYY}-{#####}",
- "creation": "2024-01-01 00:00:00.000000",
+ "creation": "2024-01-01 00:00:00",
  "default_view": "List",
  "doctype": "DocType",
- "document_type": "Transaction",
+ "document_type": "Document",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
@@ -21,14 +21,15 @@
   "cleared_on",
   "destination_warehouse",
   "total_declared_value",
-  "stock_batch",
+  "plasticflow_stock_entry",
   "section_break_items",
   "items",
   "total_quantity",
   "total_weight",
   "section_break_documents",
-  "clearance_package",
-  "remarks"
+  "customs_documents",
+  "remarks",
+  "amended_from"
  ],
  "fields": [
   {
@@ -47,6 +48,7 @@
    "reqd": 1
   },
   {
+   "default": "Today",
    "fieldname": "arrival_date",
    "fieldtype": "Date",
    "label": "Arrival Date",
@@ -82,7 +84,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Clearance Status",
-   "options": "\nReceived\nUnder Clearance\nCleared\nOn Hold",
+   "options": "\nReceived\nUnder Clearance\nCleared\nAt Warehouse\nOn Hold",
    "reqd": 1
   },
   {
@@ -104,14 +106,12 @@
    "options": "currency"
   },
   {
-   "fieldname": "stock_batch",
+   "fieldname": "plasticflow_stock_entry",
    "fieldtype": "Link",
-   "label": "Generated Stock Batch",
-   "options": "Stock Batch",
-   "read_only": 1
+   "label": "Generated Plasticflow Stock Entry",
+   "options": "Plasticflow Stock Entry"
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_items",
    "fieldtype": "Section Break",
    "label": "Batch Details"
@@ -136,26 +136,36 @@
    "read_only": 1
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_documents",
    "fieldtype": "Section Break",
    "label": "Clearance Documents"
   },
   {
-   "fieldname": "clearance_package",
-   "fieldtype": "Attach",
-   "label": "Clearance Package"
-  },
-  {
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Customs Entry",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "customs_documents",
+   "fieldtype": "Table",
+   "label": "Customs Documents",
+   "options": "Customs Documents"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-01 00:00:00.000000",
+ "modified": "2025-10-28 16:07:36.152704",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Customs Entry",
@@ -209,22 +219,26 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [
   {
-   "state": "Received"
+   "color": "Yellow",
+   "title": "Received"
   },
   {
-   "state": "Under Clearance"
+   "color": "Blue",
+   "title": "Under Clearance"
   },
   {
-   "state": "Cleared"
+   "color": "Green",
+   "title": "Cleared"
   },
   {
-   "state": "On Hold"
+   "color": "Red",
+   "title": "On Hold"
   }
  ],
- "track_changes": 1,
- "workflow_state_field": "clearance_status"
+ "track_changes": 1
 }

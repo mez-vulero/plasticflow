@@ -1,7 +1,6 @@
 {
  "actions": [],
- "allow_import": 0,
- "creation": "2024-01-01 00:00:00.000000",
+ "creation": "2024-01-01 00:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -59,8 +58,9 @@
   },
   {
    "fieldname": "uom",
-   "fieldtype": "Data",
-   "label": "UOM"
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "Unit of Measurement"
   },
   {
    "fieldname": "warehouse_location",
@@ -75,15 +75,15 @@
    "options": "Customs Entry Item"
   }
  ],
- "index_web_pages_for_search": 0,
  "istable": 1,
  "links": [],
- "modified": "2024-01-01 00:00:00.000000",
+ "modified": "2025-10-28 14:29:54.980577",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
- "name": "Stock Batch Item",
+ "name": "Plasticflow Stock Entry Item",
  "owner": "Administrator",
  "permissions": [],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

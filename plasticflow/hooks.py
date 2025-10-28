@@ -4,6 +4,7 @@ app_publisher = "VuleroTech"
 app_description = "End-to-end plastic raw material import and distribution workflow"
 app_email = "mezmure.dawit@vulero.et"
 app_license = "mit"
+app_logo_url = "/assets/plasticflow/icons/plasticflow-icon.svg"
 
 # Apps
 # ------------------
@@ -11,15 +12,15 @@ app_license = "mit"
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "plasticflow",
-# 		"logo": "/assets/plasticflow/logo.png",
-# 		"title": "PlasticFlow",
-# 		"route": "/plasticflow",
-# 		"has_permission": "plasticflow.api.permission.has_app_permission"
-# 	}
-# ]
+add_to_apps_screen = [
+	{
+		"name": "plasticflow",
+		"logo": "/assets/plasticflow/icons/plasticflow-icon.svg",
+		"title": "PlasticFlow",
+		"route": "/app",
+		"has_permission": None,
+	}
+]
 
 # Includes in <head>
 # ------------------
@@ -34,6 +35,11 @@ app_include_js = "/assets/plasticflow/js/pwa.js"
 
 website_manifest = "plasticflow/public/manifest.json"
 
+
+doctype_js = {
+	"Plasticflow Stock Entry": "public/js/plasticflow_stock_entry.js",
+}
+
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "plasticflow/public/scss/website"
 
@@ -45,7 +51,6 @@ website_manifest = "plasticflow/public/manifest.json"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -56,7 +61,7 @@ website_manifest = "plasticflow/public/manifest.json"
 # app_include_icons = "plasticflow/public/icons.svg"
 
 pwa = {
-	"theme_color": "#0b3d91",
+	"theme_color": "#f97316",
 	"background_color": "#ffffff",
 	"display": "standalone",
 	"start_url": "/app",

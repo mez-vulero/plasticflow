@@ -40,9 +40,10 @@
   },
   {
    "fieldname": "uom",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "label": "Stock UOM",
-   "reqd": 1
+   "reqd": 1,
+   "options": "Unit of Measurement"
   },
   {
    "fieldname": "default_warehouse",
