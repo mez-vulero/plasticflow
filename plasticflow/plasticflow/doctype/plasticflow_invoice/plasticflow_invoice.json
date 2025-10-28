@@ -13,6 +13,7 @@
   "sales_order",
   "customer",
   "currency",
+  "invoice_type",
   "total_amount",
   "payment_status",
   "column_break_meta",
@@ -53,6 +54,14 @@
    "fieldname": "currency",
    "fieldtype": "Data",
    "label": "Currency"
+ },
+  {
+   "default": "Cash",
+   "fieldname": "invoice_type",
+   "fieldtype": "Select",
+   "label": "Invoice Type",
+   "options": "\nCash\nCredit",
+   "reqd": 1
   },
   {
    "fieldname": "total_amount",

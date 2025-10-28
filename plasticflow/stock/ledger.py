@@ -1,5 +1,5 @@
 import frappe
-from frappe.utils import now_datetime
+from frappe.utils import flt, now_datetime
 
 LEDGER_DOCTYPE = "Plasticflow Stock Ledger Entry"
 
@@ -124,6 +124,22 @@ def clear_slot(product, location_type, location_reference, warehouse=None, custo
 
 
 # Convenience helpers -----------------------------------------------------
+
+def get_available_quantity(product, *, location_type, warehouse=None):
+	"""Return aggregated available quantity for a product at a location type."""
+	filters = {
+		"product": product,
+		"location_type": location_type,
+	}
+	if warehouse:
+		filters["warehouse"] = warehouse
+	rows = frappe.db.get_all(
+		LEDGER_DOCTYPE,
+		filters=filters,
+		fields=["coalesce(sum(available_qty), 0) as available"],
+	)
+	return flt(rows[0].available) if rows else 0.0
+
 
 def _get_transferred_totals_by_customs_item(customs_entry_name):
 	rows = frappe.db.sql(

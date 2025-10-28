@@ -27,9 +27,10 @@
   },
   {
    "fieldname": "amount_paid",
-   "fieldtype": "Float",
+   "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Amount Paid"
+   "label": "Amount Paid",
+   "options": "currency"
   }
  ],
  "grid_page_length": 50,

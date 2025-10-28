@@ -1,6 +1,7 @@
 import frappe
+from frappe import _
 from frappe.model.document import Document
-from frappe.utils import nowdate
+from frappe.utils import flt, nowdate
 
 
 class PlasticflowInvoice(Document):
@@ -11,16 +12,17 @@ class PlasticflowInvoice(Document):
 		self._calculate_totals()
 		if not self.due_date:
 			self.due_date = self.invoice_date or nowdate()
+		self._ensure_alignment_with_sales_order()
 
 	def on_submit(self):
-		gate_pass = self._create_gate_pass()
-		self.db_set("gate_pass", gate_pass.name)
-		frappe.db.set_value("Sales Order", self.sales_order, {"status": "Ready for Delivery", "gate_pass": gate_pass.name})
+		self._sync_sales_order_progress()
 
 	def on_cancel(self):
+		self._sync_sales_order_progress()
 		if self.gate_pass:
 			frappe.db.set_value("Gate Pass", self.gate_pass, "status", "Cancelled")
-		frappe.db.set_value("Sales Order", self.sales_order, {"status": "Cancelled"})
+			frappe.db.set_value("Plasticflow Invoice", self.name, "gate_pass", None, update_modified=False)
+			self.gate_pass = None
 
 	def _set_item_defaults(self):
 		for item in self.items:
@@ -36,44 +38,28 @@ class PlasticflowInvoice(Document):
 		else:
 			self.outstanding_amount = self.total_amount
 
-	def _create_gate_pass(self):
+	def _ensure_alignment_with_sales_order(self):
 		sales_order = frappe.get_doc("Sales Order", self.sales_order)
-		gate_pass = frappe.new_doc("Gate Pass")
-		gate_pass.invoice = self.name
-		gate_pass.sales_order = self.sales_order
-		gate_pass.warehouse = self._guess_warehouse(sales_order)
-		gate_pass.gate_pass_date = nowdate()
-		gate_pass.status = "Pending"
+		expected_type = "Cash" if sales_order.sales_type == "Cash" else "Credit"
+		if not self.invoice_type:
+			self.invoice_type = expected_type
+		if self.invoice_type != expected_type:
+			frappe.throw(_("Invoice type must match the sales order sales type ({0}).").format(expected_type))
 
-		for item in sales_order.items:
-			gate_pass.append(
-				"items",
-				{
-					"product": item.product,
-					"product_name": item.product_name,
-					"quantity": item.quantity,
-					"uom": item.uom,
-					"stock_entry_item": item.batch_item,
-					"warehouse": item.warehouse or gate_pass.warehouse,
-				},
+		outstanding_capacity = sales_order.get_outstanding_amount(exclude_invoice=self.name if self.name else None)
+		if self.docstatus == 1:
+			# When updating an already submitted invoice (rare), include its current total
+			outstanding_capacity += flt(self.total_amount or 0)
+
+		if flt(self.total_amount) - outstanding_capacity > 0.01:
+			frappe.throw(
+				_("Invoice value exceeds the remaining amount for this sales order ({0}).").format(
+					frappe.utils.fmt_money(outstanding_capacity, currency=sales_order.currency)
+				)
 			)
 
-		gate_pass.insert(ignore_permissions=True)
-		return gate_pass
-
-	def _guess_warehouse(self, sales_order):
-		for item in sales_order.items:
-			if item.warehouse:
-				return item.warehouse
-			if item.batch_item:
-				parent = frappe.db.get_value("Plasticflow Stock Entry Item", item.batch_item, "parent")
-				if parent:
-					warehouse = frappe.db.get_value("Plasticflow Stock Entry", parent, "warehouse")
-					if warehouse:
-						return warehouse
-					customs_entry = frappe.db.get_value("Plasticflow Stock Entry", parent, "customs_entry")
-					if customs_entry:
-						fallback = frappe.db.get_value("Customs Entry", customs_entry, "destination_warehouse")
-						if fallback:
-							return fallback
-		return None
+	def _sync_sales_order_progress(self):
+		if not self.sales_order:
+			return
+		sales_order = frappe.get_doc("Sales Order", self.sales_order)
+		sales_order.update_invoicing_progress()

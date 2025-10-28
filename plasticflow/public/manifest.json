@@ -20,6 +20,11 @@
    "sizes": "512x512",
    "type": "image/png",
    "purpose": "any maskable"
+  },
+  {
+   "src": "/assets/plasticflow/icons/plasticflow-icon.svg",
+   "sizes": "64x64",
+   "type": "image/svg+xml"
   }
- ]
+]
 }

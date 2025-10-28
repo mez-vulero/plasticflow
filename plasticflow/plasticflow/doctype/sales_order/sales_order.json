@@ -12,6 +12,7 @@
   "order_date",
   "customer",
   "delivery_source",
+  "sales_type",
   "payment_status",
   "column_break_meta",
   "status",
@@ -22,6 +23,8 @@
   "items",
   "total_quantity",
   "total_amount",
+  "invoiced_amount",
+  "outstanding_amount",
   "section_break_links",
   "payment_slips",
   "invoice",
@@ -55,6 +58,15 @@
    "label": "Delivery Source",
    "options": "\nWarehouse\nDirect from Customs",
    "reqd": 1
+ },
+  {
+   "default": "Cash",
+   "fieldname": "sales_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Sales Type",
+   "options": "\nCash\nCredit",
+   "reqd": 1
   },
   {
    "default": "Draft",
@@ -62,7 +74,8 @@
    "fieldtype": "Select",
    "label": "Payment Status",
    "options": "\nDraft\nPayment Pending\nPayment Verified\nPayment Failed",
-   "reqd": 1
+   "reqd": 1,
+   "allow_on_submit": 1
   },
   {
    "fieldname": "column_break_meta",
@@ -75,7 +88,8 @@
    "in_list_view": 1,
    "label": "Order Status",
    "options": "Draft\nPayment Pending\nPayment Verified\nCredit Sales\nInvoiced\nReady for Delivery\nCompleted\nCancelled\nHeld",
-   "reqd": 1
+   "reqd": 1,
+   "allow_on_submit": 1
   },
   {
    "default": "ETB",
@@ -118,32 +132,50 @@
    "label": "Total Amount",
    "options": "currency",
    "read_only": 1
+ },
+  {
+   "fieldname": "invoiced_amount",
+   "fieldtype": "Currency",
+   "label": "Invoiced Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Amount",
+   "options": "currency",
+   "read_only": 1
   },
   {
    "fieldname": "section_break_links",
    "fieldtype": "Section Break",
-   "label": "Linked Documents"
+   "label": "Linked Documents",
+   "allow_on_submit": 1
   },
   {
    "fieldname": "invoice",
    "fieldtype": "Link",
    "label": "Invoice",
    "options": "Plasticflow Invoice",
-   "read_only": 1
+   "read_only": 1,
+   "allow_on_submit": 1
   },
   {
    "fieldname": "gate_pass",
    "fieldtype": "Link",
    "label": "Gate Pass",
    "options": "Gate Pass",
-   "read_only": 1
+   "read_only": 1,
+   "allow_on_submit": 1
   },
   {
    "fieldname": "delivery_note",
    "fieldtype": "Link",
    "label": "Delivery Note",
    "options": "Delivery Note",
-   "read_only": 1
+   "read_only": 1,
+   "allow_on_submit": 1
   },
   {
    "fieldname": "notes",
@@ -164,7 +196,8 @@
    "fieldname": "payment_slips",
    "fieldtype": "Table",
    "label": "Payment Slips",
-   "options": "Payment Slips"
+   "options": "Payment Slips",
+   "allow_on_submit": 1
   }
  ],
  "index_web_pages_for_search": 1,

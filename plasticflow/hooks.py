@@ -28,6 +28,9 @@ add_to_apps_screen = [
 # include js, css files in header of desk.html
 # app_include_css = "/assets/plasticflow/css/plasticflow.css"
 app_include_js = "/assets/plasticflow/js/pwa.js"
+app_include_head_html = [
+	"plasticflow/public/includes/theme_color.html",
+]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/plasticflow/css/plasticflow.css"
@@ -160,13 +163,11 @@ after_install = "plasticflow.install.after_install"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Notification Log": {
+		"after_insert": "plasticflow.notifications.push.handle_notification_log",
+	}
+}
 
 # Scheduled Tasks
 # ---------------
