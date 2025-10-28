@@ -2,10 +2,10 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "format:SO-{YYYY}-{#####}",
- "creation": "2024-01-01 00:00:00.000000",
+ "creation": "2024-01-01 00:00:00",
  "default_view": "List",
  "doctype": "DocType",
- "document_type": "Transaction",
+ "document_type": "Document",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
@@ -23,10 +23,12 @@
   "total_quantity",
   "total_amount",
   "section_break_links",
+  "table_nexi",
   "invoice",
   "gate_pass",
   "delivery_note",
-  "notes"
+  "notes",
+  "amended_from"
  ],
  "fields": [
   {
@@ -72,7 +74,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Order Status",
-   "options": "Draft\nPayment Pending\nPayment Verified\nInvoiced\nReady for Delivery\nCompleted\nCancelled\nHeld",
+   "options": "Draft\nPayment Pending\nPayment Verified\nCredit Sales\nInvoiced\nReady for Delivery\nCompleted\nCancelled\nHeld",
    "reqd": 1
   },
   {
@@ -93,7 +95,6 @@
    "label": "Payment Reference"
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_items",
    "fieldtype": "Section Break",
    "label": "Items"
@@ -119,7 +120,6 @@
    "read_only": 1
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_links",
    "fieldtype": "Section Break",
    "label": "Linked Documents"
@@ -149,12 +149,27 @@
    "fieldname": "notes",
    "fieldtype": "Small Text",
    "label": "Internal Notes"
+  },
+  {
+   "fieldname": "table_nexi",
+   "fieldtype": "Table",
+   "options": "Payment Slips"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Sales Order",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-01 00:00:00.000000",
+ "modified": "2025-10-28 18:52:53.773330",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Sales Order",
@@ -217,34 +232,46 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [
   {
-   "state": "Draft"
+   "color": "Gray",
+   "title": "Draft"
   },
   {
-   "state": "Payment Pending"
+   "color": "Orange",
+   "title": "Payment Pending"
   },
   {
-   "state": "Payment Verified"
+   "color": "Light Blue",
+   "title": "Payment Verified"
   },
   {
-   "state": "Held"
+   "color": "Light Blue",
+   "title": "Credit Sales"
   },
   {
-   "state": "Invoiced"
+   "color": "Orange",
+   "title": "Invoiced"
   },
   {
-   "state": "Ready for Delivery"
+   "color": "Yellow",
+   "title": "Ready for Delivery"
   },
   {
-   "state": "Completed"
+   "color": "Green",
+   "title": "Completed"
   },
   {
-   "state": "Cancelled"
+   "color": "Red",
+   "title": "Cancelled"
+  },
+  {
+   "color": "Purple",
+   "title": "Held"
   }
  ],
- "track_changes": 1,
- "workflow_state_field": "status"
+ "track_changes": 1
 }
