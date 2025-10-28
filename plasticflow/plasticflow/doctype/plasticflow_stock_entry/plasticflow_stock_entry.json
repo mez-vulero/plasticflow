@@ -29,7 +29,8 @@
    "in_list_view": 1,
    "label": "Customs Entry",
    "options": "Customs Entry",
-   "reqd": 1
+   "reqd": 1,
+   "set_null_on_delete": 1
   },
   {
    "fieldname": "arrival_date",

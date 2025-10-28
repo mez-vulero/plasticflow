@@ -76,7 +76,7 @@ def execute(filters=None):
 
 def _collect_kpis():
 	stock_totals = frappe.db.get_all(
-		"Plasticflow Stock Entry Item",
+		"Plasticflow Stock Ledger Entry",
 		fields=[
 			"coalesce(sum(available_qty),0) as available",
 			"coalesce(sum(reserved_qty),0) as reserved",

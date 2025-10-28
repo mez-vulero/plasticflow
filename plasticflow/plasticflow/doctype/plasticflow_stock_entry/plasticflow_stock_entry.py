@@ -2,6 +2,8 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import nowdate
 
+from plasticflow.stock import ledger as stock_ledger
+
 
 class PlasticflowStockEntry(Document):
 	"""Represents stock entry tracking movement between customs and warehouses."""
@@ -41,6 +43,42 @@ class PlasticflowStockEntry(Document):
 			self.status = "Partially Issued"
 		else:
 			self.status = "Available"
+
+	def on_submit(self):
+		customs_entry = frappe.get_doc("Customs Entry", self.customs_entry)
+		if not customs_entry.plasticflow_stock_entry:
+			customs_entry.plasticflow_stock_entry = self.name
+		if self.status == "At Customs":
+			stock_ledger.sync_customs_entry(customs_entry, plasticflow_stock_entry=self.name)
+		elif self.status == "Available":
+			stock_ledger.transfer_customs_to_warehouse(customs_entry, self)
+		else:
+			stock_ledger.update_warehouse_stock(self)
+
+	def on_update_after_submit(self):
+		customs_entry = frappe.get_doc("Customs Entry", self.customs_entry)
+		if not customs_entry.plasticflow_stock_entry:
+			customs_entry.plasticflow_stock_entry = self.name
+		if self.status == "At Customs":
+			stock_ledger.sync_customs_entry(customs_entry, plasticflow_stock_entry=self.name)
+		elif self.status == "Available":
+			stock_ledger.transfer_customs_to_warehouse(customs_entry, self)
+		else:
+			stock_ledger.update_warehouse_stock(self)
+
+	def on_cancel(self):
+		stock_ledger.clear_stock_entry(self)
+		if self.customs_entry and frappe.db.exists("Customs Entry", self.customs_entry):
+			frappe.db.set_value(
+				"Customs Entry",
+				self.customs_entry,
+				"plasticflow_stock_entry",
+				None,
+				update_modified=False,
+			)
+		if frappe.db.exists("Plasticflow Stock Entry", self.name):
+			frappe.db.set_value("Plasticflow Stock Entry", self.name, "customs_entry", None, update_modified=False)
+		self.customs_entry = None
 
 	def _populate_from_customs_entry(self):
 		if not self.customs_entry or not frappe.db.exists("Customs Entry", self.customs_entry):

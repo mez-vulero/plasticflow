@@ -109,7 +109,8 @@
    "fieldname": "plasticflow_stock_entry",
    "fieldtype": "Link",
    "label": "Generated Plasticflow Stock Entry",
-   "options": "Plasticflow Stock Entry"
+   "options": "Plasticflow Stock Entry",
+   "set_null_on_delete": 1
   },
   {
    "fieldname": "section_break_items",

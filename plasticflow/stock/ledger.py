@@ -20,13 +20,38 @@ def _get_filters(product, location_type, location_reference, warehouse=None, cus
 
 
 def _get_or_create(product, location_type, location_reference, warehouse=None, customs_entry=None, plasticflow_stock_entry=None):
-	filters = _get_filters(product, location_type, location_reference, warehouse, customs_entry, plasticflow_stock_entry)
-	name = frappe.db.get_value(LEDGER_DOCTYPE, filters)
-	if name:
-		doc = frappe.get_doc(LEDGER_DOCTYPE, name)
-	else:
+	base_filters = _get_filters(product, location_type, location_reference, warehouse, customs_entry, None)
+	base_filters.pop("plasticflow_stock_entry", None)
+
+	existing = frappe.db.get_all(
+		LEDGER_DOCTYPE,
+		filters=base_filters,
+		fields=["name", "last_movement", "creation"],
+	)
+
+	doc = None
+	if existing:
+		existing.sort(key=lambda row: row.last_movement or row.creation, reverse=True)
+		doc = frappe.get_doc(LEDGER_DOCTYPE, existing[0].name)
+		for duplicate in existing[1:]:
+			frappe.delete_doc(
+				LEDGER_DOCTYPE,
+				duplicate.name,
+				ignore_permissions=True,
+				force=1,
+				delete_permanently=True,
+			)
+
+	if not doc:
 		doc = frappe.new_doc(LEDGER_DOCTYPE)
-		doc.update(filters)
+
+	doc.product = product
+	doc.location_type = location_type
+	doc.location_reference = location_reference
+	doc.warehouse = warehouse
+	doc.customs_entry = customs_entry
+	doc.plasticflow_stock_entry = plasticflow_stock_entry
+
 	return doc
 
 
@@ -87,17 +112,39 @@ def apply_delta(
 
 
 def clear_slot(product, location_type, location_reference, warehouse=None, customs_entry=None, plasticflow_stock_entry=None):
-	name = frappe.db.get_value(
+	base_filters = _get_filters(product, location_type, location_reference, warehouse, customs_entry, None)
+	base_filters.pop("plasticflow_stock_entry", None)
+	names = frappe.db.get_all(
 		LEDGER_DOCTYPE,
-		_get_filters(product, location_type, location_reference, warehouse, customs_entry, plasticflow_stock_entry),
+		filters=base_filters,
+		pluck="name",
 	)
-	if name:
+	for name in names:
 		frappe.delete_doc(LEDGER_DOCTYPE, name, ignore_permissions=True, force=1, delete_permanently=True)
 
 
 # Convenience helpers -----------------------------------------------------
 
-def sync_customs_entry(customs_entry_doc):
+def _get_transferred_totals_by_customs_item(customs_entry_name):
+	rows = frappe.db.sql(
+		"""
+		select
+			sei.customs_entry_item as customs_entry_item,
+			coalesce(sum(sei.received_qty), 0) as total_transferred
+		from `tabPlasticflow Stock Entry Item` sei
+		inner join `tabPlasticflow Stock Entry` se on se.name = sei.parent
+		where se.docstatus = 1
+			and se.customs_entry = %s
+			and se.status != 'At Customs'
+		group by sei.customs_entry_item
+		""",
+		(customs_entry_name,),
+		as_dict=True,
+	)
+	return {row.customs_entry_item: row.total_transferred for row in rows}
+
+def sync_customs_entry(customs_entry_doc, *, plasticflow_stock_entry=None):
+	linked_entry = plasticflow_stock_entry or customs_entry_doc.get("plasticflow_stock_entry")
 	for item in customs_entry_doc.items:
 		set_balances(
 			item.product,
@@ -106,7 +153,7 @@ def sync_customs_entry(customs_entry_doc):
 			available=item.quantity or 0,
 			warehouse=None,
 			customs_entry=customs_entry_doc.name,
-			plasticflow_stock_entry=customs_entry_doc.plasticflow_stock_entry,
+			plasticflow_stock_entry=linked_entry,
 			remarks="Customs stock awaiting transfer",
 		)
 
@@ -137,20 +184,45 @@ def add_warehouse_stock(plasticflow_stock_entry_doc):
 		)
 
 
+def update_warehouse_stock(plasticflow_stock_entry_doc):
+	for item in plasticflow_stock_entry_doc.items:
+		set_balances(
+			item.product,
+			"Warehouse",
+			plasticflow_stock_entry_doc.name,
+			available=item.available_qty or item.received_qty or 0,
+			reserved=item.reserved_qty or 0,
+			issued=item.issued_qty or 0,
+			warehouse=plasticflow_stock_entry_doc.warehouse,
+			customs_entry=plasticflow_stock_entry_doc.customs_entry,
+			plasticflow_stock_entry=plasticflow_stock_entry_doc.name,
+			remarks="Stock available in warehouse",
+		)
+
+
 def transfer_customs_to_warehouse(customs_entry_doc, plasticflow_stock_entry_doc):
+	customs_item_map = {child.name: (child.quantity or 0) for child in customs_entry_doc.items}
+	transferred_totals = _get_transferred_totals_by_customs_item(customs_entry_doc.name)
+
 	for item in plasticflow_stock_entry_doc.items:
 		qty = item.available_qty or item.received_qty or 0
 		if not qty:
 			continue
 
-		# set customs balances to zero for this entry
+		customs_qty = customs_item_map.get(item.customs_entry_item)
+		if customs_qty is None:
+			customs_qty = item.received_qty or item.available_qty or 0
+		total_transferred = transferred_totals.get(item.customs_entry_item, 0)
+		remaining_at_customs = max(customs_qty - total_transferred, 0)
+
+		# update customs balances with remaining stock and record movement in issued qty
 		set_balances(
 			item.product,
 			"Customs",
 			customs_entry_doc.name,
-			available=0,
+			available=remaining_at_customs,
 			reserved=0,
-			issued=0,
+			issued=total_transferred,
 			warehouse=None,
 			customs_entry=customs_entry_doc.name,
 			plasticflow_stock_entry=plasticflow_stock_entry_doc.name,
@@ -170,6 +242,27 @@ def transfer_customs_to_warehouse(customs_entry_doc, plasticflow_stock_entry_doc
 			plasticflow_stock_entry=plasticflow_stock_entry_doc.name,
 			remarks="Stock available in warehouse",
 		)
+
+
+def clear_stock_entry(plasticflow_stock_entry_doc):
+	for item in plasticflow_stock_entry_doc.items:
+		clear_slot(
+			item.product,
+			"Warehouse",
+			plasticflow_stock_entry_doc.name,
+			warehouse=plasticflow_stock_entry_doc.warehouse,
+			customs_entry=plasticflow_stock_entry_doc.customs_entry,
+			plasticflow_stock_entry=plasticflow_stock_entry_doc.name,
+		)
+		if plasticflow_stock_entry_doc.customs_entry:
+			clear_slot(
+				item.product,
+				"Customs",
+				plasticflow_stock_entry_doc.customs_entry,
+				warehouse=None,
+				customs_entry=plasticflow_stock_entry_doc.customs_entry,
+				plasticflow_stock_entry=plasticflow_stock_entry_doc.name,
+			)
 
 
 def adjust_for_reservation(stock_entry_item, quantity, from_customs=False):

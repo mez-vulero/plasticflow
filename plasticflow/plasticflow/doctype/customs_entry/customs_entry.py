@@ -34,13 +34,13 @@ class CustomsEntry(Document):
 		if self.clearance_status != "Cleared":
 			frappe.throw("Customs Entry cannot be submitted until status is set to Cleared.")
 		self._create_plasticflow_stock_entry()
-		stock_ledger.sync_customs_entry(self)
+		stock_ledger.sync_customs_entry(self, plasticflow_stock_entry=self.plasticflow_stock_entry)
 
 	def on_update_after_submit(self):
 		if self.clearance_status == "At Warehouse" and self.plasticflow_stock_entry:
 			self._transfer_to_warehouse()
 		elif self.clearance_status == "Cleared":
-			stock_ledger.sync_customs_entry(self)
+			stock_ledger.sync_customs_entry(self, plasticflow_stock_entry=self.plasticflow_stock_entry)
 
 	def on_cancel(self):
 		stock_ledger.clear_customs_entry(self)
@@ -48,6 +48,17 @@ class CustomsEntry(Document):
 			plasticflow_stock_entry = frappe.get_doc("Plasticflow Stock Entry", self.plasticflow_stock_entry)
 			if plasticflow_stock_entry.docstatus == 1:
 				plasticflow_stock_entry.cancel()
+			if frappe.db.exists("Plasticflow Stock Entry", plasticflow_stock_entry.name):
+				frappe.db.set_value(
+					"Plasticflow Stock Entry",
+					plasticflow_stock_entry.name,
+					"customs_entry",
+					None,
+					update_modified=False,
+				)
+		if frappe.db.exists("Customs Entry", self.name):
+			frappe.db.set_value("Customs Entry", self.name, "plasticflow_stock_entry", None, update_modified=False)
+		self.plasticflow_stock_entry = None
 
 	def _set_item_defaults(self):
 		for item in self.items:
