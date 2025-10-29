@@ -6,7 +6,6 @@ import frappe
 
 WORKSPACES = {
     "PlasticFlow": "plasticflow",
-    "PlasticFlow Management": "management_dashboard",
 }
 
 

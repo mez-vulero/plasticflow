@@ -1,0 +1,20 @@
+{
+ "chart_name": "Daily Sales Amount",
+ "chart_type": "Report",
+ "custom_options": "{\"type\": \"line\"}",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart",
+ "dynamic_filters_json": "{\"from_date\":\"frappe.datetime.add_days(frappe.datetime.nowdate(), -30)\",\"to_date\":\"frappe.datetime.nowdate()\"}",
+ "filters_json": "{}",
+ "idx": 0,
+ "is_public": 0,
+ "is_standard": 1,
+ "module": "PlasticFlow",
+ "name": "Daily Sales Amount",
+ "number_of_groups": 0,
+ "report_name": "Plasticflow Daily Sales",
+ "timeseries": 0,
+ "type": "Line",
+ "use_report_chart": 1,
+ "y_axis": []
+}
