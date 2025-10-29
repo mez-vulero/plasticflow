@@ -19,6 +19,7 @@ class SalesOrder(Document):
 		self._set_invoice_progress_fields()
 
 	def before_submit(self):
+		self._calculate_totals()
 		reservations = self._collect_batch_reservations()
 		self._validate_stock_availability(reservations)
 		if self.delivery_source == "Warehouse":
@@ -54,6 +55,7 @@ class SalesOrder(Document):
 				"payment_status": "Payment Failed" if self.sales_type == "Cash" else "Draft",
 			}
 		)
+		self._clear_links()
 
 	def _set_item_defaults(self):
 		for item in self.items:
@@ -120,25 +122,12 @@ class SalesOrder(Document):
 	def _sum_payment_slips(self):
 		return sum(flt(row.amount_paid or 0) for row in self.payment_slips)
 
+	@staticmethod
+	def _ledger_reference(location_type: str, warehouse: str | None = None) -> str:
+		return f"{location_type}::{warehouse or 'GLOBAL'}"
+
 	def _collect_batch_reservations(self):
-		reservations = {}
-		for item in self.items:
-			if not item.batch_item:
-				continue
-			child = frappe.get_doc("Plasticflow Stock Entry Item", item.batch_item)
-			parent = frappe.get_doc("Plasticflow Stock Entry", child.parent)
-			entry = reservations.setdefault(
-				child.parent,
-				{"rows": [], "from_customs": parent.status == "At Customs"},
-			)
-			entry["from_customs"] = parent.status == "At Customs"
-			entry["rows"].append(
-				{
-					"child_name": child.name,
-					"qty": item.quantity or 0,
-				}
-			)
-		return reservations
+		return {}
 
 	def _collect_location_requirements(self):
 		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
@@ -152,62 +141,188 @@ class SalesOrder(Document):
 		return requirements
 
 	def _validate_stock_availability(self, reservations):
-		for (product, location_type), required_qty in self._collect_location_requirements().items():
-			available_qty = stock_ledger.get_available_quantity(product, location_type=location_type)
-			if required_qty - available_qty > QTY_TOLERANCE:
+		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
+		warehouse = self._get_target_warehouse()
+		for item in self.items:
+			qty = flt(item.quantity or 0)
+			if qty <= 0 or not item.product:
+				continue
+			available_qty = stock_ledger.get_available_quantity(
+				item.product,
+				location_type=location_type,
+				warehouse=warehouse if location_type == "Warehouse" else None,
+			)
+			if qty - available_qty > QTY_TOLERANCE:
 				frappe.throw(
 					_("Insufficient {0} stock for {1}. Required {2}, available {3}.").format(
 						location_type.lower(),
-						product,
-						frappe.utils.fmt_float(required_qty),
+						item.product,
+						frappe.utils.fmt_float(qty),
 						frappe.utils.fmt_float(available_qty),
 					)
 				)
 
-		for batch_name, payload in reservations.items():
-			batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
-			for entry in payload["rows"]:
-				child = next((row for row in batch.items if row.name == entry["child_name"]), None)
-				if not child:
-					frappe.throw(_("Unable to locate batch item for reservation."))
-				available = (child.received_qty or 0) - (child.reserved_qty or 0) - (child.issued_qty or 0)
-				if entry["qty"] > available:
-					frappe.throw(
-						_("Not enough available quantity in batch {0} for {1}. Requested {2}, available {3}.").format(
-							batch.name,
-							child.product,
-							entry["qty"],
-							available,
-						)
-					)
+	def _get_target_warehouse(self):
+		if self.delivery_source != "Warehouse":
+			return None
+		for item in self.items:
+			if item.warehouse:
+				return item.warehouse
+		return None
+
+	def _clear_links(self):
+		updates = {}
+		if self.invoice:
+			if frappe.db.exists("Plasticflow Invoice", self.invoice):
+				frappe.db.set_value("Plasticflow Invoice", self.invoice, {"sales_order": None}, update_modified=False)
+			updates["invoice"] = None
+			self.invoice = None
+		if self.gate_pass:
+			if frappe.db.exists("Gate Pass", self.gate_pass):
+				frappe.db.set_value("Gate Pass", self.gate_pass, {"sales_order": None, "invoice": None, "delivery_note": None}, update_modified=False)
+			updates["gate_pass"] = None
+			self.gate_pass = None
+		if self.delivery_note:
+			if frappe.db.exists("Delivery Note", self.delivery_note):
+				frappe.db.set_value("Delivery Note", self.delivery_note, {"sales_order": None, "gate_pass": None}, update_modified=False)
+			updates["delivery_note"] = None
+			self.delivery_note = None
+		if updates:
+			frappe.db.set_value("Sales Order", self.name, updates, update_modified=False)
 
 	def _apply_reservations(self, reservations):
-		for batch_name, payload in reservations.items():
-			batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
-			updated = False
-			for entry in payload["rows"]:
-				child = next((row for row in batch.items if row.name == entry["child_name"]), None)
-				if not child:
-					continue
-				child.reserved_qty = (child.reserved_qty or 0) + (entry["qty"] or 0)
-				updated = True
-				stock_ledger.adjust_for_reservation(child, entry["qty"], from_customs=payload["from_customs"])
-			if updated:
-				batch.save(ignore_permissions=True)
+		if reservations:
+			for batch_name, payload in reservations.items():
+				batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
+				updated = False
+				for entry in payload["rows"]:
+					child = next((row for row in batch.items if row.name == entry["child_name"]), None)
+					if not child:
+						continue
+					child.reserved_qty = (child.reserved_qty or 0) + (entry["qty"] or 0)
+					updated = True
+					stock_ledger.adjust_for_reservation(child, entry["qty"], from_customs=payload["from_customs"])
+				if updated:
+					batch.save(ignore_permissions=True)
+			return
+
+		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
+		warehouse = self._get_target_warehouse()
+		reference = self._ledger_reference(location_type, warehouse)
+		for item in self.items:
+			qty = flt(item.quantity or 0)
+			if qty <= 0 or not item.product:
+				continue
+			stock_ledger.apply_delta(
+				item.product,
+				location_type,
+				reference,
+				available_delta=-qty,
+				reserved_delta=qty,
+				warehouse=warehouse if location_type == "Warehouse" else None,
+				remarks=f"Reserved for Sales Order {self.name}",
+			)
 
 	def _release_reservations(self, reservations):
-		for batch_name, payload in reservations.items():
-			batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
-			updated = False
-			for entry in payload["rows"]:
-				child = next((row for row in batch.items if row.name == entry["child_name"]), None)
-				if not child:
-					continue
-				child.reserved_qty = max((child.reserved_qty or 0) - (entry["qty"] or 0), 0)
-				updated = True
-				stock_ledger.release_reservation(child, entry["qty"], from_customs=payload["from_customs"])
-			if updated:
-				batch.save(ignore_permissions=True)
+		if reservations:
+			for batch_name, payload in reservations.items():
+				batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
+				updated = False
+				for entry in payload["rows"]:
+					child = next((row for row in batch.items if row.name == entry["child_name"]), None)
+					if not child:
+						continue
+					child.reserved_qty = max((child.reserved_qty or 0) - (entry["qty"] or 0), 0)
+					updated = True
+					stock_ledger.release_reservation(child, entry["qty"], from_customs=payload["from_customs"])
+				if updated:
+					batch.save(ignore_permissions=True)
+			return
+
+		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
+		warehouse = self._get_target_warehouse()
+		reference = self._ledger_reference(location_type, warehouse)
+		for item in self.items:
+			qty = flt(item.quantity or 0)
+			if qty <= 0 or not item.product:
+				continue
+			stock_ledger.apply_delta(
+				item.product,
+				location_type,
+				reference,
+				available_delta=qty,
+				reserved_delta=-qty,
+				warehouse=warehouse if location_type == "Warehouse" else None,
+				remarks=f"Reservation released for Sales Order {self.name}",
+			)
+
+	def _finalize_reservations(self):
+		"""Convert reserved quantity into issued quantity when billing is complete."""
+		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
+		warehouse = self._get_target_warehouse()
+		reference = self._ledger_reference(location_type, warehouse)
+		for item in self.items:
+			qty = flt(item.quantity or 0)
+			if qty <= 0 or not item.product:
+				continue
+			reserved_now = self._get_current_reserved(item.product, location_type, reference, warehouse)
+			if reserved_now <= 0:
+				continue
+			qty_to_convert = min(qty, reserved_now)
+			stock_ledger.apply_delta(
+				item.product,
+				location_type,
+				reference,
+				reserved_delta=-qty_to_convert,
+				issued_delta=qty_to_convert,
+				warehouse=warehouse if location_type == "Warehouse" else None,
+				remarks=f"Invoiced via Sales Order {self.name}",
+			)
+
+	def _restore_reservations(self):
+		"""Move issued quantity back to reserved when billing is reversed."""
+		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
+		warehouse = self._get_target_warehouse()
+		reference = self._ledger_reference(location_type, warehouse)
+		for item in self.items:
+			qty = flt(item.quantity or 0)
+			if qty <= 0 or not item.product:
+				continue
+			issued_now = self._get_current_issued(item.product, location_type, reference, warehouse)
+			if issued_now <= 0:
+				continue
+			qty_to_restore = min(qty, issued_now)
+			stock_ledger.apply_delta(
+				item.product,
+				location_type,
+				reference,
+				reserved_delta=qty_to_restore,
+				issued_delta=-qty_to_restore,
+				warehouse=warehouse if location_type == "Warehouse" else None,
+				remarks=f"Invoice reversed for Sales Order {self.name}",
+			)
+
+	@staticmethod
+	def _get_current_reserved(product, location_type, reference, warehouse):
+		filters = {
+			"product": product,
+			"location_type": location_type,
+			"location_reference": reference,
+		}
+		if warehouse:
+			filters["warehouse"] = warehouse
+		return flt(frappe.db.get_value("Plasticflow Stock Ledger Entry", filters, "reserved_qty") or 0)
+
+	@staticmethod
+	def _get_current_issued(product, location_type, reference, warehouse):
+		filters = {
+			"product": product,
+			"location_type": location_type,
+			"location_reference": reference,
+		}
+		if warehouse:
+			filters["warehouse"] = warehouse
+		return flt(frappe.db.get_value("Plasticflow Stock Ledger Entry", filters, "issued_qty") or 0)
 
 	def _enforce_fifo(self, reservations):
 		for batch_name, payload in reservations.items():
@@ -304,6 +419,7 @@ class SalesOrder(Document):
 				if self.status not in {"Ready for Delivery", "Completed"}:
 					updates["status"] = "Invoiced"
 					self.status = "Invoiced"
+				self._finalize_reservations()
 			else:
 				if self.sales_type == "Cash":
 					target_status = "Payment Verified" if self.payment_status == "Payment Verified" else "Payment Pending"
@@ -314,6 +430,7 @@ class SalesOrder(Document):
 				if self.status != "Completed":
 					updates["status"] = target_status
 					self.status = target_status
+				self._restore_reservations()
 
 		frappe.db.set_value("Sales Order", self.name, updates, update_modified=False)
 		self.invoiced_amount = total_invoiced
@@ -427,7 +544,8 @@ class SalesOrder(Document):
 		gate_pass = self._build_gate_pass_doc(latest_invoice)
 		gate_pass.insert(ignore_permissions=True)
 		frappe.db.set_value("Plasticflow Invoice", latest_invoice, "gate_pass", gate_pass.name, update_modified=False)
-		self.db_set({"gate_pass": gate_pass.name, "status": "Ready for Delivery"})
+		self.db_set({"gate_pass": gate_pass.name, "status": "Completed"})
+		self.status = "Completed"
 		return gate_pass
 
 	def _build_gate_pass_doc(self, invoice_name):

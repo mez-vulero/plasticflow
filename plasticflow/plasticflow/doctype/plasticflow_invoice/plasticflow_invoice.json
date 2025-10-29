@@ -1,11 +1,10 @@
 {
  "actions": [],
- "allow_import": 0,
  "autoname": "format:INV-{YYYY}-{#####}",
- "creation": "2024-01-01 00:00:00.000000",
+ "creation": "2024-01-01 00:00:00",
  "default_view": "List",
  "doctype": "DocType",
- "document_type": "Transaction",
+ "document_type": "Document",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
@@ -15,14 +14,16 @@
   "currency",
   "invoice_type",
   "total_amount",
-  "payment_status",
+  "status",
   "column_break_meta",
   "due_date",
   "outstanding_amount",
   "gate_pass",
+  "receipt_number",
   "section_break_items",
   "items",
-  "remarks"
+  "remarks",
+  "amended_from"
  ],
  "fields": [
   {
@@ -54,7 +55,7 @@
    "fieldname": "currency",
    "fieldtype": "Data",
    "label": "Currency"
- },
+  },
   {
    "default": "Cash",
    "fieldname": "invoice_type",
@@ -69,14 +70,6 @@
    "in_list_view": 1,
    "label": "Total Amount",
    "options": "currency",
-   "reqd": 1
-  },
-  {
-   "default": "Pending",
-   "fieldname": "payment_status",
-   "fieldtype": "Select",
-   "label": "Payment Status",
-   "options": "\nPending\nPaid\nOverdue",
    "reqd": 1
   },
   {
@@ -118,12 +111,37 @@
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Payment Status",
+   "options": "\nPending\nPaid\nOverdue",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Plasticflow Invoice",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "receipt_number",
+   "fieldtype": "Data",
+   "label": "Receipt Number",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-01-01 00:00:00.000000",
+ "modified": "2025-10-29 08:13:35.310513",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Plasticflow Invoice",
@@ -186,19 +204,22 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [
   {
-   "state": "Pending"
+   "color": "Yellow",
+   "title": "Pending"
   },
   {
-   "state": "Paid"
+   "color": "Green",
+   "title": "Paid"
   },
   {
-   "state": "Overdue"
+   "color": "Red",
+   "title": "Overdue"
   }
  ],
- "track_changes": 1,
- "workflow_state_field": "payment_status"
+ "track_changes": 1
 }

@@ -39,14 +39,16 @@
    "in_list_view": 1,
    "label": "Sales Order",
    "options": "Sales Order",
-   "reqd": 1
+   "reqd": 1,
+   "set_null_on_delete": 1
   },
   {
    "fieldname": "gate_pass",
    "fieldtype": "Link",
    "label": "Gate Pass",
    "options": "Gate Pass",
-   "reqd": 1
+   "reqd": 1,
+   "set_null_on_delete": 1
   },
   {
    "fieldname": "driver",

@@ -3,6 +3,8 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, nowdate
 
+PAYMENT_TOLERANCE = 0.01
+
 
 class PlasticflowInvoice(Document):
 	"""Finance invoice generated after payment verification."""
@@ -23,6 +25,8 @@ class PlasticflowInvoice(Document):
 			frappe.db.set_value("Gate Pass", self.gate_pass, "status", "Cancelled")
 			frappe.db.set_value("Plasticflow Invoice", self.name, "gate_pass", None, update_modified=False)
 			self.gate_pass = None
+		frappe.db.set_value("Plasticflow Invoice", self.name, "sales_order", None, update_modified=False)
+		self.sales_order = None
 
 	def _set_item_defaults(self):
 		for item in self.items:
@@ -63,3 +67,5 @@ class PlasticflowInvoice(Document):
 			return
 		sales_order = frappe.get_doc("Sales Order", self.sales_order)
 		sales_order.update_invoicing_progress()
+		if flt(sales_order.outstanding_amount) <= PAYMENT_TOLERANCE:
+			sales_order._finalize_reservations()

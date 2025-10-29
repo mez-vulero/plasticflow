@@ -20,10 +20,7 @@ class GatePass(Document):
 		frappe.db.set_value(
 			"Sales Order",
 			self.sales_order,
-			{
-				"delivery_note": delivery_note.name,
-				"status": "Ready for Delivery",
-			},
+			{"delivery_note": delivery_note.name, "status": "Completed"},
 		)
 
 	def on_cancel(self):
@@ -34,7 +31,21 @@ class GatePass(Document):
 				dn.delete(ignore_permissions=True)
 			else:
 				dn.cancel()
-		frappe.db.set_value("Sales Order", self.sales_order, "status", "Cancelled")
+		if self.invoice and frappe.db.exists("Plasticflow Invoice", self.invoice):
+			frappe.db.set_value("Plasticflow Invoice", self.invoice, "gate_pass", None, update_modified=False)
+		if self.sales_order and frappe.db.exists("Sales Order", self.sales_order):
+			frappe.db.set_value(
+				"Sales Order",
+				self.sales_order,
+				{"status": "Invoiced", "gate_pass": None, "delivery_note": None},
+				update_modified=False,
+			)
+		frappe.db.set_value(
+			"Gate Pass",
+			self.name,
+			{"invoice": None, "sales_order": None, "delivery_note": None},
+			update_modified=False,
+		)
 
 	def _set_item_defaults(self):
 		for item in self.items:

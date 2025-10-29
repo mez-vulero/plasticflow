@@ -97,12 +97,15 @@ def apply_delta(
 	warehouse=None,
 	customs_entry=None,
 	plasticflow_stock_entry=None,
+	remarks=None,
 ):
 	"""Adjust balances by delta values."""
 	doc = _get_or_create(product, location_type, location_reference, warehouse, customs_entry, plasticflow_stock_entry)
 	doc.available_qty = max((doc.available_qty or 0) + available_delta, 0)
 	doc.reserved_qty = max((doc.reserved_qty or 0) + reserved_delta, 0)
 	doc.issued_qty = max((doc.issued_qty or 0) + issued_delta, 0)
+	if remarks is not None:
+		doc.remarks = remarks
 	doc.last_movement = now_datetime()
 	if doc.is_new():
 		doc.insert(ignore_permissions=True)
