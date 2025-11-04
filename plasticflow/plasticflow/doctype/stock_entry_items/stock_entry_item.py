@@ -1,7 +1,7 @@
 from frappe.model.document import Document
 
 
-class PlasticflowStockEntryItem(Document):
+class StockEntryItems(Document):
 	"""Child table tracking per-product quantities inside a batch."""
 
 	pass

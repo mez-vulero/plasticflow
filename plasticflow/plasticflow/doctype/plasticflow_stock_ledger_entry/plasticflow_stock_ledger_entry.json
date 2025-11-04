@@ -13,8 +13,7 @@
   "location_type",
   "location_reference",
   "warehouse",
-  "customs_entry",
-  "plasticflow_stock_entry",
+  "stock_entry",
   "import_shipment",
   "landed_cost_rate",
   "landed_cost_amount",
@@ -56,17 +55,10 @@
    "options": "Warehouse"
   },
   {
-   "depends_on": "eval:doc.location_type===\"Customs\"",
-   "fieldname": "customs_entry",
+   "fieldname": "stock_entry",
    "fieldtype": "Link",
-   "label": "Customs Entry",
-   "options": "Customs Entry"
-  },
-  {
-   "fieldname": "plasticflow_stock_entry",
-   "fieldtype": "Link",
-   "label": "Plasticflow Stock Entry",
-   "options": "Plasticflow Stock Entry"
+   "label": "Stock Entries",
+   "options": "Stock Entries"
  },
   {
    "fieldname": "import_shipment",

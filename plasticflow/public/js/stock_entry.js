@@ -1,12 +1,12 @@
-frappe.ui.form.on('Plasticflow Stock Entry', {
-	customs_entry(frm) {
-		if (!frm.doc.customs_entry) {
+frappe.ui.form.on('Stock Entries', {
+	import_shipment(frm) {
+		if (!frm.doc.import_shipment) {
 			return;
 		}
 
 		frm.call({
 			method: 'plasticflow.stock.api.get_stock_entry_template',
-			args: { customs_entry: frm.doc.customs_entry },
+			args: { import_shipment: frm.doc.import_shipment },
 			freeze: true,
 			callback: ({ message }) => {
 				if (!message) {

@@ -107,7 +107,7 @@ def _collect_kpis():
 	sales_total_month = sales_row[0].total if sales_row else 0
 
 	pending_clearance = frappe.db.count(
-		"Customs Entry",
+		"Import Shipment",
 		{"docstatus": ["!=", 2], "clearance_status": ["in", ["Received", "Under Clearance", "On Hold"]]},
 	)
 

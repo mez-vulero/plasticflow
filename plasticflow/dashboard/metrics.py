@@ -5,13 +5,13 @@ from frappe.utils import flt
 
 
 def get_average_clearance_days(filters: dict[str, str] | None = None) -> dict[str, object]:
-	"""Return the average number of days between arrival and clearance for submitted customs entries."""
+	"""Return the average number of days between arrival and clearance for completed shipments."""
 
 	rows = frappe.db.sql(
 		"""
 		select avg(datediff(coalesce(cleared_on, current_date), arrival_date)) as avg_days
-		from `tabCustoms Entry`
-		where docstatus = 1
+		from `tabImport Shipment`
+		where clearance_status in ('Cleared', 'At Warehouse')
 			and arrival_date is not null
 			and cleared_on is not null
 		""",
@@ -24,5 +24,5 @@ def get_average_clearance_days(filters: dict[str, str] | None = None) -> dict[st
 		"value": round(avg_days, 1),
 		"fieldtype": "Float",
 		"suffix": "days",
-		"route": ["List", "Customs Entry"],
+		"route": ["List", "Import Shipment"],
 	}

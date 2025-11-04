@@ -12,7 +12,7 @@
  "name": "Plasticflow Cycle Time",
  "owner": "Administrator",
  "prepared_report": 0,
- "ref_doctype": "Customs Entry",
+ "ref_doctype": "Import Shipment",
  "report_name": "Plasticflow Cycle Time",
  "report_type": "Script Report",
  "roles": [

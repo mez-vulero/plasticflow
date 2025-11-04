@@ -42,7 +42,7 @@ def _get_data(filters):
 			sum(soi.net_amount) as net_sales,
 			sum(soi.withholding_amount) as withholding,
 			sum(soi.commission_amount) as commission,
-			avg(isi.landed_cost_rate) as landed_cost_rate
+			avg(isi.landed_cost_rate_local) as landed_cost_rate_local
 		from `tabSales Order Item` soi
 		inner join `tabSales Order` so on so.name = soi.parent
 		left join `tabImport Shipment Item` isi on isi.name = soi.import_shipment_item
@@ -57,7 +57,11 @@ def _get_data(filters):
 	data = []
 	for row in rows:
 		quantity = flt(row.quantity_sold or 0)
-		landed_cost_rate = flt(row.landed_cost_rate or 0)
+		landed_cost_rate = flt(row.landed_cost_rate_local or 0)
+		if not landed_cost_rate and row.import_shipment:
+			landed_cost_rate = flt(
+				frappe.db.get_value("Import Shipment", row.import_shipment, "per_unit_landed_cost_local") or 0
+			)
 		landed_cost_total = landed_cost_rate * quantity
 		net_sales = flt(row.net_sales or 0)
 		commission = flt(row.commission or 0)

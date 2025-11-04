@@ -8,7 +8,6 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "customs_entry",
   "import_shipment",
   "arrival_date",
   "warehouse",
@@ -25,21 +24,12 @@
  ],
  "fields": [
   {
-   "fieldname": "customs_entry",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Customs Entry",
-   "options": "Customs Entry",
-   "reqd": 1,
-   "set_null_on_delete": 1
-  },
-  {
    "fieldname": "import_shipment",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Import Shipment",
    "options": "Import Shipment",
-   "read_only": 1,
+   "reqd": 1,
    "set_null_on_delete": 1
   },
   {
@@ -75,7 +65,7 @@
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
-   "options": "Plasticflow Stock Entry Item",
+   "options": "Stock Entry Items",
    "reqd": 1
   },
   {
@@ -111,14 +101,14 @@
    "fieldname": "ammended_from",
    "fieldtype": "Link",
    "label": "Ammended From",
-   "options": "Plasticflow Stock Entry"
+   "options": "Stock Entries"
   },
   {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "Plasticflow Stock Entry",
+   "options": "Stock Entries",
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
@@ -130,7 +120,7 @@
  "modified": "2025-10-28 15:53:02.456777",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
- "name": "Plasticflow Stock Entry",
+ "name": "Stock Entries",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

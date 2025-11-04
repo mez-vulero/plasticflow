@@ -3,8 +3,8 @@ import frappe
 
 def execute():
 	rename_map = {
-		"Stock Batch": "Plasticflow Stock Entry",
-		"Stock Batch Item": "Plasticflow Stock Entry Item",
+		"Stock Batch": "Stock Entries",
+		"Stock Batch Item": "Stock Entry Items",
 	}
 
 	for old, new in rename_map.items():
@@ -18,14 +18,14 @@ def execute():
 	frappe.db.sql(
 		"""
 		update `tabDocField`
-		set options = 'Plasticflow Stock Entry'
+		set options = 'Stock Entries'
 		where options = 'Stock Batch'
 	"""
 	)
 	frappe.db.sql(
 		"""
 		update `tabDocField`
-		set options = 'Plasticflow Stock Entry Item'
+		set options = 'Stock Entry Items'
 		where options = 'Stock Batch Item'
 	"""
 	)

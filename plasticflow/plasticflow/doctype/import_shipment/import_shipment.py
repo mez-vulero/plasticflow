@@ -1,9 +1,12 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt
+from frappe.utils import flt, nowdate
+
+from plasticflow.stock import ledger as stock_ledger
 
 QTY_TOLERANCE = 0.0001
+CLEARANCE_FINAL_STATES = {"Cleared", "At Warehouse"}
 
 
 class ImportShipment(Document):
@@ -13,6 +16,21 @@ class ImportShipment(Document):
 		self._populate_from_purchase_order()
 		self._set_item_defaults()
 		self._calculate_totals()
+		self._set_clearance_defaults()
+
+	def before_save(self):
+		self._record_clearance_transition()
+
+	def on_update(self):
+		previous_status = getattr(self.flags, "previous_clearance_status", None)
+		current_status = getattr(self.flags, "current_clearance_status", None)
+
+		if getattr(self.flags, "destination_changed", False):
+			self._handle_destination_change()
+
+		if previous_status == current_status:
+			return
+		self._handle_clearance_transition(previous_status, current_status)
 
 	def _populate_from_purchase_order(self):
 		if not self.purchase_order:
@@ -109,13 +127,108 @@ class ImportShipment(Document):
 		if not self.landing_cost_status:
 			self.landing_cost_status = "Draft"
 
+	def _set_clearance_defaults(self):
+		self.clearance_status = self.clearance_status or "Received"
+		if self.clearance_status in CLEARANCE_FINAL_STATES and not self.cleared_on:
+			self.cleared_on = nowdate()
+		if not self.total_declared_value:
+			self.total_declared_value = self.total_shipment_amount or 0
+
+	def _record_clearance_transition(self):
+		previous = self.get_doc_before_save()
+		prev_status = previous.clearance_status if previous else None
+		current_status = self.clearance_status or "Received"
+		if prev_status != current_status:
+			self.flags.previous_clearance_status = prev_status
+			self.flags.current_clearance_status = current_status
+
+		prev_destination = previous.destination_warehouse if previous else None
+		if prev_destination != self.destination_warehouse:
+			self.flags.destination_changed = True
+
+	def _handle_clearance_transition(self, previous_status, current_status):
+		current_status = current_status or self.clearance_status or "Received"
+		if current_status == previous_status:
+			return
+
+		if current_status in CLEARANCE_FINAL_STATES:
+			if current_status == "At Warehouse" and not self.destination_warehouse:
+				frappe.throw(_("Destination Warehouse is required before marking the shipment as at warehouse."))
+			stock_entry = self._ensure_stock_entry()
+			if current_status == "Cleared":
+				if stock_entry.status != "At Customs":
+					stock_entry.status = "At Customs"
+					stock_entry.save(ignore_permissions=True)
+				stock_ledger.update_stock_entry_balances(stock_entry)
+			else:  # At Warehouse
+				self._prepare_stock_entry_for_warehouse(stock_entry)
+				stock_ledger.update_stock_entry_balances(stock_entry)
+		elif previous_status in CLEARANCE_FINAL_STATES:
+			self._rollback_clearance()
+
+	def _handle_destination_change(self):
+		if self.clearance_status != "At Warehouse" or not self.stock_entry:
+			return
+		if not frappe.db.exists("Stock Entries", self.stock_entry):
+			return
+		stock_entry = frappe.get_doc("Stock Entries", self.stock_entry)
+		self._prepare_stock_entry_for_warehouse(stock_entry)
+		stock_ledger.update_stock_entry_balances(stock_entry)
+
+	def _ensure_stock_entry(self):
+		if self.stock_entry and frappe.db.exists("Stock Entries", self.stock_entry):
+			return frappe.get_doc("Stock Entries", self.stock_entry)
+
+		if not self.name:
+			# Should not happen because on_update runs post-save, but guard just in case.
+			self.save(ignore_permissions=True)
+
+		stock_entry = frappe.new_doc("Stock Entries")
+		stock_entry.import_shipment = self.name
+		stock_entry.arrival_date = self.arrival_date or nowdate()
+		stock_entry.warehouse = self.destination_warehouse
+		stock_entry.status = "At Customs"
+		stock_entry.insert(ignore_permissions=True)
+		if stock_entry.docstatus == 0:
+			stock_entry.submit()
+		self.db_set("stock_entry", stock_entry.name, update_modified=False)
+		return stock_entry
+
+	def _prepare_stock_entry_for_warehouse(self, stock_entry):
+		updated = False
+		if stock_entry.status != "Available":
+			stock_entry.status = "Available"
+			updated = True
+		if self.destination_warehouse and stock_entry.warehouse != self.destination_warehouse:
+			stock_entry.warehouse = self.destination_warehouse
+			updated = True
+		if not stock_entry.arrival_date:
+			stock_entry.arrival_date = nowdate()
+			updated = True
+		if updated:
+			stock_entry.save(ignore_permissions=True)
+		return stock_entry
+
+	def _rollback_clearance(self):
+		if self.stock_entry and frappe.db.exists("Stock Entries", self.stock_entry):
+			stock_entry = frappe.get_doc("Stock Entries", self.stock_entry)
+			if stock_entry.status != "At Customs":
+				stock_entry.status = "At Customs"
+				stock_entry.save(ignore_permissions=True)
+			stock_ledger.update_stock_entry_balances(stock_entry)
+		else:
+			stock_ledger.sync_shipment_customs_balances(self)
+
+		if self.clearance_status not in CLEARANCE_FINAL_STATES and self.cleared_on:
+			self.db_set("cleared_on", None, update_modified=False)
+
 
 def get_dashboard_data():
 	return {
 		"fieldname": "import_shipment",
 		"transactions": [
 			{"label": _("Costing"), "items": ["Landing Cost Worksheet"]},
-			{"label": _("Customs & Stock"), "items": ["Customs Entry", "Plasticflow Stock Entry"]},
+			{"label": _("Customs & Stock"), "items": ["Stock Entries"]},
 		],
 		"internal_links": {
 			"Purchase Order": ["purchase_order"],

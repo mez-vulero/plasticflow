@@ -9,8 +9,7 @@ def _get_filters(
 	location_type,
 	location_reference,
 	warehouse=None,
-	customs_entry=None,
-	plasticflow_stock_entry=None,
+	stock_entry=None,
 	import_shipment=None,
 ):
 	filters = {
@@ -20,10 +19,8 @@ def _get_filters(
 	}
 	if warehouse:
 		filters["warehouse"] = warehouse
-	if customs_entry:
-		filters["customs_entry"] = customs_entry
-	if plasticflow_stock_entry:
-		filters["plasticflow_stock_entry"] = plasticflow_stock_entry
+	if stock_entry:
+		filters["stock_entry"] = stock_entry
 	if import_shipment:
 		filters["import_shipment"] = import_shipment
 	return filters
@@ -34,8 +31,7 @@ def _get_or_create(
 	location_type,
 	location_reference,
 	warehouse=None,
-	customs_entry=None,
-	plasticflow_stock_entry=None,
+	stock_entry=None,
 	import_shipment=None,
 ):
 	base_filters = _get_filters(
@@ -43,11 +39,10 @@ def _get_or_create(
 		location_type,
 		location_reference,
 		warehouse,
-		customs_entry,
 		None,
 		import_shipment,
 	)
-	base_filters.pop("plasticflow_stock_entry", None)
+	base_filters.pop("stock_entry", None)
 
 	existing = frappe.db.get_all(
 		LEDGER_DOCTYPE,
@@ -75,8 +70,7 @@ def _get_or_create(
 	doc.location_type = location_type
 	doc.location_reference = location_reference
 	doc.warehouse = warehouse
-	doc.customs_entry = customs_entry
-	doc.plasticflow_stock_entry = plasticflow_stock_entry
+	doc.stock_entry = stock_entry
 	doc.import_shipment = import_shipment
 
 	return doc
@@ -91,8 +85,7 @@ def set_balances(
 	reserved=None,
 	issued=None,
 	warehouse=None,
-	customs_entry=None,
-	plasticflow_stock_entry=None,
+	stock_entry=None,
 	import_shipment=None,
 	landed_cost_rate=None,
 	landed_cost_amount=None,
@@ -104,8 +97,7 @@ def set_balances(
 		location_type,
 		location_reference,
 		warehouse,
-		customs_entry,
-		plasticflow_stock_entry,
+		stock_entry,
 		import_shipment,
 	)
 	if available is not None:
@@ -137,8 +129,7 @@ def apply_delta(
 	reserved_delta=0.0,
 	issued_delta=0.0,
 	warehouse=None,
-	customs_entry=None,
-	plasticflow_stock_entry=None,
+	stock_entry=None,
 	import_shipment=None,
 	remarks=None,
 ):
@@ -148,8 +139,7 @@ def apply_delta(
 		location_type,
 		location_reference,
 		warehouse,
-		customs_entry,
-		plasticflow_stock_entry,
+		stock_entry,
 		import_shipment,
 	)
 	doc.available_qty = max((doc.available_qty or 0) + available_delta, 0)
@@ -170,12 +160,10 @@ def clear_slot(
 	location_type,
 	location_reference,
 	warehouse=None,
-	customs_entry=None,
-	plasticflow_stock_entry=None,
+	stock_entry=None,
 	import_shipment=None,
 ):
-	base_filters = _get_filters(product, location_type, location_reference, warehouse, customs_entry, None, import_shipment)
-	base_filters.pop("plasticflow_stock_entry", None)
+	base_filters = _get_filters(product, location_type, location_reference, warehouse, None, import_shipment)
 	names = frappe.db.get_all(
 		LEDGER_DOCTYPE,
 		filters=base_filters,
@@ -203,70 +191,76 @@ def get_available_quantity(product, *, location_type, warehouse=None):
 	return flt(rows[0].available) if rows else 0.0
 
 
-def _get_transferred_totals_by_customs_item(customs_entry_name):
+def _get_transferred_totals_by_shipment_item(import_shipment_name):
 	rows = frappe.db.sql(
 		"""
 		select
-			sei.customs_entry_item as customs_entry_item,
+			sei.import_shipment_item as shipment_item,
 			coalesce(sum(sei.received_qty), 0) as total_transferred
-		from `tabPlasticflow Stock Entry Item` sei
-		inner join `tabPlasticflow Stock Entry` se on se.name = sei.parent
+		from `tabStock Entry Items` sei
+		inner join `tabStock Entries` se on se.name = sei.parent
 		where se.docstatus = 1
-			and se.customs_entry = %s
+			and se.import_shipment = %s
 			and se.status != 'At Customs'
-		group by sei.customs_entry_item
+		group by sei.import_shipment_item
 		""",
-		(customs_entry_name,),
+		(import_shipment_name,),
 		as_dict=True,
 	)
-	return {row.customs_entry_item: row.total_transferred for row in rows}
+	return {row.shipment_item: row.total_transferred for row in rows}
 
-def sync_customs_entry(customs_entry_doc, *, plasticflow_stock_entry=None):
-	linked_entry = plasticflow_stock_entry or customs_entry_doc.get("plasticflow_stock_entry")
-	for item in customs_entry_doc.items:
-		landed_cost_rate = 0
-		landed_cost_amount = 0
-		if item.import_shipment_item:
-			shipment_item = frappe.db.get_value(
-				"Import Shipment Item",
-				item.import_shipment_item,
-				["landed_cost_rate_local", "landed_cost_amount_local"],
-				as_dict=True,
-			)
-			if shipment_item:
-				landed_cost_rate = shipment_item.landed_cost_rate_local or 0
-				landed_cost_amount = shipment_item.landed_cost_amount_local or 0
+
+def sync_shipment_customs_balances(shipment_doc, *, stock_entry=None):
+	linked_entry = stock_entry
+	if not linked_entry and shipment_doc.get("stock_entry"):
+		linked_entry = frappe.get_doc("Stock Entries", shipment_doc.stock_entry)
+
+	source_items = linked_entry.items if linked_entry else shipment_doc.items
+	customs_reference = shipment_doc.name
+
+	for item in source_items:
+		local_rate = getattr(item, "landed_cost_rate_local", None)
+		local_amount = getattr(item, "landed_cost_amount_local", None)
+		if local_rate is None:
+			local_rate = getattr(item, "landed_cost_rate", 0)
+		if local_amount is None:
+			local_amount = getattr(item, "landed_cost_amount", 0)
+		quantity = getattr(item, "available_qty", None)
+		if quantity is None:
+			quantity = getattr(item, "received_qty", None)
+		if quantity is None:
+			quantity = getattr(item, "quantity", 0)
 
 		set_balances(
 			item.product,
 			"Customs",
-			customs_entry_doc.name,
-			available=item.quantity or 0,
+			customs_reference,
+			available=quantity or 0,
+			reserved=0,
+			issued=0,
 			warehouse=None,
-			customs_entry=customs_entry_doc.name,
-			plasticflow_stock_entry=linked_entry,
-			import_shipment=customs_entry_doc.import_shipment,
-			landed_cost_rate=landed_cost_rate,
-			landed_cost_amount=landed_cost_amount,
+			stock_entry=linked_entry.name if linked_entry else None,
+			import_shipment=shipment_doc.name,
+			landed_cost_rate=local_rate,
+			landed_cost_amount=local_amount,
 			remarks="Customs stock awaiting transfer",
 		)
 
 
-def clear_customs_entry(customs_entry_doc):
-	for item in customs_entry_doc.items:
+def clear_shipment_balances(shipment_doc):
+	for item in shipment_doc.items:
 		clear_slot(
 			item.product,
 			"Customs",
-			customs_entry_doc.name,
+			shipment_doc.name,
 			warehouse=None,
-			customs_entry=customs_entry_doc.name,
-			import_shipment=customs_entry_doc.import_shipment,
-			plasticflow_stock_entry=customs_entry_doc.plasticflow_stock_entry,
+			import_shipment=shipment_doc.name,
+			stock_entry=shipment_doc.get("stock_entry"),
 		)
 
 
-def add_warehouse_stock(plasticflow_stock_entry_doc):
-	for item in plasticflow_stock_entry_doc.items:
+def _set_warehouse_balances(stock_entry_doc):
+	for item in stock_entry_doc.items:
 		local_rate = getattr(item, "landed_cost_rate_local", None)
 		local_amount = getattr(item, "landed_cost_amount_local", None)
 		if local_rate is None:
@@ -276,20 +270,19 @@ def add_warehouse_stock(plasticflow_stock_entry_doc):
 		set_balances(
 			item.product,
 			"Warehouse",
-			plasticflow_stock_entry_doc.name,
+			stock_entry_doc.name,
 			available=item.available_qty or item.received_qty or 0,
-			warehouse=plasticflow_stock_entry_doc.warehouse,
-			customs_entry=plasticflow_stock_entry_doc.customs_entry,
-			plasticflow_stock_entry=plasticflow_stock_entry_doc.name,
-			import_shipment=plasticflow_stock_entry_doc.import_shipment,
+			warehouse=stock_entry_doc.warehouse,
+			stock_entry=stock_entry_doc.name,
+			import_shipment=stock_entry_doc.import_shipment,
 			landed_cost_rate=local_rate,
 			landed_cost_amount=local_amount,
 			remarks="Stock available in warehouse",
 		)
 
 
-def update_warehouse_stock(plasticflow_stock_entry_doc):
-	for item in plasticflow_stock_entry_doc.items:
+def update_warehouse_stock(stock_entry_doc):
+	for item in stock_entry_doc.items:
 		local_rate = getattr(item, "landed_cost_rate_local", None)
 		local_amount = getattr(item, "landed_cost_amount_local", None)
 		if local_rate is None:
@@ -299,25 +292,24 @@ def update_warehouse_stock(plasticflow_stock_entry_doc):
 		set_balances(
 			item.product,
 			"Warehouse",
-			plasticflow_stock_entry_doc.name,
+			stock_entry_doc.name,
 			available=item.available_qty or item.received_qty or 0,
 			reserved=item.reserved_qty or 0,
 			issued=item.issued_qty or 0,
-			warehouse=plasticflow_stock_entry_doc.warehouse,
-			customs_entry=plasticflow_stock_entry_doc.customs_entry,
-			plasticflow_stock_entry=plasticflow_stock_entry_doc.name,
-			import_shipment=plasticflow_stock_entry_doc.import_shipment,
+			warehouse=stock_entry_doc.warehouse,
+			stock_entry=stock_entry_doc.name,
+			import_shipment=stock_entry_doc.import_shipment,
 			landed_cost_rate=local_rate,
 			landed_cost_amount=local_amount,
 			remarks="Stock available in warehouse",
 		)
 
 
-def transfer_customs_to_warehouse(customs_entry_doc, plasticflow_stock_entry_doc):
-	customs_item_map = {child.name: (child.quantity or 0) for child in customs_entry_doc.items}
-	transferred_totals = _get_transferred_totals_by_customs_item(customs_entry_doc.name)
+def transfer_shipment_to_warehouse(shipment_doc, stock_entry_doc):
+	shipment_item_map = {child.name: (child.quantity or 0) for child in shipment_doc.items}
+	transferred_totals = _get_transferred_totals_by_shipment_item(shipment_doc.name)
 
-	for item in plasticflow_stock_entry_doc.items:
+	for item in stock_entry_doc.items:
 		local_rate = getattr(item, "landed_cost_rate_local", None)
 		local_amount = getattr(item, "landed_cost_amount_local", None)
 		if local_rate is None:
@@ -328,24 +320,23 @@ def transfer_customs_to_warehouse(customs_entry_doc, plasticflow_stock_entry_doc
 		if not qty:
 			continue
 
-		customs_qty = customs_item_map.get(item.customs_entry_item)
+		customs_qty = shipment_item_map.get(item.import_shipment_item)
 		if customs_qty is None:
 			customs_qty = item.received_qty or item.available_qty or 0
-		total_transferred = transferred_totals.get(item.customs_entry_item, 0)
+		total_transferred = transferred_totals.get(item.import_shipment_item, 0)
 		remaining_at_customs = max(customs_qty - total_transferred, 0)
 
 		# update customs balances with remaining stock and record movement in issued qty
 		set_balances(
 			item.product,
 			"Customs",
-			customs_entry_doc.name,
+			shipment_doc.name,
 			available=remaining_at_customs,
 			reserved=0,
 			issued=total_transferred,
 			warehouse=None,
-			customs_entry=customs_entry_doc.name,
-			plasticflow_stock_entry=plasticflow_stock_entry_doc.name,
-			import_shipment=customs_entry_doc.import_shipment,
+			stock_entry=stock_entry_doc.name,
+			import_shipment=shipment_doc.name,
 			landed_cost_rate=local_rate,
 			landed_cost_amount=local_amount,
 			remarks="Transferred to warehouse",
@@ -355,102 +346,162 @@ def transfer_customs_to_warehouse(customs_entry_doc, plasticflow_stock_entry_doc
 		set_balances(
 			item.product,
 			"Warehouse",
-			plasticflow_stock_entry_doc.name,
+			stock_entry_doc.name,
 			available=item.available_qty or item.received_qty or 0,
 			reserved=item.reserved_qty or 0,
 			issued=item.issued_qty or 0,
-			warehouse=plasticflow_stock_entry_doc.warehouse,
-			customs_entry=customs_entry_doc.name,
-			plasticflow_stock_entry=plasticflow_stock_entry_doc.name,
-			import_shipment=plasticflow_stock_entry_doc.import_shipment,
+			warehouse=stock_entry_doc.warehouse,
+			stock_entry=stock_entry_doc.name,
+			import_shipment=shipment_doc.name,
 			landed_cost_rate=local_rate,
 			landed_cost_amount=local_amount,
 			remarks="Stock available in warehouse",
 		)
 
 
-def clear_stock_entry(plasticflow_stock_entry_doc):
-	for item in plasticflow_stock_entry_doc.items:
-		clear_slot(
+def _sync_entry_customs_balances(stock_entry_doc):
+	customs_reference = stock_entry_doc.import_shipment or stock_entry_doc.name
+	for item in stock_entry_doc.items:
+		local_rate = getattr(item, "landed_cost_rate_local", None)
+		local_amount = getattr(item, "landed_cost_amount_local", None)
+		if local_rate is None:
+			local_rate = getattr(item, "landed_cost_rate", 0)
+		if local_amount is None:
+			local_amount = getattr(item, "landed_cost_amount", 0)
+		set_balances(
 			item.product,
-			"Warehouse",
-			plasticflow_stock_entry_doc.name,
-			warehouse=plasticflow_stock_entry_doc.warehouse,
-			customs_entry=plasticflow_stock_entry_doc.customs_entry,
-			plasticflow_stock_entry=plasticflow_stock_entry_doc.name,
-			import_shipment=plasticflow_stock_entry_doc.import_shipment,
+			"Customs",
+			customs_reference,
+			available=item.available_qty or item.received_qty or 0,
+			reserved=0,
+			issued=0,
+			warehouse=None,
+			stock_entry=stock_entry_doc.name,
+			import_shipment=stock_entry_doc.import_shipment,
+			landed_cost_rate=local_rate,
+			landed_cost_amount=local_amount,
+			remarks="Customs stock awaiting transfer",
 		)
-		if plasticflow_stock_entry_doc.customs_entry:
+
+
+def update_stock_entry_balances(stock_entry_doc):
+	shipment = None
+	if stock_entry_doc.import_shipment and frappe.db.exists("Import Shipment", stock_entry_doc.import_shipment):
+		shipment = frappe.get_doc("Import Shipment", stock_entry_doc.import_shipment)
+
+	if stock_entry_doc.status == "At Customs":
+		if shipment:
+			sync_shipment_customs_balances(shipment, stock_entry=stock_entry_doc)
+		else:
+			_sync_entry_customs_balances(stock_entry_doc)
+		for item in stock_entry_doc.items:
+			clear_slot(
+				item.product,
+				"Warehouse",
+				stock_entry_doc.name,
+				warehouse=stock_entry_doc.warehouse,
+				stock_entry=stock_entry_doc.name,
+				import_shipment=stock_entry_doc.import_shipment,
+			)
+		return
+
+	if shipment:
+		transfer_shipment_to_warehouse(shipment, stock_entry_doc)
+	else:
+		update_warehouse_stock(stock_entry_doc)
+		customs_reference = stock_entry_doc.import_shipment or stock_entry_doc.name
+		for item in stock_entry_doc.items:
 			clear_slot(
 				item.product,
 				"Customs",
-				plasticflow_stock_entry_doc.customs_entry,
+				customs_reference,
 				warehouse=None,
-				customs_entry=plasticflow_stock_entry_doc.customs_entry,
-				plasticflow_stock_entry=plasticflow_stock_entry_doc.name,
-				import_shipment=plasticflow_stock_entry_doc.import_shipment,
+				stock_entry=stock_entry_doc.name,
+				import_shipment=stock_entry_doc.import_shipment,
+			)
+
+
+def clear_stock_entry(stock_entry_doc):
+	for item in stock_entry_doc.items:
+		clear_slot(
+			item.product,
+			"Warehouse",
+			stock_entry_doc.name,
+			warehouse=stock_entry_doc.warehouse,
+			stock_entry=stock_entry_doc.name,
+			import_shipment=stock_entry_doc.import_shipment,
+		)
+		customs_reference = stock_entry_doc.import_shipment or stock_entry_doc.name
+		if customs_reference:
+			clear_slot(
+				item.product,
+				"Customs",
+				customs_reference,
+				warehouse=None,
+				stock_entry=stock_entry_doc.name,
+				import_shipment=stock_entry_doc.import_shipment,
 			)
 
 
 def adjust_for_reservation(stock_entry_item, quantity, from_customs=False):
 	location_type = "Customs" if from_customs else "Warehouse"
-	parent = frappe.get_doc("Plasticflow Stock Entry", stock_entry_item.parent)
+	parent = frappe.get_doc("Stock Entries", stock_entry_item.parent)
+	location_reference = parent.import_shipment if from_customs else parent.name
 	apply_delta(
 		stock_entry_item.product,
 		location_type,
-		parent.name,
+		location_reference,
 		available_delta=-quantity,
 		reserved_delta=quantity,
 		warehouse=parent.warehouse if not from_customs else None,
-		customs_entry=parent.customs_entry,
-		plasticflow_stock_entry=parent.name,
+		stock_entry=parent.name,
 		import_shipment=parent.import_shipment,
 	)
 
 
 def release_reservation(stock_entry_item, quantity, from_customs=False):
 	location_type = "Customs" if from_customs else "Warehouse"
-	parent = frappe.get_doc("Plasticflow Stock Entry", stock_entry_item.parent)
+	parent = frappe.get_doc("Stock Entries", stock_entry_item.parent)
+	location_reference = parent.import_shipment if from_customs else parent.name
 	apply_delta(
 		stock_entry_item.product,
 		location_type,
-		parent.name,
+		location_reference,
 		available_delta=quantity,
 		reserved_delta=-quantity,
 		warehouse=parent.warehouse if not from_customs else None,
-		customs_entry=parent.customs_entry,
-		plasticflow_stock_entry=parent.name,
+		stock_entry=parent.name,
 		import_shipment=parent.import_shipment,
 	)
 
 
 def issue_stock(stock_entry_item, quantity, from_customs=False):
 	location_type = "Customs" if from_customs else "Warehouse"
-	parent = frappe.get_doc("Plasticflow Stock Entry", stock_entry_item.parent)
+	parent = frappe.get_doc("Stock Entries", stock_entry_item.parent)
+	location_reference = parent.import_shipment if from_customs else parent.name
 	apply_delta(
 		stock_entry_item.product,
 		location_type,
-		parent.name,
+		location_reference,
 		reserved_delta=-quantity,
 		issued_delta=quantity,
 		warehouse=parent.warehouse if not from_customs else None,
-		customs_entry=parent.customs_entry,
-		plasticflow_stock_entry=parent.name,
+		stock_entry=parent.name,
 		import_shipment=parent.import_shipment,
 	)
 
 
 def reverse_issue(stock_entry_item, quantity, from_customs=False):
 	location_type = "Customs" if from_customs else "Warehouse"
-	parent = frappe.get_doc("Plasticflow Stock Entry", stock_entry_item.parent)
+	parent = frappe.get_doc("Stock Entries", stock_entry_item.parent)
+	location_reference = parent.import_shipment if from_customs else parent.name
 	apply_delta(
 		stock_entry_item.product,
 		location_type,
-		parent.name,
+		location_reference,
 		reserved_delta=quantity,
 		issued_delta=-quantity,
 		warehouse=parent.warehouse if not from_customs else None,
-		customs_entry=parent.customs_entry,
-		plasticflow_stock_entry=parent.name,
+		stock_entry=parent.name,
 		import_shipment=parent.import_shipment,
 	)

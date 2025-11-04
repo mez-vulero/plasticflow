@@ -11,6 +11,7 @@
   "description",
   "quantity",
   "uom",
+  "warehouse_location",
   "base_rate",
   "base_amount",
   "base_amount_local",
@@ -55,6 +56,11 @@
    "fieldtype": "Link",
    "label": "UOM",
    "options": "Unit of Measurement"
+ },
+  {
+   "fieldname": "warehouse_location",
+   "fieldtype": "Data",
+   "label": "Location Remark"
   },
   {
    "fieldname": "base_rate",

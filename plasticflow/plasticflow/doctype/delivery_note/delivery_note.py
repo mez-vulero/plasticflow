@@ -59,13 +59,13 @@ class DeliveryNote(Document):
 		aggregated = []
 		for item in self.items:
 			if item.stock_entry_item:
-				child = frappe.get_doc("Plasticflow Stock Entry Item", item.stock_entry_item)
+				child = frappe.get_doc("Stock Entry Items", item.stock_entry_item)
 				batch_map.setdefault(child.parent, []).append((child.name, item.quantity or 0))
 			else:
 				aggregated.append(item)
 
 		for batch_name, entries in batch_map.items():
-			batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
+			batch = frappe.get_doc("Stock Entries", batch_name)
 			updated = False
 			from_customs = batch.status == "At Customs"
 			for child_name, qty in entries:
@@ -101,13 +101,13 @@ class DeliveryNote(Document):
 		aggregated = []
 		for item in self.items:
 			if item.stock_entry_item:
-				child = frappe.get_doc("Plasticflow Stock Entry Item", item.stock_entry_item)
+				child = frappe.get_doc("Stock Entry Items", item.stock_entry_item)
 				batch_map.setdefault(child.parent, []).append((child.name, item.quantity or 0))
 			else:
 				aggregated.append(item)
 
 		for batch_name, entries in batch_map.items():
-			batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
+			batch = frappe.get_doc("Stock Entries", batch_name)
 			updated = False
 			from_customs = batch.status == "At Customs"
 			for child_name, qty in entries:

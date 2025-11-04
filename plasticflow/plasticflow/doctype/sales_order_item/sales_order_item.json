@@ -128,8 +128,8 @@
   {
    "fieldname": "batch_item",
    "fieldtype": "Link",
-   "label": "Plasticflow Stock Entry Item",
-   "options": "Plasticflow Stock Entry Item"
+   "label": "Stock Entry Items",
+   "options": "Stock Entry Items"
   },
   {
    "fieldname": "warehouse",

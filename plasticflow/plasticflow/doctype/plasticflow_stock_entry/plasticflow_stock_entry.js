@@ -1,8 +1,0 @@
-// Copyright (c) 2025, VuleroTech and contributors
-// For license information, please see license.txt
-
-// frappe.ui.form.on("Plasticflow Stock Entry", {
-// 	refresh(frm) {
-
-// 	},
-// });

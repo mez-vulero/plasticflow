@@ -12,6 +12,16 @@
   "import_reference",
   "shipment_date",
   "expected_arrival",
+  "section_break_customs",
+  "arrival_date",
+  "customs_station",
+  "bill_of_lading",
+  "container_no",
+  "destination_warehouse",
+  "clearance_status",
+  "cleared_on",
+  "total_declared_value",
+  "stock_entry",
   "section_break_commercial",
   "supplier",
   "purchase_order",
@@ -32,6 +42,9 @@
   "per_unit_landed_cost_local",
   "landing_cost_status",
   "landing_cost_note",
+  "remarks",
+  "section_break_documents",
+  "customs_documents",
   "section_break_items",
   "items"
  ],
@@ -52,16 +65,78 @@
    "label": "Shipment Date",
    "reqd": 1
   },
+ {
+  "fieldname": "expected_arrival",
+  "fieldtype": "Date",
+  "label": "Expected Arrival"
+ },
   {
-   "fieldname": "expected_arrival",
-   "fieldtype": "Date",
-   "label": "Expected Arrival"
+   "fieldname": "section_break_customs",
+   "fieldtype": "Section Break",
+   "label": "Customs Clearance"
   },
   {
-   "collapsible": 1,
-   "fieldname": "section_break_commercial",
-   "fieldtype": "Section Break",
-   "label": "Commercial Details"
+   "default": "Today",
+   "fieldname": "arrival_date",
+   "fieldtype": "Date",
+   "label": "Arrival Date"
+  },
+  {
+   "fieldname": "customs_station",
+   "fieldtype": "Data",
+   "label": "Customs Station"
+  },
+  {
+   "fieldname": "bill_of_lading",
+   "fieldtype": "Data",
+   "label": "Bill of Lading"
+  },
+  {
+   "fieldname": "container_no",
+   "fieldtype": "Data",
+   "label": "Container Number"
+  },
+  {
+   "fieldname": "destination_warehouse",
+   "fieldtype": "Link",
+   "label": "Destination Warehouse",
+   "options": "Warehouse",
+   "set_null_on_delete": 1
+  },
+  {
+   "default": "Received",
+   "fieldname": "clearance_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Clearance Status",
+   "options": "\nReceived\nUnder Clearance\nCleared\nAt Warehouse\nOn Hold",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.clearance_status===\"Cleared\" or doc.clearance_status===\"At Warehouse\"",
+   "fieldname": "cleared_on",
+   "fieldtype": "Date",
+   "label": "Cleared On"
+  },
+  {
+   "fieldname": "total_declared_value",
+   "fieldtype": "Currency",
+   "label": "Declared Value",
+   "options": "currency"
+  },
+  {
+   "fieldname": "stock_entry",
+   "fieldtype": "Link",
+   "label": "Generated Stock Entries",
+   "options": "Stock Entries",
+   "read_only": 1,
+   "set_null_on_delete": 1
+  },
+ {
+  "collapsible": 1,
+  "fieldname": "section_break_commercial",
+  "fieldtype": "Section Break",
+  "label": "Commercial Details"
   },
   {
    "fieldname": "supplier",
@@ -177,15 +252,32 @@
    "read_only": 1
   },
   {
-   "fieldname": "landing_cost_note",
+  "fieldname": "landing_cost_note",
+  "fieldtype": "Small Text",
+  "label": "Landing Cost Notes"
+ },
+  {
+   "fieldname": "remarks",
    "fieldtype": "Small Text",
-   "label": "Landing Cost Notes"
+   "label": "Remarks"
   },
   {
    "collapsible": 1,
-   "fieldname": "section_break_items",
+   "fieldname": "section_break_documents",
    "fieldtype": "Section Break",
-   "label": "Shipment Items"
+   "label": "Clearance Documents"
+  },
+  {
+   "fieldname": "customs_documents",
+   "fieldtype": "Table",
+   "label": "Customs Documents",
+   "options": "Customs Documents"
+  },
+ {
+  "collapsible": 1,
+  "fieldname": "section_break_items",
+  "fieldtype": "Section Break",
+  "label": "Shipment Items"
   },
   {
    "fieldname": "items",

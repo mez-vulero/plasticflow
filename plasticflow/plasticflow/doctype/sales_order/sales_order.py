@@ -91,7 +91,7 @@ class SalesOrder(Document):
 
 			if item.batch_item:
 				try:
-					stock_item = frappe.get_cached_doc("Plasticflow Stock Entry Item", item.batch_item)
+					stock_item = frappe.get_cached_doc("Stock Entry Items", item.batch_item)
 				except frappe.DoesNotExistError:
 					stock_item = None
 				if stock_item:
@@ -106,7 +106,7 @@ class SalesOrder(Document):
 						)
 					if not parent_shipment:
 						parent_shipment = frappe.db.get_value(
-							"Plasticflow Stock Entry",
+							"Stock Entries",
 							stock_item.parent,
 							"import_shipment",
 						)
@@ -125,6 +125,49 @@ class SalesOrder(Document):
 		if not item_commissions and flt(self.broker_commission_rate or 0):
 			item_commissions = self.total_gross_amount * flt(self.broker_commission_rate or 0) / 100
 		self.total_commission = item_commissions
+		self._calculate_profitability_fields()
+
+	def _calculate_profitability_fields(self):
+		total_landed = 0.0
+		rate_cache: dict[object, float] = {}
+		for item in self.items:
+			quantity = flt(item.quantity or 0)
+			if quantity <= 0 or not item.product:
+				continue
+
+			landed_rate = 0.0
+			if item.import_shipment_item:
+				if item.import_shipment_item not in rate_cache:
+					rate_cache[item.import_shipment_item] = flt(
+						frappe.db.get_value(
+							"Import Shipment Item",
+							item.import_shipment_item,
+							"landed_cost_rate_local",
+						)
+						or 0
+					)
+				landed_rate = rate_cache[item.import_shipment_item]
+			elif self.import_shipment:
+				cache_key = (self.import_shipment, item.product)
+				if cache_key not in rate_cache:
+					rate_cache[cache_key] = flt(
+						frappe.db.get_value(
+							"Import Shipment Item",
+							{"parent": self.import_shipment, "product": item.product},
+							"landed_cost_rate_local",
+						)
+						or 0
+					)
+				landed_rate = rate_cache[cache_key]
+
+			total_landed += quantity * landed_rate
+
+		self.landed_cost_total = total_landed
+		net_sales = flt(self.total_net_amount or 0)
+		commission = flt(self.total_commission or 0)
+		profit = net_sales - total_landed - commission
+		self.profit_before_tax = profit
+		self.margin_percent = (profit / net_sales * 100) if net_sales else 0
 
 	def _sync_import_shipment_context(self):
 		pending = set(getattr(self, "_pending_import_shipments", set()) or [])
@@ -209,7 +252,47 @@ class SalesOrder(Document):
 		return f"{location_type}::{warehouse or 'GLOBAL'}"
 
 	def _collect_batch_reservations(self):
-		return {}
+		reservations: dict[str, dict[str, object]] = {}
+		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
+		target_warehouse = self._get_target_warehouse()
+
+		for item in self.items:
+			required_qty = flt(item.quantity or 0)
+			if required_qty <= 0 or not item.product:
+				continue
+
+			if item.batch_item:
+				self._reserve_specific_batch(reservations, item, required_qty, location_type, target_warehouse)
+				continue
+
+			for batch in self._iter_fifo_batches(
+				item.product,
+				location_type=location_type,
+				warehouse=target_warehouse,
+			):
+				available = flt(batch.available_qty or 0)
+				if available <= 0 or required_qty <= 0:
+					continue
+				allocate = min(required_qty, available)
+				self._add_reservation(
+					reservations,
+					batch.batch_name,
+					batch.child_name,
+					allocate,
+					from_customs=location_type == "Customs",
+				)
+				required_qty -= allocate
+				if required_qty <= QTY_TOLERANCE:
+					break
+
+			if required_qty > QTY_TOLERANCE:
+				frappe.throw(
+					_("Insufficient FIFO stock for {0}. Short by {1} units.").format(
+						item.product, frappe.utils.fmt_float(required_qty)
+					)
+				)
+
+		return reservations
 
 	def _collect_location_requirements(self):
 		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
@@ -275,7 +358,7 @@ class SalesOrder(Document):
 	def _apply_reservations(self, reservations):
 		if reservations:
 			for batch_name, payload in reservations.items():
-				batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
+				batch = frappe.get_doc("Stock Entries", batch_name)
 				updated = False
 				for entry in payload["rows"]:
 					child = next((row for row in batch.items if row.name == entry["child_name"]), None)
@@ -308,7 +391,7 @@ class SalesOrder(Document):
 	def _release_reservations(self, reservations):
 		if reservations:
 			for batch_name, payload in reservations.items():
-				batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
+				batch = frappe.get_doc("Stock Entries", batch_name)
 				updated = False
 				for entry in payload["rows"]:
 					child = next((row for row in batch.items if row.name == entry["child_name"]), None)
@@ -406,11 +489,107 @@ class SalesOrder(Document):
 			filters["warehouse"] = warehouse
 		return flt(frappe.db.get_value("Plasticflow Stock Ledger Entry", filters, "issued_qty") or 0)
 
+	def _add_reservation(self, reservations, batch_name, child_name, qty, *, from_customs):
+		if qty <= 0:
+			return
+		entry = reservations.setdefault(batch_name, {"from_customs": from_customs, "rows": []})
+		entry["rows"].append({"child_name": child_name, "qty": qty})
+
+	def _reserve_specific_batch(self, reservations, item, required_qty, location_type, target_warehouse):
+		row = frappe.db.get_value(
+			"Stock Entry Items",
+			item.batch_item,
+			[
+				"name",
+				"parent",
+				"product",
+				"received_qty",
+				"reserved_qty",
+				"issued_qty",
+			],
+			as_dict=True,
+		)
+		if not row:
+			frappe.throw(_("Selected batch item {0} not found.").format(item.batch_item))
+		if row.product != item.product:
+			frappe.throw(_("Batch item {0} does not match product {1}.").format(item.batch_item, item.product))
+
+		parent = frappe.db.get_value(
+			"Stock Entries",
+			row.parent,
+			["status", "warehouse"],
+			as_dict=True,
+		)
+		if not parent:
+			frappe.throw(_("Stock Entry {0} linked to batch item {1} not found.").format(row.parent, row.name))
+
+		if location_type == "Warehouse":
+			if target_warehouse and parent.warehouse and parent.warehouse != target_warehouse:
+				frappe.throw(
+					_("Batch {0} is stored in warehouse {1}, not the target warehouse {2}.").format(
+						row.parent, parent.warehouse, target_warehouse
+					)
+				)
+
+		available = flt(row.received_qty or 0) - flt(row.reserved_qty or 0) - flt(row.issued_qty or 0)
+		if available + QTY_TOLERANCE < required_qty:
+			frappe.throw(
+				_("Batch item {0} does not have enough stock. Required {1}, available {2}.").format(
+					row.name,
+					frappe.utils.fmt_float(required_qty),
+					frappe.utils.fmt_float(max(available, 0)),
+				)
+			)
+
+		self._add_reservation(
+			reservations,
+			row.parent,
+			row.name,
+			required_qty,
+			from_customs=location_type == "Customs",
+		)
+
+	def _iter_fifo_batches(self, product, *, location_type, warehouse):
+		conditions = ["se.docstatus = 1", "sei.product = %s"]
+		values: list = [product]
+
+		if location_type == "Customs":
+			conditions.append("se.status = 'At Customs'")
+		else:
+			conditions.append("se.status in ('Available', 'Reserved', 'Partially Issued')")
+			if warehouse:
+				conditions.append("se.warehouse = %s")
+				values.append(warehouse)
+
+		if self.import_shipment:
+			conditions.append("se.import_shipment = %s")
+			values.append(self.import_shipment)
+
+		conditions.append(
+			"(coalesce(sei.received_qty,0) - coalesce(sei.reserved_qty,0) - coalesce(sei.issued_qty,0)) > 0"
+		)
+
+		query = f"""
+			select
+				sei.name as child_name,
+				se.name as batch_name,
+				se.status as status,
+				se.warehouse as warehouse,
+				coalesce(se.arrival_date, se.creation) as arrival_marker,
+				se.creation as creation,
+				(coalesce(sei.received_qty,0) - coalesce(sei.reserved_qty,0) - coalesce(sei.issued_qty,0)) as available_qty
+			from `tabStock Entry Items` sei
+			inner join `tabStock Entries` se on se.name = sei.parent
+			where {" and ".join(conditions)}
+			order by arrival_marker, se.creation
+		"""
+		return frappe.db.sql(query, tuple(values), as_dict=True)
+
 	def _enforce_fifo(self, reservations):
 		for batch_name, payload in reservations.items():
 			if payload["from_customs"]:
 				continue
-			batch = frappe.get_doc("Plasticflow Stock Entry", batch_name)
+			batch = frappe.get_doc("Stock Entries", batch_name)
 			for entry in payload["rows"]:
 				child = next((row for row in batch.items if row.name == entry["child_name"]), None)
 				if not child:
@@ -419,8 +598,8 @@ class SalesOrder(Document):
 				available_older = frappe.db.sql(
 					"""
 					select sei.name
-					from `tabPlasticflow Stock Entry Item` sei
-					inner join `tabPlasticflow Stock Entry` se on se.name = sei.parent
+					from `tabStock Entry Items` sei
+					inner join `tabStock Entries` se on se.name = sei.parent
 					where se.warehouse = %s
 					and sei.product = %s
 					and se.status = 'Available'
@@ -441,7 +620,7 @@ class SalesOrder(Document):
 						_("FIFO policy violation for {0}. Older stock is available in warehouse {1}.").format(
 							child.product, batch.warehouse
 						)
-					)
+			)
 
 	def _get_total_invoiced_amount(self, exclude=None):
 		if self.is_new():

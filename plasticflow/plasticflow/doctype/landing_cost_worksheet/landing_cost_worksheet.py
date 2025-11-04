@@ -189,13 +189,13 @@ class LandingCostWorksheet(Document):
 		# Update downstream stock entry items
 		for item in shipment.items:
 			stock_entry_items = frappe.db.get_all(
-				"Plasticflow Stock Entry Item",
+				"Stock Entry Items",
 				filters={"import_shipment_item": item.name},
 				pluck="name",
 			)
 			for sei in stock_entry_items:
 				frappe.db.set_value(
-					"Plasticflow Stock Entry Item",
+					"Stock Entry Items",
 					sei,
 					{
 						"landed_cost_rate": item.landed_cost_rate,
@@ -207,17 +207,13 @@ class LandingCostWorksheet(Document):
 				)
 
 		stock_entries = frappe.db.get_all(
-			"Plasticflow Stock Entry",
+			"Stock Entries",
 			filters={"import_shipment": shipment.name, "docstatus": 1},
 			pluck="name",
 		)
 		for name in stock_entries:
-			batch_doc = frappe.get_doc("Plasticflow Stock Entry", name)
-			if batch_doc.status == "At Customs" and batch_doc.customs_entry:
-				customs_doc = frappe.get_doc("Customs Entry", batch_doc.customs_entry)
-				stock_ledger.sync_customs_entry(customs_doc, plasticflow_stock_entry=batch_doc.name)
-			else:
-				stock_ledger.update_warehouse_stock(batch_doc)
+			batch_doc = frappe.get_doc("Stock Entries", name)
+			stock_ledger.update_stock_entry_balances(batch_doc)
 
 		self.locked_on = now_datetime()
 		self.lock_note = f"Locked via worksheet {self.name}"
@@ -245,6 +241,21 @@ class LandingCostWorksheet(Document):
 		shipment.save(ignore_permissions=True)
 
 		self._revert_purchase_order_receipts(shipment)
+
+		stock_entries = frappe.db.get_all(
+			"Stock Entries",
+			filters={"import_shipment": shipment.name, "docstatus": 1},
+			pluck="name",
+		)
+		for name in stock_entries:
+			batch_doc = frappe.get_doc("Stock Entries", name)
+			for row in batch_doc.items:
+				row.landed_cost_rate = 0
+				row.landed_cost_amount = 0
+				row.landed_cost_rate_local = 0
+				row.landed_cost_amount_local = 0
+			batch_doc.save(ignore_permissions=True)
+			stock_ledger.update_stock_entry_balances(batch_doc)
 
 	# -------------------------------------------------------------------------
 	# Utilities

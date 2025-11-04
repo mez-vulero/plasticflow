@@ -8,8 +8,8 @@ def execute(filters=None):
 	clearance_days = frappe.db.sql(
 		"""
 		select avg(datediff(cleared_on, arrival_date))
-		from `tabCustoms Entry`
-		where docstatus = 1
+		from `tabImport Shipment`
+		where clearance_status in ('Cleared', 'At Warehouse')
 			and arrival_date is not null
 			and cleared_on is not null
 		"""
@@ -18,8 +18,8 @@ def execute(filters=None):
 	transfer_days = frappe.db.sql(
 		"""
 		select avg(datediff(date(se.creation), ce.cleared_on))
-		from `tabPlasticflow Stock Entry` se
-		inner join `tabCustoms Entry` ce on se.customs_entry = ce.name
+		from `tabStock Entries` se
+		inner join `tabImport Shipment` ce on se.import_shipment = ce.name
 		where se.docstatus = 1
 			and ce.cleared_on is not null
 		"""

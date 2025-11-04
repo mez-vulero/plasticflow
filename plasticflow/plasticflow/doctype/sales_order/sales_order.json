@@ -32,6 +32,9 @@
   "total_withholding",
   "total_net_amount",
   "total_commission",
+  "landed_cost_total",
+  "profit_before_tax",
+  "margin_percent",
   "invoiced_amount",
   "outstanding_amount",
   "section_break_links",
@@ -201,6 +204,27 @@
    "fieldtype": "Currency",
    "label": "Total Commission",
    "options": "currency",
+   "read_only": 1
+ },
+  {
+   "fieldname": "landed_cost_total",
+   "fieldtype": "Currency",
+   "label": "Total Landed Cost",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "profit_before_tax",
+   "fieldtype": "Currency",
+   "label": "Profit Before Tax",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "margin_percent",
+   "fieldtype": "Percent",
+   "label": "Margin %",
+   "precision": "2",
    "read_only": 1
   },
   {
