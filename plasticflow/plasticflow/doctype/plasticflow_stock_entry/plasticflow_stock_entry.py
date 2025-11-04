@@ -86,6 +86,9 @@ class PlasticflowStockEntry(Document):
 
 		customs_entry = frappe.get_doc("Customs Entry", self.customs_entry)
 
+		if customs_entry.import_shipment:
+			self.import_shipment = customs_entry.import_shipment
+
 		if not self.arrival_date:
 			self.arrival_date = nowdate()
 
@@ -94,6 +97,21 @@ class PlasticflowStockEntry(Document):
 
 		if not self.items:
 			for item in customs_entry.items:
+				landed_rate = 0
+				landed_amount = 0
+				landed_rate_local = 0
+				landed_amount_local = 0
+				if item.import_shipment_item:
+					shipment_item = frappe.get_doc("Import Shipment Item", item.import_shipment_item)
+					landed_amount = shipment_item.landed_cost_amount or 0
+					landed_rate = shipment_item.landed_cost_rate or (
+						(landed_amount / (item.quantity or 1)) if (item.quantity or 0) else 0
+					)
+					landed_amount_local = shipment_item.landed_cost_amount_local or 0
+					landed_rate_local = shipment_item.landed_cost_rate_local or (
+						(landed_amount_local / (item.quantity or 1)) if (item.quantity or 0) else 0
+					)
+
 				self.append(
 					"items",
 					{
@@ -103,9 +121,15 @@ class PlasticflowStockEntry(Document):
 						"reserved_qty": 0,
 						"issued_qty": 0,
 						"uom": item.uom,
-						"warehouse_location": item.get("warehouse_location"),
-						"customs_entry_item": item.name,
-					},
+					"warehouse_location": item.get("warehouse_location"),
+					"customs_entry_item": item.name,
+					"import_shipment_item": item.import_shipment_item,
+					"purchase_order_item": getattr(item, "purchase_order_item", None),
+					"landed_cost_rate": landed_rate,
+					"landed_cost_amount": landed_amount,
+					"landed_cost_rate_local": landed_rate_local,
+					"landed_cost_amount_local": landed_amount_local,
+				},
 				)
 
 		if not self.status:

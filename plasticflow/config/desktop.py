@@ -12,6 +12,9 @@ def get_data():
 			"image": "/assets/plasticflow/icons/plasticflow-icon.svg",
 			"type": "module",
 			"items": [
+				{"type": "doctype", "name": "Purchase Order"},
+				{"type": "doctype", "name": "Import Shipment"},
+				{"type": "doctype", "name": "Landing Cost Worksheet"},
 				{"type": "doctype", "name": "Customs Entry"},
 				{"type": "doctype", "name": "Supplier"},
 				{"type": "doctype", "name": "Product"},
@@ -19,6 +22,7 @@ def get_data():
 				{"type": "doctype", "name": "Plasticflow Stock Entry"},
 				{"type": "doctype", "name": "Plasticflow Stock Ledger Entry"},
 				{"type": "doctype", "name": "Customer"},
+				{"type": "doctype", "name": "Broker"},
 				{"type": "doctype", "name": "Sales Order"},
 				{"type": "doctype", "name": "Plasticflow Invoice"},
 				{"type": "doctype", "name": "Gate Pass"},
@@ -28,6 +32,7 @@ def get_data():
 				{"type": "doctype", "name": "Unit of Measurement"},
 				{"type": "report", "name": "PlasticFlow Dashboard", "is_query_report": False},
 				{"type": "report", "name": "Plasticflow Stock By Location", "is_query_report": True},
+				{"type": "report", "name": "PlasticFlow Profitability Summary", "is_query_report": False},
 			],
 		}
 	]

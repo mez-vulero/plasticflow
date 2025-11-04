@@ -21,6 +21,10 @@ frappe.ui.form.on('Plasticflow Stock Entry', {
 					frm.set_value('warehouse', message.warehouse);
 				}
 
+				if (message.import_shipment && !frm.doc.import_shipment) {
+					frm.set_value('import_shipment', message.import_shipment);
+				}
+
 				frm.set_value('status', message.status);
 
 				frm.clear_table('items');

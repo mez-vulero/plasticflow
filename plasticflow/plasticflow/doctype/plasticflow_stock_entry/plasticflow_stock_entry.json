@@ -9,6 +9,7 @@
  "engine": "InnoDB",
  "field_order": [
   "customs_entry",
+  "import_shipment",
   "arrival_date",
   "warehouse",
   "status",
@@ -30,6 +31,15 @@
    "label": "Customs Entry",
    "options": "Customs Entry",
    "reqd": 1,
+   "set_null_on_delete": 1
+  },
+  {
+   "fieldname": "import_shipment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Import Shipment",
+   "options": "Import Shipment",
+   "read_only": 1,
    "set_null_on_delete": 1
   },
   {

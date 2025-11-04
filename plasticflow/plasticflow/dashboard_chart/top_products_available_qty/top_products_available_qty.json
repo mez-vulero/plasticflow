@@ -1,0 +1,31 @@
+{
+ "chart_name": "Top Products by Stock",
+ "chart_type": "Report",
+ "custom_options": "{\"type\": \"bar\"}",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart",
+ "dynamic_filters_json": "{\"limit\":5}",
+ "filters_json": "{}",
+ "idx": 0,
+ "is_public": 0,
+ "is_standard": 1,
+ "module": "PlasticFlow",
+ "name": "Top Products by Stock",
+ "number_of_groups": 0,
+ "report_name": "Plasticflow Top Products",
+ "timeseries": 0,
+ "type": "Bar",
+ "use_report_chart": 1,
+ "y_axis": [],
+ "roles": [
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Management"
+  }
+ ]
+}

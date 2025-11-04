@@ -12,17 +12,26 @@
   "order_date",
   "customer",
   "delivery_source",
+  "import_shipment",
   "sales_type",
+  "sales_mode",
   "payment_status",
+  "withholding_rate",
   "column_break_meta",
   "status",
   "currency",
   "sales_manager",
+  "broker",
+  "broker_commission_rate",
   "external_payment_reference",
   "section_break_items",
   "items",
   "total_quantity",
   "total_amount",
+  "total_gross_amount",
+  "total_withholding",
+  "total_net_amount",
+  "total_commission",
   "invoiced_amount",
   "outstanding_amount",
   "section_break_links",
@@ -60,6 +69,13 @@
    "reqd": 1
  },
   {
+   "fieldname": "import_shipment",
+   "fieldtype": "Link",
+   "label": "Import Shipment",
+   "options": "Import Shipment",
+   "set_null_on_delete": 1
+  },
+  {
    "default": "Cash",
    "fieldname": "sales_type",
    "fieldtype": "Select",
@@ -69,6 +85,12 @@
    "reqd": 1
   },
   {
+   "fieldname": "sales_mode",
+   "fieldtype": "Select",
+   "label": "Sales Mode",
+   "options": "\nBank Transfer\nCash Deposit\nCheque\nLC\nRTGS\nOther"
+  },
+  {
    "default": "Draft",
    "fieldname": "payment_status",
    "fieldtype": "Select",
@@ -76,6 +98,13 @@
    "options": "\nDraft\nPayment Pending\nPayment Verified\nPayment Failed",
    "reqd": 1,
    "allow_on_submit": 1
+  },
+  {
+   "default": "2",
+   "fieldname": "withholding_rate",
+   "fieldtype": "Percent",
+   "label": "Withholding %",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_meta",
@@ -102,6 +131,19 @@
    "fieldtype": "Link",
    "label": "Sales Manager",
    "options": "User"
+  },
+  {
+   "fieldname": "broker",
+   "fieldtype": "Link",
+   "label": "Broker",
+   "options": "Broker"
+  },
+  {
+   "default": "0",
+   "fieldname": "broker_commission_rate",
+   "fieldtype": "Percent",
+   "label": "Broker Commission %",
+   "precision": "2"
   },
   {
    "fieldname": "external_payment_reference",
@@ -133,6 +175,34 @@
    "options": "currency",
    "read_only": 1
  },
+  {
+   "fieldname": "total_gross_amount",
+   "fieldtype": "Currency",
+   "label": "Total Sales (VAT Incl.)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_withholding",
+   "fieldtype": "Currency",
+   "label": "Total Withholding",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_net_amount",
+   "fieldtype": "Currency",
+   "label": "Net Receivable",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_commission",
+   "fieldtype": "Currency",
+   "label": "Total Commission",
+   "options": "currency",
+   "read_only": 1
+  },
   {
    "fieldname": "invoiced_amount",
    "fieldtype": "Currency",

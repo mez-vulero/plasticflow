@@ -15,6 +15,7 @@ class SalesOrder(Document):
 	def validate(self):
 		self._set_item_defaults()
 		self._calculate_totals()
+		self._sync_import_shipment_context()
 		self._sync_payment_tracking()
 		self._set_invoice_progress_fields()
 
@@ -58,17 +59,98 @@ class SalesOrder(Document):
 		self._clear_links()
 
 	def _set_item_defaults(self):
+		default_withholding = flt(self.withholding_rate or 0)
+		default_commission = flt(self.broker_commission_rate or 0)
+		detected_shipments: set[str] = set()
+
 		for item in self.items:
 			if item.product and not item.product_name:
 				item.product_name = frappe.db.get_value("Product", item.product, "product_name")
 			if item.product and not item.uom:
 				item.uom = frappe.db.get_value("Product", item.product, "uom")
-			if item.quantity and item.rate:
-				item.amount = (item.quantity or 0) * (item.rate or 0)
+
+			quantity = flt(item.quantity or 0)
+			rate = flt(item.rate or 0)
+			item.amount = quantity * rate
+
+			price_with_vat = flt(item.price_with_vat or 0) or rate
+			item.price_with_vat = price_with_vat
+			gross_amount = quantity * price_with_vat
+			item.gross_amount = gross_amount
+
+			if item.withholding_rate in (None, ""):
+				item.withholding_rate = default_withholding
+			withholding_rate = flt(item.withholding_rate or 0)
+			item.withholding_amount = gross_amount * (withholding_rate / 100) if gross_amount else 0
+			item.net_amount = gross_amount - flt(item.withholding_amount or 0)
+
+			if item.commission_rate in (None, ""):
+				item.commission_rate = default_commission
+			commission_rate = flt(item.commission_rate or 0)
+			item.commission_amount = gross_amount * (commission_rate / 100) if gross_amount else 0
+
+			if item.batch_item:
+				try:
+					stock_item = frappe.get_cached_doc("Plasticflow Stock Entry Item", item.batch_item)
+				except frappe.DoesNotExistError:
+					stock_item = None
+				if stock_item:
+					if stock_item.get("import_shipment_item") and not item.import_shipment_item:
+						item.import_shipment_item = stock_item.import_shipment_item
+					parent_shipment = None
+					if item.import_shipment_item:
+						parent_shipment = frappe.db.get_value(
+							"Import Shipment Item",
+							item.import_shipment_item,
+							"parent",
+						)
+					if not parent_shipment:
+						parent_shipment = frappe.db.get_value(
+							"Plasticflow Stock Entry",
+							stock_item.parent,
+							"import_shipment",
+						)
+					if parent_shipment:
+						detected_shipments.add(parent_shipment)
+
+		self._pending_import_shipments = detected_shipments
 
 	def _calculate_totals(self):
 		self.total_quantity = sum((item.quantity or 0) for item in self.items)
 		self.total_amount = sum((item.amount or 0) for item in self.items)
+		self.total_gross_amount = sum((item.gross_amount or 0) for item in self.items)
+		self.total_withholding = sum((item.withholding_amount or 0) for item in self.items)
+		self.total_net_amount = sum((item.net_amount or 0) for item in self.items)
+		item_commissions = sum((item.commission_amount or 0) for item in self.items)
+		if not item_commissions and flt(self.broker_commission_rate or 0):
+			item_commissions = self.total_gross_amount * flt(self.broker_commission_rate or 0) / 100
+		self.total_commission = item_commissions
+
+	def _sync_import_shipment_context(self):
+		pending = set(getattr(self, "_pending_import_shipments", set()) or [])
+		if self.import_shipment:
+			pending.add(self.import_shipment)
+		pending = {name for name in pending if name}
+		if len(pending) > 1:
+			frappe.throw(
+				_("Items reference multiple import shipments. Please split the order per shipment."),
+				title=_("Multiple Shipments Detected"),
+			)
+		if pending:
+			self.import_shipment = pending.pop()
+		if self.import_shipment:
+			for item in self.items:
+				if item.import_shipment_item or not item.product:
+					continue
+				linked_item = frappe.db.get_value(
+					"Import Shipment Item",
+					{"parent": self.import_shipment, "product": item.product},
+					"name",
+				)
+				if linked_item:
+					item.import_shipment_item = linked_item
+		if hasattr(self, "_pending_import_shipments"):
+			delattr(self, "_pending_import_shipments")
 
 	def _set_invoice_progress_fields(self):
 		total_invoiced = self._get_total_invoiced_amount()
@@ -86,30 +168,30 @@ class SalesOrder(Document):
 				self.status = "Credit Sales"
 			return
 
-		total_amount = flt(self.total_amount or 0)
+		expected_payment = flt(self.total_net_amount or self.total_amount or 0)
 		total_paid = self._sum_payment_slips()
 		has_slip = bool(self.payment_slips)
 
-		if total_paid - total_amount > PAYMENT_TOLERANCE:
+		if total_paid - expected_payment > PAYMENT_TOLERANCE:
 			frappe.throw(
-				_("Total payment {0} cannot exceed sales order total {1}.").format(
+				_("Total payment {0} cannot exceed net receivable {1}.").format(
 					frappe.utils.fmt_money(total_paid, currency=self.currency),
-					frappe.utils.fmt_money(total_amount, currency=self.currency),
+					frappe.utils.fmt_money(expected_payment, currency=self.currency),
 				)
 			)
 
 		if self.payment_status == "Payment Verified" and not has_slip:
 			frappe.throw(_("Attach at least one payment slip before marking the payment as verified."))
-		if self.payment_status == "Payment Verified" and abs(total_paid - total_amount) > PAYMENT_TOLERANCE:
-			frappe.throw(_("Amount paid on the slips must match the sales order total before verifying payment."))
+		if self.payment_status == "Payment Verified" and abs(total_paid - expected_payment) > PAYMENT_TOLERANCE:
+			frappe.throw(_("Amount paid on the slips must match the net receivable before verifying payment."))
 
-		if total_amount <= PAYMENT_TOLERANCE:
+		if expected_payment <= PAYMENT_TOLERANCE:
 			self.payment_status = "Payment Verified"
 			if self.status in {"Draft", "Payment Pending", "Payment Verified"}:
 				self.status = "Payment Verified"
 			return
 
-		if abs(total_paid - total_amount) <= PAYMENT_TOLERANCE and has_slip:
+		if abs(total_paid - expected_payment) <= PAYMENT_TOLERANCE and has_slip:
 			self.payment_status = "Payment Verified"
 			if self.status in {"Draft", "Payment Pending", "Payment Verified"}:
 				self.status = "Payment Verified"

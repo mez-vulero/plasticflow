@@ -10,6 +10,7 @@
  "engine": "InnoDB",
  "field_order": [
   "shipment_reference",
+  "import_shipment",
   "supplier",
   "arrival_date",
   "customs_station",
@@ -38,6 +39,15 @@
    "in_list_view": 1,
    "label": "Shipment Reference",
    "reqd": 1
+  },
+  {
+   "fieldname": "import_shipment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Import Shipment",
+   "options": "Import Shipment",
+   "reqd": 1,
+   "set_null_on_delete": 1
   },
   {
    "fieldname": "supplier",

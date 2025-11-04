@@ -1,0 +1,273 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "format:SHIP-{YYYY}-{#####}",
+ "creation": "2025-01-01 00:00:00",
+ "default_view": "List",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "import_reference",
+  "shipment_date",
+  "expected_arrival",
+  "section_break_commercial",
+  "supplier",
+  "purchase_order",
+  "purchase_order_no",
+  "lc_no",
+  "incoterm",
+  "country_of_origin",
+  "port_of_loading",
+  "port_of_discharge",
+  "currency",
+  "local_currency",
+  "column_break_finance",
+  "total_shipment_amount",
+  "total_quantity",
+  "total_landed_cost",
+  "total_landed_cost_local",
+  "per_unit_landed_cost",
+  "per_unit_landed_cost_local",
+  "landing_cost_status",
+  "landing_cost_note",
+  "section_break_items",
+  "items"
+ ],
+ "fields": [
+  {
+   "fieldname": "import_reference",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Reference",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "shipment_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Shipment Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "expected_arrival",
+   "fieldtype": "Date",
+   "label": "Expected Arrival"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_commercial",
+   "fieldtype": "Section Break",
+   "label": "Commercial Details"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Supplier",
+   "options": "Supplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "purchase_order",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Purchase Order",
+   "options": "Purchase Order",
+   "set_null_on_delete": 1
+  },
+  {
+   "fieldname": "purchase_order_no",
+   "fieldtype": "Data",
+   "label": "Purchase Order No."
+  },
+  {
+   "fieldname": "lc_no",
+   "fieldtype": "Data",
+   "label": "L/C Number"
+  },
+  {
+   "fieldname": "incoterm",
+   "fieldtype": "Select",
+   "label": "Incoterm",
+   "options": "\nCIF\nCFR\nFOB\nDAP\nEXW"
+  },
+  {
+   "fieldname": "country_of_origin",
+   "fieldtype": "Data",
+   "label": "Country of Origin"
+  },
+  {
+   "fieldname": "port_of_loading",
+   "fieldtype": "Data",
+   "label": "Port of Loading"
+  },
+  {
+   "fieldname": "port_of_discharge",
+   "fieldtype": "Data",
+   "label": "Port of Discharge"
+  },
+  {
+   "default": "USD",
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "local_currency",
+   "fieldtype": "Link",
+   "label": "Local Currency",
+   "options": "Currency"
+  },
+  {
+   "fieldname": "column_break_finance",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_shipment_amount",
+   "fieldtype": "Currency",
+   "label": "Base Shipment Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_quantity",
+   "fieldtype": "Float",
+   "label": "Total Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_landed_cost",
+   "fieldtype": "Currency",
+   "label": "Total Landed Cost (Import Currency)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_landed_cost_local",
+   "fieldtype": "Currency",
+   "label": "Total Landed Cost (Local Currency)",
+   "options": "local_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "per_unit_landed_cost",
+   "fieldtype": "Currency",
+   "label": "Avg Landed Cost / Unit (Import Currency)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "per_unit_landed_cost_local",
+   "fieldtype": "Currency",
+   "label": "Avg Landed Cost / Unit (Local Currency)",
+   "options": "local_currency",
+   "read_only": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "landing_cost_status",
+   "fieldtype": "Select",
+   "label": "Landing Cost Status",
+   "options": "\nDraft\nIn Review\nLocked",
+   "read_only": 1
+  },
+  {
+   "fieldname": "landing_cost_note",
+   "fieldtype": "Small Text",
+   "label": "Landing Cost Notes"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_items",
+   "fieldtype": "Section Break",
+   "label": "Shipment Items"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Import Shipment Item",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Import Shipment",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Finance Officer",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Management",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Grey",
+   "title": "Draft"
+  },
+  {
+   "color": "Blue",
+   "title": "In Review"
+  },
+  {
+   "color": "Green",
+   "title": "Locked"
+  }
+ ],
+ "track_changes": 1
+}

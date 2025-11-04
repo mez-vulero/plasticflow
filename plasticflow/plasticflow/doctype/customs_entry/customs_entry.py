@@ -9,6 +9,7 @@ class CustomsEntry(Document):
 	"""Captures inbound customs clearance details for imported stock."""
 
 	def validate(self):
+		self._sync_from_import_shipment()
 		self._set_item_defaults()
 		self._update_totals()
 
@@ -66,6 +67,14 @@ class CustomsEntry(Document):
 				item.product_name = frappe.db.get_value("Product", item.product, "product_name")
 			if item.product and not item.uom:
 				item.uom = frappe.db.get_value("Product", item.product, "uom")
+			if self.import_shipment and not item.import_shipment_item and item.product:
+				shipment_item = frappe.db.get_value(
+					"Import Shipment Item",
+					{"parent": self.import_shipment, "product": item.product},
+					"name",
+				)
+				if shipment_item:
+					item.import_shipment_item = shipment_item
 
 	def _update_totals(self):
 		total_qty = 0
@@ -75,6 +84,36 @@ class CustomsEntry(Document):
 		self.total_quantity = total_qty
 		self.total_weight = 0
 		self.total_declared_value = 0
+
+	def _sync_from_import_shipment(self):
+		if not self.import_shipment or not frappe.db.exists("Import Shipment", self.import_shipment):
+			return
+
+		shipment = frappe.get_doc("Import Shipment", self.import_shipment)
+		if not self.shipment_reference:
+			self.shipment_reference = shipment.import_reference
+		if shipment.supplier and not self.supplier:
+			self.supplier = shipment.supplier
+		if shipment.incoterm:
+			self.incoterm = shipment.incoterm
+		if shipment.expected_arrival and not self.arrival_date:
+			self.arrival_date = shipment.expected_arrival
+		if shipment.total_shipment_amount and not self.total_declared_value:
+			self.total_declared_value = shipment.total_shipment_amount
+
+		if not self.items:
+			for item in shipment.items:
+				self.append(
+					"items",
+					{
+						"product": item.product,
+						"product_name": item.product_name,
+						"description": item.description,
+						"quantity": item.quantity,
+						"uom": item.uom,
+						"import_shipment_item": item.name,
+					},
+				)
 
 	def _create_plasticflow_stock_entry(self):
 		if self.plasticflow_stock_entry:
@@ -88,6 +127,7 @@ class CustomsEntry(Document):
 
 		batch = frappe.new_doc("Plasticflow Stock Entry")
 		batch.customs_entry = self.name
+		batch.import_shipment = self.import_shipment
 		batch.arrival_date = nowdate()
 		batch.warehouse = self.destination_warehouse
 		batch.status = "At Customs"

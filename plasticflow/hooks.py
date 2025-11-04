@@ -42,6 +42,8 @@ website_manifest = "plasticflow/public/manifest.json"
 doctype_js = {
 	"Plasticflow Stock Entry": "public/js/plasticflow_stock_entry.js",
 	"Number Card": "public/js/number_card.js",
+	"Purchase Order": "public/js/purchase_order.js",
+	"Import Shipment": "public/js/import_shipment.js",
 }
 
 # include custom scss in every website theme (without file extension ".scss")

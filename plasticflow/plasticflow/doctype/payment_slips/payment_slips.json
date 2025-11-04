@@ -8,6 +8,9 @@
  "field_order": [
   "transfer_slip",
   "amount_paid",
+  "deposit_date",
+  "bank_name",
+  "payment_mode",
   "date_uploaded"
  ],
  "fields": [
@@ -31,6 +34,23 @@
    "in_list_view": 1,
    "label": "Amount Paid",
    "options": "currency"
+  },
+  {
+   "default": "Today",
+   "fieldname": "deposit_date",
+   "fieldtype": "Date",
+   "label": "Deposit Date"
+  },
+  {
+    "fieldname": "bank_name",
+    "fieldtype": "Data",
+    "label": "Bank"
+  },
+  {
+   "fieldname": "payment_mode",
+   "fieldtype": "Select",
+   "label": "Payment Mode",
+   "options": "\nBank Transfer\nCash Deposit\nCheque\nRTGS\nOther"
   }
  ],
  "grid_page_length": 50,

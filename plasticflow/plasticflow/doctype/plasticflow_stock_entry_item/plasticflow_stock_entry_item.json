@@ -12,9 +12,15 @@
   "reserved_qty",
   "issued_qty",
   "uom",
-  "warehouse_location",
+ "warehouse_location",
+ "import_shipment_item",
+ "landed_cost_rate",
+  "landed_cost_amount",
+  "landed_cost_rate_local",
+  "landed_cost_amount_local",
+  "purchase_order_item",
   "customs_entry_item"
- ],
+],
  "fields": [
   {
    "fieldname": "product",
@@ -66,6 +72,46 @@
    "fieldname": "warehouse_location",
    "fieldtype": "Data",
    "label": "Warehouse Location"
+ },
+  {
+   "fieldname": "import_shipment_item",
+   "fieldtype": "Link",
+   "label": "Import Shipment Item",
+   "options": "Import Shipment Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "landed_cost_rate",
+   "fieldtype": "Currency",
+   "label": "Landed Cost Rate (Import Currency)",
+   "options": "currency",
+   "read_only": 1
+ },
+  {
+   "fieldname": "landed_cost_amount",
+   "fieldtype": "Currency",
+   "label": "Landed Cost Amount (Import Currency)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "landed_cost_rate_local",
+   "fieldtype": "Currency",
+   "label": "Landed Cost Rate (Local Currency)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "landed_cost_amount_local",
+   "fieldtype": "Currency",
+   "label": "Landed Cost Amount (Local Currency)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "purchase_order_item",
+   "fieldtype": "Link",
+   "label": "Purchase Order Item",
+   "options": "Purchase Order Item",
+   "read_only": 1
   },
   {
    "fieldname": "customs_entry_item",

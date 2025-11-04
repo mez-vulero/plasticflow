@@ -10,7 +10,8 @@
   "description",
   "quantity",
   "uom",
-  "warehouse_location"
+  "warehouse_location",
+  "import_shipment_item"
  ],
  "fields": [
   {
@@ -51,6 +52,13 @@
    "fieldname": "warehouse_location",
    "fieldtype": "Data",
    "label": "Location Remark"
+  },
+  {
+   "fieldname": "import_shipment_item",
+   "fieldtype": "Link",
+   "label": "Import Shipment Item",
+   "options": "Import Shipment Item",
+   "hidden": 1
   }
  ],
  "istable": 1,

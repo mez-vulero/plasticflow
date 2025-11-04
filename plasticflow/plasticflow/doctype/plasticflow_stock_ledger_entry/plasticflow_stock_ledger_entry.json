@@ -15,6 +15,9 @@
   "warehouse",
   "customs_entry",
   "plasticflow_stock_entry",
+  "import_shipment",
+  "landed_cost_rate",
+  "landed_cost_amount",
   "available_qty",
   "reserved_qty",
   "issued_qty",
@@ -64,6 +67,24 @@
    "fieldtype": "Link",
    "label": "Plasticflow Stock Entry",
    "options": "Plasticflow Stock Entry"
+ },
+  {
+   "fieldname": "import_shipment",
+   "fieldtype": "Link",
+   "label": "Import Shipment",
+   "options": "Import Shipment"
+  },
+  {
+   "fieldname": "landed_cost_rate",
+   "fieldtype": "Currency",
+   "label": "Landed Cost Rate",
+   "options": "currency"
+  },
+  {
+   "fieldname": "landed_cost_amount",
+   "fieldtype": "Currency",
+   "label": "Landed Cost Amount",
+   "options": "currency"
   },
   {
    "default": "0",

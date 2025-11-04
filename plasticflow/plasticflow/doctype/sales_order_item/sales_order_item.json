@@ -12,6 +12,14 @@
   "uom",
   "rate",
   "amount",
+  "price_with_vat",
+  "gross_amount",
+  "withholding_rate",
+  "withholding_amount",
+  "net_amount",
+  "commission_rate",
+  "commission_amount",
+  "import_shipment_item",
   "batch_item",
   "warehouse",
   "remarks"
@@ -62,6 +70,59 @@
    "in_list_view": 1,
    "label": "Amount",
    "options": "currency",
+   "read_only": 1
+ },
+  {
+   "fieldname": "price_with_vat",
+   "fieldtype": "Currency",
+   "label": "Price (VAT Incl.)",
+   "options": "currency"
+  },
+  {
+   "fieldname": "gross_amount",
+   "fieldtype": "Currency",
+   "label": "Gross Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "withholding_rate",
+   "fieldtype": "Percent",
+   "label": "Withholding %",
+   "precision": "2"
+  },
+  {
+   "fieldname": "withholding_amount",
+   "fieldtype": "Currency",
+   "label": "Withholding Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "net_amount",
+   "fieldtype": "Currency",
+   "label": "Net Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commission_rate",
+   "fieldtype": "Percent",
+   "label": "Commission %",
+   "precision": "2"
+  },
+  {
+   "fieldname": "commission_amount",
+   "fieldtype": "Currency",
+   "label": "Commission Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "import_shipment_item",
+   "fieldtype": "Link",
+   "label": "Import Shipment Item",
+   "options": "Import Shipment Item",
    "read_only": 1
   },
   {

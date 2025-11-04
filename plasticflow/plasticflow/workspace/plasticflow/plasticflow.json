@@ -1,7 +1,12 @@
 {
  "app": "plasticflow",
- "charts": [],
- "content": "[{\"id\":\"hdr_ops\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Operations Overview</b></span>\",\"col\":12}},{\"id\":\"PiytFlY28k\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Revenue\",\"col\":4}},{\"id\":\"gejJCMLp2f\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Outstanding Amount\",\"col\":4}},{\"id\":\"ijVK_vkhd0\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Overdue Credit Invoices\",\"col\":4}},{\"id\":\"shortcut_customs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customs Entries\",\"col\":3}},{\"id\":\"shortcut_stock\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Plasticflow Stock Entries\",\"col\":3}},{\"id\":\"shortcut_sales_orders\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Orders\",\"col\":3}},{\"id\":\"shortcut_invoices\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Invoices\",\"col\":3}},{\"id\":\"hdr_logistics\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Logistics</b></span>\",\"col\":12}},{\"id\":\"shortcut_gate_pass\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Gate Passes\",\"col\":3}},{\"id\":\"shortcut_delivery\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Delivery Notes\",\"col\":3}},{\"id\":\"shortcut_plasticflow_stock_ledger_entry\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Ledger\",\"col\":3}}]",
+ "charts": [
+  {
+   "chart_name": "Daily Sales Amount",
+   "label": "Daily Sales Amount"
+  }
+ ],
+"content": "[{\"id\":\"hdr_ops\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Operations Overview</b></span>\",\"col\":12}},{\"id\":\"aKY0Sb23sk\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Daily Sales Amount\",\"col\":12}},{\"id\":\"PiytFlY28k\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Revenue\",\"col\":4}},{\"id\":\"gejJCMLp2f\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Outstanding Amount\",\"col\":4}},{\"id\":\"ijVK_vkhd0\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Overdue Credit Invoices\",\"col\":4}},{\"id\":\"shortcut_purchase_orders\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Purchase Orders\",\"col\":3}},{\"id\":\"shortcut_import_shipments\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Import Shipments\",\"col\":3}},{\"id\":\"shortcut_landing_cost\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Landing Cost Worksheets\",\"col\":3}},{\"id\":\"shortcut_customs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customs Entries\",\"col\":3}},{\"id\":\"shortcut_stock\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Plasticflow Stock Entries\",\"col\":3}},{\"id\":\"shortcut_sales_orders\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Orders\",\"col\":3}},{\"id\":\"shortcut_invoices\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Invoices\",\"col\":3}},{\"id\":\"hdr_logistics\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Logistics</b></span>\",\"col\":12}},{\"id\":\"shortcut_gate_pass\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Gate Passes\",\"col\":3}},{\"id\":\"shortcut_delivery\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Delivery Notes\",\"col\":3}},{\"id\":\"shortcut_plasticflow_stock_ledger_entry\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Ledger\",\"col\":3}}]",
  "creation": "2024-01-01 00:00:00",
  "custom_blocks": [],
  "docstatus": 0,
@@ -13,6 +18,39 @@
  "is_hidden": 0,
  "label": "PlasticFlow",
  "links": [
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Purchase Orders",
+   "link_count": 0,
+   "link_to": "Purchase Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Import Shipments",
+   "link_count": 0,
+   "link_to": "Import Shipment",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Landing Cost Worksheets",
+   "link_count": 0,
+   "link_to": "Landing Cost Worksheet",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
   {
    "dependencies": "",
    "hidden": 0,
@@ -64,6 +102,17 @@
    "label": "Customers",
    "link_count": 0,
    "link_to": "Customer",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Brokers",
+   "link_count": 0,
+   "link_to": "Broker",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -153,7 +202,7 @@
    "type": "Link"
   }
  ],
- "modified": "2025-10-29 09:49:15.498435",
+ "modified": "2025-10-29 10:11:12.974643",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "PlasticFlow",
@@ -194,7 +243,25 @@
   }
  ],
  "sequence_id": 1.0,
- "shortcuts": [
+  "shortcuts": [
+  {
+   "doc_view": "List",
+   "label": "Purchase Orders",
+   "link_to": "Purchase Order",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Import Shipments",
+   "link_to": "Import Shipment",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Landing Cost Worksheets",
+   "link_to": "Landing Cost Worksheet",
+   "type": "DocType"
+  },
   {
    "doc_view": "List",
    "label": "Customs Entries",
