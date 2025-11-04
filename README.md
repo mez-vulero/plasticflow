@@ -1,6 +1,14 @@
 ### PlasticFlow
 
-PET stock and sales workflow
+End-to-end plastics import, costing, stock, and sales management built on Frappe.
+
+#### What the app does
+- **Import & Customs Lifecycle**: Capture purchase orders, shipments, customs data, and automate stock entry creation as clearance statuses change.
+- **Landed Cost Allocation**: Allocate multi-currency expenses (freight, duty, handling) to shipment items with exchange-rate tracking, locking, and audit history.
+- **Stock Visibility**: Maintain customs vs. warehouse availability, reservations, and issues through a purpose-built ledger and Stock Entries doctype.
+- **Sales & Delivery**: Reserve and issue stock through FIFO-aware sales orders, gate passes, and delivery notes with automated withholding and commission tracking.
+- **Profitability Intelligence**: Roll up landed cost, revenue, and commission per shipment for P&L insights and dashboards.
+- **Workspace UX**: Opinionated workspace with shortcuts, charts, and reports specific to plastics trading operations.
 
 ### Installation
 
@@ -12,10 +20,30 @@ bench get-app $URL_OF_THIS_REPO --branch main
 bench install-app plasticflow
 ```
 
-After installation, install the additional Python requirements used for PWA push notifications:
+#### Prerequisites
+- Frappe/ERPNext bench environment running Python 3.11+ and Node 18+.
+- MariaDB 10.6+ (recommended by Frappe).
+- Redis server for background workers and caching.
+
+#### Required Python libraries
+PlasticFlow relies on a few extra libraries that are not bundled with core Frappe:
 
 ```bash
 bench pip install pywebpush py-vapid cairosvg
+```
+
+If you use yarn-based asset builds, also ensure the following global npm packages are available:
+
+```bash
+bench setup requirements --node
+```
+
+After installing requirements, compile assets and run migrations:
+
+```bash
+bench migrate
+bench build --apps plasticflow
+bench restart
 ```
 
 ### Progressive Web App (PWA) Setup
