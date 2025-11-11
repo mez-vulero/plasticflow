@@ -11,6 +11,8 @@
   "import_shipment",
   "arrival_date",
   "warehouse",
+  "import_currency",
+  "local_currency",
   "status",
   "section_break_items",
   "items",
@@ -45,10 +47,24 @@
    "in_list_view": 1,
    "label": "Warehouse",
    "options": "Warehouse"
+ },
+  {
+   "fieldname": "import_currency",
+   "fieldtype": "Link",
+   "label": "Import Currency",
+   "options": "Currency",
+   "read_only": 1
   },
   {
-   "default": "Available",
-   "fieldname": "status",
+   "fieldname": "local_currency",
+   "fieldtype": "Link",
+   "label": "Local Currency",
+   "options": "Currency",
+   "read_only": 1
+  },
+ {
+  "default": "Available",
+  "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",

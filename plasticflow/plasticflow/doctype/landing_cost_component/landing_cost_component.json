@@ -7,10 +7,14 @@
  "engine": "InnoDB",
  "field_order": [
   "cost_type",
+  "cost_bucket",
   "description",
+  "apply_to_item",
+  "cost_scope",
   "currency",
   "exchange_rate",
   "amount",
+  "percentage_rate",
   "converted_amount",
   "notes"
  ],
@@ -25,9 +29,31 @@
    "reqd": 1
   },
   {
+   "default": "Foreign Cost",
+   "fieldname": "cost_bucket",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Cost Bucket",
+   "options": "\nForeign Cost\nLocal Cost\nTax",
+   "reqd": 1
+  },
+  {
    "fieldname": "description",
    "fieldtype": "Data",
    "label": "Description"
+  },
+  {
+   "fieldname": "apply_to_item",
+   "fieldtype": "Link",
+   "label": "Apply To Shipment Item",
+   "options": "Import Shipment Item"
+  },
+  {
+   "default": "Total Amount",
+   "fieldname": "cost_scope",
+   "fieldtype": "Select",
+   "label": "Cost Scope",
+   "options": "\nTotal Amount\nPer Ton\nPer Kg\nPercent of CIF\nPercent of Landed Cost"
   },
   {
    "fieldname": "currency",
@@ -49,9 +75,13 @@
    "fieldname": "amount",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Amount",
-   "options": "currency",
-   "reqd": 1
+   "label": "Amount / Rate",
+   "options": "currency"
+  },
+  {
+   "fieldname": "percentage_rate",
+   "fieldtype": "Percent",
+   "label": "Percentage Rate"
   },
   {
    "fieldname": "converted_amount",

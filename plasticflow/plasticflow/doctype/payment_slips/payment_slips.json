@@ -9,7 +9,8 @@
   "transfer_slip",
   "amount_paid",
   "deposit_date",
-  "bank_name",
+  "payment_bank",
+  "slip_status",
   "payment_mode",
   "date_uploaded"
  ],
@@ -42,9 +43,19 @@
    "label": "Deposit Date"
   },
   {
-    "fieldname": "bank_name",
-    "fieldtype": "Data",
-    "label": "Bank"
+   "fieldname": "payment_bank",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Bank",
+   "options": "Banks"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "slip_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Pending\nVerified"
   },
   {
    "fieldname": "payment_mode",

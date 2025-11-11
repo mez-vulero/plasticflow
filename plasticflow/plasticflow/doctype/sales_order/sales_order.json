@@ -23,7 +23,6 @@
   "sales_manager",
   "broker",
   "broker_commission_rate",
-  "external_payment_reference",
   "section_break_items",
   "items",
   "total_quantity",
@@ -119,7 +118,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Order Status",
-   "options": "Draft\nPayment Pending\nPayment Verified\nCredit Sales\nInvoiced\nReady for Delivery\nCompleted\nCancelled\nHeld",
+   "options": "Draft\nPayment Pending\nPayment Verified\nSettled\nCredit Sales\nInvoiced\nReady for Delivery\nCompleted\nCancelled\nHeld",
    "reqd": 1,
    "allow_on_submit": 1
   },
@@ -147,11 +146,6 @@
    "fieldtype": "Percent",
    "label": "Broker Commission %",
    "precision": "2"
-  },
-  {
-   "fieldname": "external_payment_reference",
-   "fieldtype": "Data",
-   "label": "Payment Reference"
   },
   {
    "fieldname": "section_break_items",
@@ -378,6 +372,10 @@
   {
    "color": "Light Blue",
    "title": "Payment Verified"
+  },
+  {
+   "color": "Green",
+   "title": "Settled"
   },
   {
    "color": "Light Blue",

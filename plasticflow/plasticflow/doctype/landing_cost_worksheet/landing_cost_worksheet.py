@@ -1,7 +1,10 @@
+from collections import defaultdict
+
 import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, now_datetime
+
 from plasticflow.stock import ledger as stock_ledger
 
 
@@ -12,6 +15,7 @@ class LandingCostWorksheet(Document):
 		self._ensure_shipment_context()
 		self._calculate_totals()
 		self._build_allocations()
+		self._build_product_summary()
 		self._update_status_flag()
 
 	def on_submit(self):
@@ -28,13 +32,25 @@ class LandingCostWorksheet(Document):
 			self.total_base_amount = 0
 			self.total_base_amount_import = 0
 			self.total_quantity = 0
+			self.shipment_quantity_tons = 0
+			self.shipment_amount_import = 0
+			self.supplier = None
+			self.country_of_origin = None
+			self.port_of_loading = None
+			self.port_of_discharge = None
 			return
 		if not frappe.db.exists("Import Shipment", self.import_shipment):
 			frappe.throw("Import Shipment does not exist.")
 
 		shipment = frappe.get_doc("Import Shipment", self.import_shipment)
+		self._shipment_doc = shipment
 		if shipment.purchase_order:
 			self.purchase_order = self.purchase_order or shipment.purchase_order
+		self.supplier = shipment.get("supplier")
+		self.country_of_origin = shipment.get("country_of_origin")
+		self.port_of_loading = shipment.get("port_of_loading")
+		self.port_of_discharge = shipment.get("port_of_discharge")
+		self.shipment_amount_import = shipment.get("total_shipment_amount")
 
 		# Derive currencies
 		if not self.currency:
@@ -51,21 +67,44 @@ class LandingCostWorksheet(Document):
 		self.shipment_exchange_rate = flt(self.shipment_exchange_rate or 0)
 
 		self.total_quantity = shipment.total_quantity or sum(flt(item.quantity or 0) for item in shipment.items)
+		self.shipment_quantity_tons = self.total_quantity
 		self.total_base_amount_import = sum(flt(item.base_amount or 0) for item in shipment.items)
 		self.total_base_amount = self._convert_to_local(self.total_base_amount_import)
 
 	def _calculate_totals(self):
+		if not self.import_shipment:
+			self.total_additional_cost = 0
+			self.total_additional_cost_import = 0
+			self.total_landed_cost = flt(self.total_base_amount)
+			self.total_landed_cost_import = flt(self.total_base_amount_import)
+			self.avg_landed_cost = 0
+			self.avg_landed_cost_import = 0
+			self.foreign_cost_total = 0
+			self.local_cost_total = 0
+			self.tax_cost_total = 0
+			self._component_breakdown = {"items": {}, "totals": {"local": defaultdict(float), "import": defaultdict(float)}}
+			return
+
+		shipment = getattr(self, "_shipment_doc", None) or frappe.get_doc("Import Shipment", self.import_shipment)
+		self._shipment_doc = shipment
+
 		total_additional_local = 0.0
 		total_additional_import = 0.0
 
-		for row in self.cost_components:
-			row.currency = row.currency or self.currency
-			row.exchange_rate = self._normalise_component_rate(row)
-			converted = flt(row.amount or 0) * flt(row.exchange_rate or 0)
-			row.converted_amount = converted
+		breakdown = self._allocate_cost_components(shipment)
+		self._component_breakdown = breakdown
 
-			total_additional_local += converted
-			total_additional_import += self._convert_to_import(converted)
+		local_totals = breakdown["totals"]["local"]
+		import_totals = breakdown["totals"]["import"]
+
+		self.foreign_cost_total = flt(local_totals["foreign"])
+		self.local_cost_total = flt(local_totals["local"])
+		self.tax_cost_total = flt(local_totals["tax"])
+
+		total_additional_local = self.foreign_cost_total + self.local_cost_total + self.tax_cost_total
+		total_additional_import = (
+			import_totals["foreign"] + import_totals["local"] + import_totals["tax"]
+		)
 
 		self.total_additional_cost = total_additional_local
 		self.total_additional_cost_import = total_additional_import
@@ -87,17 +126,15 @@ class LandingCostWorksheet(Document):
 			self.allocations = []
 			return
 
-		shipment = frappe.get_doc("Import Shipment", self.import_shipment)
-		allocation_basis = self._get_allocation_basis(shipment)
-		total_basis = sum(allocation_basis.values())
-		additional_total_local = flt(self.total_additional_cost)
-		additional_total_import = flt(self.total_additional_cost_import)
+		shipment = getattr(self, "_shipment_doc", None) or frappe.get_doc("Import Shipment", self.import_shipment)
+		self._shipment_doc = shipment
+		breakdown = getattr(self, "_component_breakdown", None) or self._allocate_cost_components(shipment)
+		per_item_costs = breakdown["items"]
 
 		self.set("allocations", [])
 
 		for item in shipment.items:
-			basis_value = allocation_basis.get(item.name, 0)
-			allocation_ratio = basis_value / total_basis if total_basis else 0
+			cost_detail = per_item_costs.get(item.name) or self._zero_breakdown_row()
 			quantity = flt(item.quantity or 0)
 
 			base_amount_import = flt(item.base_amount or 0)
@@ -105,8 +142,13 @@ class LandingCostWorksheet(Document):
 			if not base_amount_local:
 				base_amount_local = self._convert_to_local(base_amount_import)
 
-			additional_cost_local = additional_total_local * allocation_ratio
-			additional_cost_import = additional_total_import * allocation_ratio
+			additional_cost_local = flt(cost_detail["total_local"])
+			additional_cost_import = flt(cost_detail["total_import"])
+			allocation_ratio = (
+				(additional_cost_local / flt(self.total_additional_cost))
+				if flt(self.total_additional_cost)
+				else 0
+			)
 
 			landed_cost_local = base_amount_local + additional_cost_local
 			landed_cost_import = base_amount_import + additional_cost_import
@@ -119,6 +161,7 @@ class LandingCostWorksheet(Document):
 				{
 					"shipment_item": item.name,
 					"product": item.product,
+					"import_currency": self.shipment_currency,
 					"quantity": quantity,
 					"base_amount": base_amount_local,
 					"base_amount_import": base_amount_import,
@@ -131,6 +174,83 @@ class LandingCostWorksheet(Document):
 					"landed_cost_rate_import": landed_rate_import,
 				},
 			)
+
+	def _build_product_summary(self):
+		if not self.import_shipment:
+			self.product_summaries = []
+			self.estimated_total_net_profit = 0
+			return
+
+		shipment = getattr(self, "_shipment_doc", None) or frappe.get_doc("Import Shipment", self.import_shipment)
+		self._shipment_doc = shipment
+		existing_summary = {row.shipment_item: row for row in self.product_summaries}
+		breakdown = getattr(self, "_component_breakdown", None) or self._allocate_cost_components(shipment)
+		per_item_costs = breakdown["items"]
+
+		self.set("product_summaries", [])
+
+		total_net_profit = 0
+
+		for item in shipment.items:
+			quantity = flt(item.quantity or 0)
+			base_amount_import = flt(item.base_amount or 0)
+			base_amount_local = flt(item.base_amount_local or 0) or self._convert_to_local(base_amount_import)
+
+			cost_detail = per_item_costs.get(item.name) or self._zero_breakdown_row()
+			foreign_local = flt(cost_detail["foreign_local"])
+			local_local = flt(cost_detail["local_local"])
+			tax_local = flt(cost_detail["tax_local"])
+			total_local_cost = base_amount_local + foreign_local + local_local + tax_local
+
+			per_ton_foreign = (foreign_local / quantity) if quantity else 0
+			per_ton_local = (local_local / quantity) if quantity else 0
+			per_ton_tax = (tax_local / quantity) if quantity else 0
+			per_ton_landed = (total_local_cost / quantity) if quantity else 0
+			per_kg_landed = (per_ton_landed / 1000) if quantity else 0
+
+			price_per_ton_import = (base_amount_import / quantity) if quantity else 0
+			price_per_ton_local = (base_amount_local / quantity) if quantity else 0
+
+			existing_row = existing_summary.get(item.name)
+			selling_price = (
+				flt(existing_row.selling_price_per_kg)
+				if existing_row and existing_row.selling_price_per_kg is not None
+				else flt(self.default_selling_price_per_kg or 0)
+			)
+			profit_tax_percent = (
+				flt(existing_row.profit_tax_percent)
+				if existing_row and existing_row.profit_tax_percent is not None
+				else flt(self.profit_tax_percent or 0)
+			)
+
+			gross_profit_per_kg = selling_price - per_kg_landed
+			net_profit_per_kg = gross_profit_per_kg * (1 - (profit_tax_percent / 100))
+			total_net = net_profit_per_kg * quantity * 1000
+			total_net_profit += total_net
+
+			self.append(
+				"product_summaries",
+				{
+					"shipment_item": item.name,
+					"product": item.product,
+					"import_currency": self.shipment_currency,
+					"quantity_tons": quantity,
+					"price_per_ton_import": price_per_ton_import,
+					"price_per_ton_local": price_per_ton_local,
+					"foreign_cost_per_ton": per_ton_foreign,
+					"local_cost_per_ton": per_ton_local,
+					"tax_cost_per_ton": per_ton_tax,
+					"landing_cost_per_ton": per_ton_landed,
+					"landing_cost_per_kg": per_kg_landed,
+					"selling_price_per_kg": selling_price,
+					"gross_profit_per_kg": gross_profit_per_kg,
+					"profit_tax_percent": profit_tax_percent,
+					"net_profit_per_kg": net_profit_per_kg,
+					"total_net_profit": total_net,
+				},
+			)
+
+		self.estimated_total_net_profit = total_net_profit
 
 	def _get_allocation_basis(self, shipment):
 		method = (self.allocation_method or "By Value").lower()
@@ -298,16 +418,6 @@ class LandingCostWorksheet(Document):
 			po.update_receipt_status()
 
 
-def get_dashboard_data():
-	return {
-		"fieldname": "import_shipment",
-		"transactions": [],
-		"internal_links": {
-			"Import Shipment": ["import_shipment"],
-			"Purchase Order": ["purchase_order"],
-		},
-	}
-
 	def _revert_purchase_order_receipts(self, shipment):
 		if not shipment.purchase_order:
 			return
@@ -378,3 +488,208 @@ def get_dashboard_data():
 		if rate <= 0:
 			return 0.0
 		return flt(local_amount) / rate
+
+	# -------------------------------------------------------------------------
+	# Cost breakdown helpers
+
+	def _allocate_cost_components(self, shipment):
+		item_quantities = {item.name: flt(item.quantity or 0) for item in shipment.items}
+		item_base_import = {item.name: flt(item.base_amount or 0) for item in shipment.items}
+		item_base_local = {}
+		for item in shipment.items:
+			local_val = flt(item.base_amount_local or 0)
+			if not local_val:
+				local_val = self._convert_to_local(flt(item.base_amount or 0))
+			item_base_local[item.name] = local_val
+
+		breakdown = {
+			"items": {item.name: self._zero_breakdown_row() for item in shipment.items},
+			"totals": {
+				"local": defaultdict(float),
+				"import": defaultdict(float),
+			},
+		}
+
+		component_groups = defaultdict(list)
+		for row in self.cost_components:
+			component_groups[self._normalise_cost_bucket(row.cost_bucket)].append(row)
+
+		subtotal_local = {name: item_base_local.get(name, 0) for name in item_base_local}
+
+		for bucket in ("foreign", "local", "tax"):
+			for row in component_groups.get(bucket, []):
+				self._normalise_component_row(row)
+				allocations = self._distribute_component_amount(
+					row, shipment, item_quantities, item_base_import, item_base_local, subtotal_local
+				)
+				for item_name, amounts in allocations.items():
+					entry = breakdown["items"].setdefault(item_name, self._zero_breakdown_row())
+					entry[f"{bucket}_local"] += amounts["local"]
+					entry[f"{bucket}_import"] += amounts["import"]
+					entry["total_local"] += amounts["local"]
+					entry["total_import"] += amounts["import"]
+					breakdown["totals"]["local"][bucket] += amounts["local"]
+					breakdown["totals"]["import"][bucket] += amounts["import"]
+					if bucket != "tax":
+						subtotal_local[item_name] = subtotal_local.get(item_name, 0) + amounts["local"]
+
+		return breakdown
+
+	def _distribute_component_amount(
+		self, row, shipment, item_quantities, item_base_import, item_base_local, subtotal_local
+	):
+		if row.apply_to_item:
+			if row.apply_to_item not in item_quantities:
+				frappe.throw(_("Cost component {0} references an unknown shipment item.").format(row.cost_type))
+			target_items = [row.apply_to_item]
+		else:
+			target_items = list(item_quantities.keys())
+		if not target_items:
+			return {}
+
+		scope = (row.cost_scope or "Total Amount").strip() or "Total Amount"
+		result = {}
+
+		if scope == "Total Amount":
+			total_amount = flt(row.amount or 0)
+			if total_amount <= 0:
+				frappe.throw(_("Set 'Amount / Rate' for component {0}.").format(row.cost_type))
+			basis = self._get_allocation_basis_for_targets(shipment, target_items)
+			total_basis = sum(basis.values())
+			if not total_basis:
+				frappe.throw(_("Cannot distribute component {0} because allocation basis is zero.").format(row.cost_type))
+			for item_name in target_items:
+				share = basis[item_name] / total_basis
+				amount_currency = total_amount * share
+				result[item_name] = self._convert_component_amount(row, amount_currency)
+
+		elif scope == "Per Ton":
+			rate = flt(row.amount or 0)
+			if rate == 0:
+				frappe.throw(_("Set 'Amount / Rate' for component {0}.").format(row.cost_type))
+			for item_name in target_items:
+				qty = item_quantities.get(item_name) or 0
+				if not qty:
+					continue
+				amount_currency = rate * qty
+				result[item_name] = self._convert_component_amount(row, amount_currency)
+
+		elif scope == "Per Kg":
+			rate = flt(row.amount or 0)
+			if rate == 0:
+				frappe.throw(_("Set 'Amount / Rate' for component {0}.").format(row.cost_type))
+			for item_name in target_items:
+				qty = (item_quantities.get(item_name) or 0) * 1000
+				if not qty:
+					continue
+				amount_currency = rate * qty
+				result[item_name] = self._convert_component_amount(row, amount_currency)
+
+		elif scope == "Percent of CIF":
+			percent = flt(row.percentage_rate or 0)
+			if percent == 0:
+				frappe.throw(_("Set 'Percentage Rate' for component {0}.").format(row.cost_type))
+			for item_name in target_items:
+				base_value = self._get_base_value_for_percent(row, item_base_import[item_name], item_base_local[item_name])
+				amount_currency = base_value * percent / 100
+				result[item_name] = self._convert_component_amount(row, amount_currency)
+
+		elif scope == "Percent of Landed Cost":
+			percent = flt(row.percentage_rate or 0)
+			if percent == 0:
+				frappe.throw(_("Set 'Percentage Rate' for component {0}.").format(row.cost_type))
+			for item_name in target_items:
+				base_value_local = subtotal_local.get(item_name, 0)
+				base_in_component_currency = self._convert_local_to_component_currency(row, base_value_local)
+				amount_currency = base_in_component_currency * percent / 100
+				result[item_name] = self._convert_component_amount(row, amount_currency)
+		else:
+			frappe.throw(_("Unknown cost scope '{0}' for component {1}.").format(scope, row.cost_type))
+
+		row.converted_amount = sum(entry["local"] for entry in result.values())
+		return result
+
+	def _normalise_cost_bucket(self, bucket_value):
+		value = (bucket_value or "Foreign Cost").lower()
+		if "local" in value:
+			return "local"
+		if "tax" in value:
+			return "tax"
+		return "foreign"
+
+	def _normalise_component_row(self, row):
+		row.currency = row.currency or self.currency or self.shipment_currency
+		if row.currency == self.currency:
+			row.exchange_rate = 1
+		elif row.currency == self.shipment_currency:
+			row.exchange_rate = row.exchange_rate or self.shipment_exchange_rate or 0
+		else:
+			row.exchange_rate = row.exchange_rate or 0
+
+	def _component_exchange_rate(self, row):
+		if row.currency == self.currency:
+			return 1.0
+		if row.currency == self.shipment_currency:
+			rate = flt(self.shipment_exchange_rate or 0)
+			if rate <= 0:
+				frappe.throw(_("Set Exchange Rate (Shipment → Worksheet) to convert shipment currency components."))
+			return rate
+		rate = flt(row.exchange_rate or 0)
+		if rate <= 0:
+			frappe.throw(_("Please set an exchange rate for component {0}.").format(row.cost_type))
+		return rate
+
+	def _convert_component_amount(self, row, amount_currency):
+		rate = self._component_exchange_rate(row)
+		local_amount = flt(amount_currency or 0) * rate
+
+		if row.currency == self.shipment_currency:
+			import_amount = flt(amount_currency or 0)
+		elif self.shipment_currency == self.currency:
+			import_amount = flt(local_amount)
+		else:
+			ship_rate = flt(self.shipment_exchange_rate or 0)
+			import_amount = (local_amount / ship_rate) if ship_rate > 0 else 0
+
+		return {"local": local_amount, "import": import_amount}
+
+	def _convert_local_to_component_currency(self, row, local_amount):
+		if row.currency == self.currency:
+			return flt(local_amount)
+		rate = self._component_exchange_rate(row)
+		return flt(local_amount) / rate if rate else 0
+
+	def _get_base_value_for_percent(self, row, base_import, base_local):
+		if row.currency == self.shipment_currency:
+			return flt(base_import)
+		if row.currency == self.currency:
+			return flt(base_local)
+		rate = self._component_exchange_rate(row)
+		return flt(base_local) / rate if rate else 0
+
+	def _get_allocation_basis_for_targets(self, shipment, target_items):
+		full_basis = self._get_allocation_basis(shipment)
+		return {name: full_basis.get(name, 0) for name in target_items}
+
+	def _zero_breakdown_row(self):
+		return {
+			"foreign_local": 0.0,
+			"foreign_import": 0.0,
+			"local_local": 0.0,
+			"local_import": 0.0,
+			"tax_local": 0.0,
+			"tax_import": 0.0,
+			"total_local": 0.0,
+			"total_import": 0.0,
+		}
+
+
+def get_dashboard_data():
+	return {
+		"fieldname": "import_shipment",
+		"transactions": [],
+		"internal_links": {
+			"Import Shipment": ["import_shipment"],
+			"Purchase Order": ["purchase_order"],
+		},
+	}

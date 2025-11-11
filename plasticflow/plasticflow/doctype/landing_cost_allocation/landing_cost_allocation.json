@@ -8,6 +8,7 @@
  "field_order": [
   "shipment_item",
   "product",
+  "import_currency",
   "quantity",
   "base_amount",
   "base_amount_import",
@@ -34,6 +35,14 @@
    "label": "Product",
    "options": "Product",
    "read_only": 1
+ },
+  {
+   "fieldname": "import_currency",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Import Currency",
+   "options": "Currency",
+   "read_only": 1
   },
   {
    "fieldname": "quantity",
@@ -52,9 +61,9 @@
    "fieldname": "base_amount_import",
    "fieldtype": "Currency",
    "label": "Base Amount (Import Currency)",
-   "options": "parent.shipment_currency",
+    "options": "import_currency",
    "read_only": 1
-  },
+ },
   {
    "fieldname": "allocation_ratio",
    "fieldtype": "Percent",
@@ -72,9 +81,9 @@
    "fieldname": "additional_cost_import",
    "fieldtype": "Currency",
    "label": "Additional Cost (Import Currency)",
-   "options": "parent.shipment_currency",
+   "options": "import_currency",
    "read_only": 1
-  },
+ },
   {
    "fieldname": "landed_cost_amount",
    "fieldtype": "Currency",
@@ -86,9 +95,9 @@
    "fieldname": "landed_cost_amount_import",
    "fieldtype": "Currency",
    "label": "Total Landed Cost (Import Currency)",
-   "options": "parent.shipment_currency",
+   "options": "import_currency",
    "read_only": 1
-  },
+ },
   {
    "fieldname": "landed_cost_rate",
    "fieldtype": "Currency",
@@ -100,9 +109,9 @@
    "fieldname": "landed_cost_rate_import",
    "fieldtype": "Currency",
    "label": "Landed Cost Rate (Import Currency)",
-   "options": "parent.shipment_currency",
+   "options": "import_currency",
    "read_only": 1
-  }
+ }
 ],
  "grid_page_length": 30,
  "istable": 1,

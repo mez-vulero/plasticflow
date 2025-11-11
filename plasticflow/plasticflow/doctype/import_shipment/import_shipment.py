@@ -20,6 +20,7 @@ class ImportShipment(Document):
 
 	def before_save(self):
 		self._record_clearance_transition()
+		self._assign_item_row_names()
 
 	def on_update(self):
 		previous_status = getattr(self.flags, "previous_clearance_status", None)
@@ -193,6 +194,33 @@ class ImportShipment(Document):
 			stock_entry.submit()
 		self.db_set("stock_entry", stock_entry.name, update_modified=False)
 		return stock_entry
+
+	def _assign_item_row_names(self):
+		"""Ensure shipment items carry deterministic names for downstream linking."""
+		if not self.name or self.name.startswith("New "):
+			return
+
+		prefix = f"{self.name}-ITEM-"
+		existing_sequences = []
+		for row in self.items:
+			sequence = self._extract_child_sequence(row.name, prefix)
+			if sequence is not None:
+				existing_sequences.append(sequence)
+
+		next_sequence = (max(existing_sequences) if existing_sequences else 0) + 1
+
+		for row in self.items:
+			if row.name and not row.name.startswith("new-"):
+				continue
+			row.name = f"{prefix}{next_sequence:03d}"
+			next_sequence += 1
+
+	@staticmethod
+	def _extract_child_sequence(value, prefix):
+		if not value or not value.startswith(prefix):
+			return None
+		suffix = value[len(prefix) :]
+		return int(suffix) if suffix.isdigit() else None
 
 	def _prepare_stock_entry_for_warehouse(self, stock_entry):
 		updated = False

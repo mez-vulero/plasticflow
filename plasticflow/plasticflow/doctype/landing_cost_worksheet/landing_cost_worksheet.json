@@ -10,10 +10,20 @@
  "field_order": [
   "import_shipment",
   "purchase_order",
+  "section_break_shipment_overview",
+  "supplier",
+  "country_of_origin",
+  "port_of_loading",
+  "port_of_discharge",
+  "shipment_quantity_tons",
+  "shipment_amount_import",
+  "column_break_shipment_overview",
   "posting_date",
   "currency",
   "shipment_currency",
   "shipment_exchange_rate",
+  "default_selling_price_per_kg",
+  "profit_tax_percent",
   "allocation_method",
   "section_break_costs",
   "cost_components",
@@ -27,6 +37,12 @@
   "total_landed_cost_import",
   "avg_landed_cost",
   "avg_landed_cost_import",
+  "foreign_cost_total",
+  "local_cost_total",
+  "tax_cost_total",
+  "section_break_profitability",
+  "product_summaries",
+  "estimated_total_net_profit",
   "section_break_allocations",
   "allocations",
   "status",
@@ -49,6 +65,55 @@
    "label": "Purchase Order",
    "options": "Purchase Order",
    "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_shipment_overview",
+   "fieldtype": "Section Break",
+   "label": "Shipment Overview"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
+   "read_only": 1
+  },
+  {
+   "fieldname": "country_of_origin",
+   "fieldtype": "Data",
+   "label": "Country of Origin",
+   "read_only": 1
+  },
+  {
+   "fieldname": "port_of_loading",
+   "fieldtype": "Data",
+   "label": "Port of Loading",
+   "read_only": 1
+  },
+  {
+   "fieldname": "port_of_discharge",
+   "fieldtype": "Data",
+   "label": "Port of Discharge",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shipment_quantity_tons",
+   "fieldtype": "Float",
+   "label": "Quantity (Tons)",
+   "precision": "3",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shipment_amount_import",
+   "fieldtype": "Currency",
+   "label": "Shipment Amount (Import Currency)",
+   "options": "shipment_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_shipment_overview",
+   "fieldtype": "Column Break"
   },
   {
    "default": "Today",
@@ -76,6 +141,19 @@
    "fieldtype": "Float",
    "label": "Exchange Rate (Shipment → Worksheet)",
    "precision": "6"
+  },
+  {
+   "fieldname": "default_selling_price_per_kg",
+   "fieldtype": "Currency",
+   "label": "Default Selling Price / Kg",
+   "options": "currency"
+  },
+  {
+   "default": "30",
+   "fieldname": "profit_tax_percent",
+   "fieldtype": "Percent",
+   "label": "Profit Tax %",
+   "precision": "2"
   },
   {
    "default": "By Value",
@@ -160,6 +238,46 @@
    "fieldtype": "Currency",
    "label": "Avg Landed Cost / Unit (Import Currency)",
    "options": "shipment_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foreign_cost_total",
+   "fieldtype": "Currency",
+   "label": "Foreign Cost Total",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "local_cost_total",
+   "fieldtype": "Currency",
+   "label": "Local Cost Total",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tax_cost_total",
+   "fieldtype": "Currency",
+   "label": "Tax Cost Total",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_profitability",
+   "fieldtype": "Section Break",
+   "label": "Per Product Profitability"
+  },
+  {
+   "fieldname": "product_summaries",
+   "fieldtype": "Table",
+   "label": "Product Cost Summary",
+   "options": "Landing Cost Product Summary"
+  },
+  {
+   "fieldname": "estimated_total_net_profit",
+   "fieldtype": "Currency",
+   "label": "Estimated Total Net Profit",
+   "options": "currency",
    "read_only": 1
   },
   {

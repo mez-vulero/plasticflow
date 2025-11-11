@@ -65,6 +65,9 @@ def execute():
 				update_modified=False,
 			)
 
+	frappe.reload_doc("plasticflow", "doctype", "stock_entries")
+	frappe.reload_doc("plasticflow", "doctype", "stock_entry_items")
+
 	if frappe.db.table_exists("Customs Documents"):
 		customs_docs = frappe.db.get_all(
 			"Customs Documents",

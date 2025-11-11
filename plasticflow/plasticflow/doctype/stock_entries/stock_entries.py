@@ -17,11 +17,16 @@ class StockEntries(Document):
 	def before_insert(self):
 		self._populate_from_import_shipment()
 
+	def before_save(self):
+		self._assign_item_row_names()
+
 	def _populate_from_import_shipment(self):
 		if not self.import_shipment or not frappe.db.exists("Import Shipment", self.import_shipment):
 			return
 
 		shipment = frappe.get_doc("Import Shipment", self.import_shipment)
+		self.import_currency = shipment.currency
+		self.local_currency = shipment.local_currency or frappe.db.get_default("currency") or shipment.currency
 
 		if not self.arrival_date:
 			self.arrival_date = shipment.arrival_date or nowdate()
@@ -117,3 +122,30 @@ class StockEntries(Document):
 				self.name,
 				update_modified=False,
 			)
+
+	def _assign_item_row_names(self):
+		"""Give stock entry items deterministic identifiers for FIFO tracking."""
+		if not self.name or self.name.startswith("New "):
+			return
+
+		prefix = f"{self.name}-BATCH-"
+		existing_sequences = []
+		for row in self.items:
+			sequence = self._extract_child_sequence(row.name, prefix)
+			if sequence is not None:
+				existing_sequences.append(sequence)
+
+		next_sequence = (max(existing_sequences) if existing_sequences else 0) + 1
+
+		for row in self.items:
+			if row.name and not row.name.startswith("new-"):
+				continue
+			row.name = f"{prefix}{next_sequence:03d}"
+			next_sequence += 1
+
+	@staticmethod
+	def _extract_child_sequence(value, prefix):
+		if not value or not value.startswith(prefix):
+			return None
+		suffix = value[len(prefix) :]
+		return int(suffix) if suffix.isdigit() else None

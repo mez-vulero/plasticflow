@@ -113,7 +113,7 @@
    "reqd": 1
   },
   {
-   "depends_on": "eval:doc.clearance_status===\"Cleared\" or doc.clearance_status===\"At Warehouse\"",
+   "depends_on": "eval:[\"Cleared\", \"At Warehouse\"].includes(doc.clearance_status)",
    "fieldname": "cleared_on",
    "fieldtype": "Date",
    "label": "Cleared On"

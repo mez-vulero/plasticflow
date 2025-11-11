@@ -205,15 +205,21 @@ class SalesOrder(Document):
 		if self.docstatus == 0:
 			return
 
-		if self.sales_type == "Credit":
-			self.payment_status = "Draft"
-			if self.status not in {"Invoiced", "Ready for Delivery", "Completed"}:
-				self.status = "Credit Sales"
-			return
-
 		expected_payment = flt(self.total_net_amount or self.total_amount or 0)
 		total_paid = self._sum_payment_slips()
 		has_slip = bool(self.payment_slips)
+		current_outstanding = flt(self.outstanding_amount or 0)
+
+		if self.sales_type == "Credit":
+			if not self._maybe_mark_settled(
+				total_paid=total_paid,
+				expected_payment=expected_payment,
+				outstanding=current_outstanding,
+			):
+				self.payment_status = "Draft"
+				if self.status not in {"Invoiced", "Ready for Delivery", "Completed", "Settled"}:
+					self.status = "Credit Sales"
+			return
 
 		if total_paid - expected_payment > PAYMENT_TOLERANCE:
 			frappe.throw(
@@ -232,20 +238,50 @@ class SalesOrder(Document):
 			self.payment_status = "Payment Verified"
 			if self.status in {"Draft", "Payment Pending", "Payment Verified"}:
 				self.status = "Payment Verified"
+			self._maybe_mark_settled(
+				total_paid=total_paid,
+				expected_payment=expected_payment,
+				outstanding=current_outstanding,
+			)
 			return
 
 		if abs(total_paid - expected_payment) <= PAYMENT_TOLERANCE and has_slip:
 			self.payment_status = "Payment Verified"
 			if self.status in {"Draft", "Payment Pending", "Payment Verified"}:
 				self.status = "Payment Verified"
+			self._maybe_mark_settled(
+				total_paid=total_paid,
+				expected_payment=expected_payment,
+				outstanding=current_outstanding,
+			)
 		else:
-			if self.status in {"Draft", "Payment Pending", "Payment Verified"}:
+			if self.status in {"Draft", "Payment Pending", "Payment Verified", "Settled"}:
 				self.status = "Payment Pending"
 			if self.payment_status != "Payment Pending":
 				self.payment_status = "Payment Pending"
 
 	def _sum_payment_slips(self):
 		return sum(flt(row.amount_paid or 0) for row in self.payment_slips)
+
+	def _maybe_mark_settled(
+		self,
+		*,
+		total_paid: float | None = None,
+		expected_payment: float | None = None,
+		outstanding: float | None = None,
+	) -> bool:
+		total_paid = flt(total_paid if total_paid is not None else self._sum_payment_slips())
+		expected_payment = flt(expected_payment if expected_payment is not None else (self.total_net_amount or self.total_amount or 0))
+		outstanding = flt(outstanding if outstanding is not None else (self.outstanding_amount or 0))
+
+		if not self.payment_slips:
+			return False
+
+		if outstanding <= PAYMENT_TOLERANCE and abs(total_paid - expected_payment) <= PAYMENT_TOLERANCE:
+			self.payment_status = "Payment Verified"
+			self.status = "Settled"
+			return True
+		return False
 
 	@staticmethod
 	def _ledger_reference(location_type: str, warehouse: str | None = None) -> str:
@@ -288,7 +324,7 @@ class SalesOrder(Document):
 			if required_qty > QTY_TOLERANCE:
 				frappe.throw(
 					_("Insufficient FIFO stock for {0}. Short by {1} units.").format(
-						item.product, frappe.utils.fmt_float(required_qty)
+						item.product, f"{required_qty:.3f}"
 					)
 				)
 
@@ -322,8 +358,8 @@ class SalesOrder(Document):
 					_("Insufficient {0} stock for {1}. Required {2}, available {3}.").format(
 						location_type.lower(),
 						item.product,
-						frappe.utils.fmt_float(qty),
-						frappe.utils.fmt_float(available_qty),
+						f"{qty:.3f}",
+						f"{available_qty:.3f}",
 					)
 				)
 
@@ -536,8 +572,8 @@ class SalesOrder(Document):
 			frappe.throw(
 				_("Batch item {0} does not have enough stock. Required {1}, available {2}.").format(
 					row.name,
-					frappe.utils.fmt_float(required_qty),
-					frappe.utils.fmt_float(max(available, 0)),
+					f"{required_qty:.3f}",
+					f"{max(available, 0):.3f}",
 				)
 			)
 
@@ -550,6 +586,15 @@ class SalesOrder(Document):
 		)
 
 	def _iter_fifo_batches(self, product, *, location_type, warehouse):
+		child_table = "`tabStock Entry Items`"
+		parent_table = "`tabStock Entries`"
+
+		if not frappe.db.table_exists("Stock Entries") or not frappe.db.table_exists("Stock Entry Items"):
+			frappe.throw(
+				_("Stock Entry tables are missing. Please run `bench migrate` to set up Stock Entries."),
+				title=_("Stock Entries Not Available"),
+			)
+
 		conditions = ["se.docstatus = 1", "sei.product = %s"]
 		values: list = [product]
 
@@ -578,8 +623,8 @@ class SalesOrder(Document):
 				coalesce(se.arrival_date, se.creation) as arrival_marker,
 				se.creation as creation,
 				(coalesce(sei.received_qty,0) - coalesce(sei.reserved_qty,0) - coalesce(sei.issued_qty,0)) as available_qty
-			from `tabStock Entry Items` sei
-			inner join `tabStock Entries` se on se.name = sei.parent
+			from {child_table} sei
+			inner join {parent_table} se on se.name = sei.parent
 			where {" and ".join(conditions)}
 			order by arrival_marker, se.creation
 		"""
@@ -595,6 +640,8 @@ class SalesOrder(Document):
 				if not child:
 					continue
 				arrival_marker = batch.arrival_date or batch.creation
+				if not frappe.db.table_exists("Stock Entry Items") or not frappe.db.table_exists("Stock Entries"):
+					continue
 				available_older = frappe.db.sql(
 					"""
 					select sei.name
@@ -668,6 +715,8 @@ class SalesOrder(Document):
 		total_invoiced = self._get_total_invoiced_amount()
 		outstanding = max(flt(self.total_amount) - total_invoiced, 0)
 		latest_invoice = self._get_latest_invoice_name()
+		total_paid = self._sum_payment_slips()
+		expected_payment = flt(self.total_net_amount or self.total_amount or 0)
 
 		updates = {
 			"invoiced_amount": total_invoiced,
@@ -676,8 +725,13 @@ class SalesOrder(Document):
 		}
 
 		if self.docstatus == 1:
+			settled = self._maybe_mark_settled(
+				total_paid=total_paid,
+				expected_payment=expected_payment,
+				outstanding=outstanding,
+			)
 			if outstanding <= PAYMENT_TOLERANCE:
-				if self.status not in {"Ready for Delivery", "Completed"}:
+				if not settled and self.status not in {"Ready for Delivery", "Completed", "Settled"}:
 					updates["status"] = "Invoiced"
 					self.status = "Invoiced"
 				self._finalize_reservations()
@@ -692,6 +746,18 @@ class SalesOrder(Document):
 					updates["status"] = target_status
 					self.status = target_status
 				self._restore_reservations()
+		else:
+			settled = self._maybe_mark_settled(
+				total_paid=total_paid,
+				expected_payment=expected_payment,
+				outstanding=outstanding,
+			)
+
+		if self.status == "Settled":
+			updates["status"] = "Settled"
+			self.payment_status = "Payment Verified"
+
+		updates["payment_status"] = self.payment_status
 
 		frappe.db.set_value("Sales Order", self.name, updates, update_modified=False)
 		self.invoiced_amount = total_invoiced

@@ -21,6 +21,7 @@ def get_data():
 				{"type": "doctype", "name": "Stock Entries"},
 				{"type": "doctype", "name": "Plasticflow Stock Ledger Entry"},
 				{"type": "doctype", "name": "Customer"},
+				{"type": "doctype", "name": "Banks"},
 				{"type": "doctype", "name": "Broker"},
 				{"type": "doctype", "name": "Sales Order"},
 				{"type": "doctype", "name": "Plasticflow Invoice"},
