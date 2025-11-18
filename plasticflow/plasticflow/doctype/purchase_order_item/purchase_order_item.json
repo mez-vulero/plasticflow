@@ -13,6 +13,7 @@
   "received_qty",
   "uom",
   "rate",
+  "purchase_currency",
   "amount",
   "required_by",
   "target_warehouse",
@@ -57,21 +58,32 @@
   {
    "fieldname": "uom",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "UOM",
    "options": "Unit of Measurement"
   },
   {
    "fieldname": "rate",
    "fieldtype": "Currency",
+   "in_list_view": 1,
    "label": "Rate",
-   "options": "parent.purchase_currency"
+   "options": "purchase_currency"
+  },
+  {
+   "fetch_from": "parent.purchase_currency",
+   "fieldname": "purchase_currency",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Purchase Currency",
+   "options": "Currency",
+   "read_only": 1
   },
   {
    "fieldname": "amount",
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Amount",
-   "options": "parent.purchase_currency",
+   "options": "purchase_currency",
    "read_only": 1
   },
   {

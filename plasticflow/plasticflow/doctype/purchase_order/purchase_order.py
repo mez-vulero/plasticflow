@@ -66,6 +66,8 @@ class PurchaseOrder(Document):
 				item.product_name = frappe.db.get_value("Product", item.product, "product_name")
 			if item.product and not item.uom:
 				item.uom = frappe.db.get_value("Product", item.product, "uom")
+			# Ensure child rows always carry the purchase currency so Currency fields format correctly
+			item.purchase_currency = self.purchase_currency
 			qty = flt(item.quantity or 0)
 			rate = flt(item.rate or 0)
 			item.amount = qty * rate
