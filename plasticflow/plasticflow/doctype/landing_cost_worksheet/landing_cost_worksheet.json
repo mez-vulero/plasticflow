@@ -25,21 +25,22 @@
   "default_selling_price_per_kg",
   "profit_tax_percent",
   "allocation_method",
-  "section_break_costs",
+  "section_break_eicd",
   "cost_components",
-  "column_break_totals",
+  "section_break_costs",
   "total_base_amount",
-  "total_base_amount_import",
-  "total_quantity",
   "total_additional_cost",
-  "total_additional_cost_import",
   "total_landed_cost",
-  "total_landed_cost_import",
   "avg_landed_cost",
-  "avg_landed_cost_import",
-  "foreign_cost_total",
   "local_cost_total",
   "tax_cost_total",
+  "column_break_totals",
+  "total_base_amount_import",
+  "total_additional_cost_import",
+  "total_landed_cost_import",
+  "avg_landed_cost_import",
+  "foreign_cost_total",
+  "total_quantity",
   "section_break_profitability",
   "product_summaries",
   "estimated_total_net_profit",
@@ -47,7 +48,8 @@
   "allocations",
   "status",
   "locked_on",
-  "lock_note"
+  "lock_note",
+  "amended_from"
  ],
  "fields": [
   {
@@ -56,8 +58,7 @@
    "in_list_view": 1,
    "label": "Import Shipment",
    "options": "Import Shipment",
-   "reqd": 1,
-   "set_null_on_delete": 1
+   "reqd": 1
   },
   {
    "fieldname": "purchase_order",
@@ -139,7 +140,7 @@
   {
    "fieldname": "shipment_exchange_rate",
    "fieldtype": "Float",
-   "label": "Exchange Rate (Shipment → Worksheet)",
+   "label": "Exchange Rate (Shipment \u2192 Worksheet)",
    "precision": "6"
   },
   {
@@ -311,12 +312,26 @@
    "fieldtype": "Data",
    "label": "Lock Note",
    "read_only": 1
+  },
+  {
+   "fieldname": "section_break_eicd",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Landing Cost Worksheet",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-01 00:00:00",
+ "modified": "2025-11-20 22:25:19.890676",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Landing Cost Worksheet",
@@ -375,7 +390,7 @@
  "sort_order": "DESC",
  "states": [
   {
-   "color": "Grey",
+   "color": "Yellow",
    "title": "Draft"
   },
   {
@@ -387,6 +402,5 @@
    "title": "Locked"
   }
  ],
- "track_changes": 1,
- "workflow_state_field": "status"
+ "track_changes": 1
 }

@@ -65,6 +65,7 @@
   {
    "fieldname": "base_rate",
    "fieldtype": "Currency",
+   "in_list_view": 1,
    "label": "Base Rate",
    "options": "currency"
   },

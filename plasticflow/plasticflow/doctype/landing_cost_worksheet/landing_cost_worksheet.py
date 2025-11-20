@@ -12,6 +12,7 @@ class LandingCostWorksheet(Document):
 	"""Aggregates shipment logistics costs and allocates landed cost per item."""
 
 	def validate(self):
+		self._ensure_single_shipment_constraint()
 		self._ensure_shipment_context()
 		self._calculate_totals()
 		self._build_allocations()
@@ -26,6 +27,27 @@ class LandingCostWorksheet(Document):
 
 	# -------------------------------------------------------------------------
 	# Internal helpers
+
+	def _ensure_single_shipment_constraint(self):
+		if not self.import_shipment:
+			return
+
+		existing = frappe.db.get_value(
+			"Landing Cost Worksheet",
+			{
+				"import_shipment": self.import_shipment,
+				"name": ["!=", self.name],
+				"docstatus": ["!=", 2],
+			},
+			"name",
+		)
+
+		if existing:
+			frappe.throw(
+				_("Landing Cost Worksheet {0} already exists for Import Shipment {1}.").format(
+					existing, self.import_shipment
+				)
+			)
 
 	def _ensure_shipment_context(self):
 		if not self.import_shipment:

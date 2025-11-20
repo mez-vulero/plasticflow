@@ -17,8 +17,7 @@ frappe.ui.form.on("Purchase Order", {
 							frappe.set_route("Form", message.doctype || "Import Shipment", message.name);
 						},
 					});
-				},
-				__("Create")
+				}
 			);
 		}
 	},

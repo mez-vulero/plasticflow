@@ -47,7 +47,6 @@ class ImportShipment(Document):
 		self.local_currency = self.local_currency or po.local_currency
 		self.supplier = self.supplier or po.supplier
 		self.incoterm = self.incoterm or po.incoterm
-		self.purchase_order_no = self.purchase_order_no or po.name
 		if not self.import_reference:
 			self.import_reference = po.name
 		if not self.shipment_date:
@@ -77,6 +76,8 @@ class ImportShipment(Document):
 			)
 
 	def _set_item_defaults(self):
+		if not self.currency:
+			self.currency = frappe.db.get_default("currency")
 		if not self.local_currency:
 			self.local_currency = frappe.db.get_default("currency")
 
@@ -262,3 +263,35 @@ def get_dashboard_data():
 			"Purchase Order": ["purchase_order"],
 		},
 	}
+
+
+@frappe.whitelist()
+def create_landing_cost_worksheet(import_shipment: str):
+	if not import_shipment:
+		frappe.throw(_("Import Shipment is required."))
+
+	shipment = frappe.get_doc("Import Shipment", import_shipment)
+	shipment.check_permission("read")
+
+	if shipment.docstatus != 1:
+		frappe.throw(_("Submit the import shipment before creating a landing cost worksheet."))
+
+	existing = frappe.db.get_value(
+		"Landing Cost Worksheet",
+		{
+			"import_shipment": shipment.name,
+			"docstatus": ["!=", 2],
+		},
+		"name",
+	)
+
+	if existing:
+		return {"name": existing, "status": "existing"}
+
+	worksheet = frappe.new_doc("Landing Cost Worksheet")
+	worksheet.import_shipment = shipment.name
+	worksheet.purchase_order = shipment.purchase_order
+	worksheet.posting_date = nowdate()
+	worksheet.insert(ignore_permissions=True)
+
+	return {"name": worksheet.name, "status": "created"}

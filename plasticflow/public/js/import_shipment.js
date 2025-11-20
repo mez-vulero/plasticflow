@@ -2,14 +2,8 @@ frappe.ui.form.on("Import Shipment", {
 	refresh(frm) {
 		if (frm.doc.docstatus === 1) {
 			frm.add_custom_button(
-				__("New Landing Cost Worksheet"),
-				() => {
-					frappe.route_options = {
-						import_shipment: frm.doc.name,
-						purchase_order: frm.doc.purchase_order,
-					};
-					frappe.new_doc("Landing Cost Worksheet");
-				},
+				__("Landing Cost Worksheet"),
+				() => create_landing_cost_worksheet(frm),
 				__("Create")
 			);
 		}
@@ -23,3 +17,30 @@ frappe.ui.form.on("Import Shipment", {
 		}
 	},
 });
+
+function create_landing_cost_worksheet(frm) {
+	if (!frm.doc.name) {
+		return;
+	}
+
+	frappe.call({
+		method: "plasticflow.plasticflow.doctype.import_shipment.import_shipment.create_landing_cost_worksheet",
+		args: { import_shipment: frm.doc.name },
+		freeze: true,
+		freeze_message: __("Preparing Landing Cost Worksheet..."),
+		callback: ({ message }) => {
+			if (!message || !message.name) {
+				return;
+			}
+
+			if (message.status === "existing") {
+				frappe.show_alert({
+					message: __("Opening existing worksheet {0}", [message.name]),
+					indicator: "blue",
+				});
+			}
+
+			frappe.set_route("Form", "Landing Cost Worksheet", message.name);
+		},
+	});
+}

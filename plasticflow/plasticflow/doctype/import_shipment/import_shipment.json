@@ -14,9 +14,7 @@
   "expected_arrival",
   "section_break_customs",
   "arrival_date",
-  "customs_station",
   "bill_of_lading",
-  "container_no",
   "destination_warehouse",
   "clearance_status",
   "cleared_on",
@@ -25,7 +23,6 @@
   "section_break_commercial",
   "supplier",
   "purchase_order",
-  "purchase_order_no",
   "lc_no",
   "incoterm",
   "country_of_origin",
@@ -51,11 +48,13 @@
  "fields": [
   {
    "fieldname": "import_reference",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Reference",
+   "options": "Purchase Order",
    "reqd": 1,
-   "search_index": 1
+   "search_index": 1,
+   "set_null_on_delete": 1
   },
   {
    "default": "Today",
@@ -82,19 +81,9 @@
    "label": "Arrival Date"
   },
   {
-   "fieldname": "customs_station",
-   "fieldtype": "Data",
-   "label": "Customs Station"
-  },
-  {
    "fieldname": "bill_of_lading",
    "fieldtype": "Data",
    "label": "Bill of Lading"
-  },
-  {
-   "fieldname": "container_no",
-   "fieldtype": "Data",
-   "label": "Container Number"
   },
   {
    "fieldname": "destination_warehouse",
@@ -155,11 +144,6 @@
    "set_null_on_delete": 1
   },
   {
-   "fieldname": "purchase_order_no",
-   "fieldtype": "Data",
-   "label": "Purchase Order No."
-  },
-  {
    "fieldname": "lc_no",
    "fieldtype": "Data",
    "label": "L/C Number"
@@ -177,13 +161,17 @@
   },
   {
    "fieldname": "port_of_loading",
-   "fieldtype": "Data",
-   "label": "Port of Loading"
+   "fieldtype": "Link",
+   "label": "Port of Loading",
+   "options": "Ports",
+   "set_null_on_delete": 1
   },
   {
    "fieldname": "port_of_discharge",
-   "fieldtype": "Data",
-   "label": "Port of Discharge"
+   "fieldtype": "Link",
+   "label": "Port of Discharge",
+   "options": "Ports",
+   "set_null_on_delete": 1
   },
   {
    "default": "USD",

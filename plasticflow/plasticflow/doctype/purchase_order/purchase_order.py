@@ -96,7 +96,6 @@ def create_import_shipment(purchase_order: str):
 	shipment = frappe.new_doc("Import Shipment")
 	shipment.purchase_order = po.name
 	shipment.import_reference = po.name
-	shipment.purchase_order_no = po.name
 	shipment.supplier = po.supplier
 	shipment.incoterm = po.incoterm
 	shipment.arrival_date = po.expected_shipment
