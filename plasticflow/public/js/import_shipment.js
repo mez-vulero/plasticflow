@@ -13,33 +13,33 @@ frappe.ui.form.on("Import Shipment", {
 });
 
 function create_landing_cost_worksheet(frm) {
-	if (!frm.doc.name) {
+	const proceed = () => {
+		frappe.call({
+			method: "plasticflow.plasticflow.doctype.import_shipment.import_shipment.create_landing_cost_worksheet",
+			args: { import_shipment: frm.doc.name },
+			freeze: true,
+			freeze_message: __("Preparing Landing Cost Worksheet..."),
+			callback: ({ message }) => {
+				if (!message || !message.name) {
+					return;
+				}
+
+				if (message.status === "existing") {
+					frappe.show_alert({
+						message: __("Opening existing worksheet {0}", [message.name]),
+						indicator: "blue",
+					});
+				}
+
+				frappe.set_route("Form", "Landing Cost Worksheet", message.name);
+			},
+		});
+	};
+
+	if (!frm.doc.name || frm.doc.__islocal || frm.is_dirty()) {
+		frm.save().then(() => proceed());
 		return;
 	}
 
-	if (frm.doc.docstatus !== 1) {
-		frappe.msgprint(__("Submit the import shipment before creating a landing cost worksheet."));
-		return;
-	}
-
-	frappe.call({
-		method: "plasticflow.plasticflow.doctype.import_shipment.import_shipment.create_landing_cost_worksheet",
-		args: { import_shipment: frm.doc.name },
-		freeze: true,
-		freeze_message: __("Preparing Landing Cost Worksheet..."),
-		callback: ({ message }) => {
-			if (!message || !message.name) {
-				return;
-			}
-
-			if (message.status === "existing") {
-				frappe.show_alert({
-					message: __("Opening existing worksheet {0}", [message.name]),
-					indicator: "blue",
-				});
-			}
-
-			frappe.set_route("Form", "Landing Cost Worksheet", message.name);
-		},
-	});
+	proceed();
 }

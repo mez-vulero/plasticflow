@@ -279,8 +279,8 @@ def create_landing_cost_worksheet(import_shipment: str):
 	shipment = frappe.get_doc("Import Shipment", import_shipment)
 	shipment.check_permission("read")
 
-	if shipment.docstatus != 1:
-		frappe.throw(_("Submit the import shipment before creating a landing cost worksheet."))
+	if shipment.docstatus == 2:
+		frappe.throw(_("Cannot create a landing cost worksheet for a cancelled import shipment."))
 
 	existing = frappe.db.get_value(
 		"Landing Cost Worksheet",
