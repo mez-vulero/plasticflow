@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+import json
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -611,6 +612,8 @@ class LandingCostWorksheet(Document):
 		result = {}
 
 		if scope == "Total Amount":
+			if is_tax:
+				frappe.throw(_("Taxes must be a percentage-based scope."))
 			total_amount = flt(row.amount or 0)
 			if total_amount <= 0:
 				frappe.throw(_("Set 'Amount / Rate' for component {0}.").format(row.cost_type))
@@ -624,6 +627,8 @@ class LandingCostWorksheet(Document):
 				result[item_name] = self._convert_component_amount(row, amount_currency)
 
 		elif scope == "Per Ton":
+			if is_tax:
+				frappe.throw(_("Taxes must be a percentage-based scope."))
 			rate = flt(row.amount or 0)
 			if rate == 0:
 				frappe.throw(_("Set 'Amount / Rate' for component {0}.").format(row.cost_type))
@@ -635,6 +640,8 @@ class LandingCostWorksheet(Document):
 				result[item_name] = self._convert_component_amount(row, amount_currency)
 
 		elif scope == "Per Kg":
+			if is_tax:
+				frappe.throw(_("Taxes must be a percentage-based scope."))
 			rate = flt(row.amount or 0)
 			if rate == 0:
 				frappe.throw(_("Set 'Amount / Rate' for component {0}.").format(row.cost_type))
@@ -672,8 +679,8 @@ class LandingCostWorksheet(Document):
 	def _get_component_percent(self, row, is_tax: bool) -> float:
 		if is_tax:
 			# Prefer explicit override via amount when used as a percent, else default table percentages
-			if flt(row.amount):
-				return flt(row.amount)
+			if hasattr(row, "percentage") and (row.percentage is not None):
+				return flt(row.percentage)
 			key = (row.cost_type or "").strip().lower()
 			return TAX_PERCENT_BY_TYPE.get(key, 0.0)
 
@@ -707,7 +714,7 @@ class LandingCostWorksheet(Document):
 		if row.currency == self.currency:
 			return 1.0
 		if row.currency == self.shipment_currency:
-			rate = flt(self.shipment_exchange_rate or 0)
+			rate = flt(row.exchange_rate or 0) or flt(self.shipment_exchange_rate or 0)
 			if rate <= 0:
 				frappe.throw(_("Set Exchange Rate (Shipment → Worksheet) to convert shipment currency components."))
 			return rate
@@ -769,4 +776,30 @@ def get_dashboard_data():
 			"Import Shipment": ["import_shipment"],
 			"Purchase Order": ["purchase_order"],
 		},
+	}
+
+
+@frappe.whitelist()
+def preview_totals(doc):
+	"""Return recalculated totals (including taxes) for an unsaved worksheet client preview."""
+	if isinstance(doc, str):
+		doc = json.loads(doc)
+
+	worksheet = frappe.get_doc(doc)
+	worksheet._ensure_shipment_context()
+	worksheet._calculate_totals()
+	worksheet._build_allocations()
+
+	return {
+		"total_additional_cost": worksheet.total_additional_cost,
+		"total_additional_cost_import": worksheet.total_additional_cost_import,
+		"tax_cost_total": worksheet.tax_cost_total,
+		"tax_cost_total_import": worksheet.tax_cost_total_import,
+		"total_landed_cost": worksheet.total_landed_cost,
+		"total_landed_cost_import": worksheet.total_landed_cost_import,
+		"avg_landed_cost": worksheet.avg_landed_cost,
+		"avg_landed_cost_import": worksheet.avg_landed_cost_import,
+		"foreign_cost_total": worksheet.foreign_cost_total,
+		"local_cost_total": worksheet.local_cost_total,
+		"total_quantity": worksheet.total_quantity,
 	}

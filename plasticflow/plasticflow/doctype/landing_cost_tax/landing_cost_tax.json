@@ -12,7 +12,7 @@
   "cost_scope",
   "currency",
   "exchange_rate",
-  "amount",
+  "percentage",
   "converted_amount",
   "notes"
  ],
@@ -42,7 +42,7 @@
    "fieldname": "cost_scope",
    "fieldtype": "Select",
    "label": "Tax Scope",
-   "options": "\nTotal Amount\nPer Ton\nPer Kg\nPercent of CIF\nPercent of Landed Cost"
+   "options": "\nPercent of CIF\nPercent of Landed Cost"
   },
   {
    "fieldname": "currency",
@@ -61,11 +61,11 @@
    "precision": "6"
   },
   {
-   "fieldname": "amount",
-   "fieldtype": "Currency",
+   "fieldname": "percentage",
+   "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Amount / Rate",
-   "options": "currency"
+   "label": "Percentage",
+   "precision": "6"
   },
   {
    "fieldname": "converted_amount",
