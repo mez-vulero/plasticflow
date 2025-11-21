@@ -7,6 +7,15 @@ from frappe.utils import flt, now_datetime
 
 from plasticflow.stock import ledger as stock_ledger
 
+TAX_PERCENT_BY_TYPE = {
+	"import duty tax 5%": 5.0,
+	"excise tax 3%": 3.0,
+	"sur tax 10%": 10.0,
+	"social welfare tax 3%": 3.0,
+	"withholding tax 3%": 3.0,
+	"vat 15%": 15.0,
+}
+
 
 class LandingCostWorksheet(Document):
 	"""Aggregates shipment logistics costs and allocates landed cost per item."""
@@ -97,13 +106,14 @@ class LandingCostWorksheet(Document):
 		if not self.import_shipment:
 			self.total_additional_cost = 0
 			self.total_additional_cost_import = 0
+			self.tax_cost_total = 0
+			self.tax_cost_total_import = 0
 			self.total_landed_cost = flt(self.total_base_amount)
 			self.total_landed_cost_import = flt(self.total_base_amount_import)
 			self.avg_landed_cost = 0
 			self.avg_landed_cost_import = 0
 			self.foreign_cost_total = 0
 			self.local_cost_total = 0
-			self.tax_cost_total = 0
 			self._component_breakdown = {"items": {}, "totals": {"local": defaultdict(float), "import": defaultdict(float)}}
 			return
 
@@ -122,18 +132,17 @@ class LandingCostWorksheet(Document):
 		self.foreign_cost_total = flt(local_totals["foreign"])
 		self.local_cost_total = flt(local_totals["local"])
 		self.tax_cost_total = flt(local_totals["tax"])
+		self.tax_cost_total_import = flt(import_totals["tax"])
 
-		total_additional_local = self.foreign_cost_total + self.local_cost_total + self.tax_cost_total
-		total_additional_import = (
-			import_totals["foreign"] + import_totals["local"] + import_totals["tax"]
-		)
+		total_additional_local = self.foreign_cost_total + self.local_cost_total
+		total_additional_import = import_totals["foreign"] + import_totals["local"]
 
 		self.total_additional_cost = total_additional_local
 		self.total_additional_cost_import = total_additional_import
 
-		self.total_landed_cost = flt(self.total_base_amount) + flt(self.total_additional_cost)
+		self.total_landed_cost = flt(self.total_base_amount) + flt(self.total_additional_cost) + flt(self.tax_cost_total)
 		self.total_landed_cost_import = (
-			flt(self.total_base_amount_import) + flt(self.total_additional_cost_import)
+			flt(self.total_base_amount_import) + flt(self.total_additional_cost_import) + flt(self.tax_cost_total_import)
 		)
 
 		self.avg_landed_cost = (
@@ -160,20 +169,25 @@ class LandingCostWorksheet(Document):
 			quantity = flt(item.quantity or 0)
 
 			base_amount_import = flt(item.base_amount or 0)
-			base_amount_local = flt(item.base_amount_local or 0)
-			if not base_amount_local:
-				base_amount_local = self._convert_to_local(base_amount_import)
+			base_amount_local = flt(item.base_amount_local or 0) or self._convert_to_local(base_amount_import)
 
-			additional_cost_local = flt(cost_detail["total_local"])
-			additional_cost_import = flt(cost_detail["total_import"])
+			foreign_local = flt(cost_detail["foreign_local"])
+			local_local = flt(cost_detail["local_local"])
+			tax_local = flt(cost_detail["tax_local"])
+			foreign_import = flt(cost_detail["foreign_import"])
+			local_import = flt(cost_detail["local_import"])
+			tax_import = flt(cost_detail["tax_import"])
+
+			additional_cost_local = foreign_local + local_local
+			additional_cost_import = foreign_import + local_import
 			allocation_ratio = (
 				(additional_cost_local / flt(self.total_additional_cost))
 				if flt(self.total_additional_cost)
 				else 0
 			)
 
-			landed_cost_local = base_amount_local + additional_cost_local
-			landed_cost_import = base_amount_import + additional_cost_import
+			landed_cost_local = base_amount_local + additional_cost_local + tax_local
+			landed_cost_import = base_amount_import + additional_cost_import + tax_import
 
 			landed_rate_local = landed_cost_local / quantity if quantity else 0
 			landed_rate_import = landed_cost_import / quantity if quantity else 0
@@ -533,12 +547,21 @@ class LandingCostWorksheet(Document):
 		}
 
 		component_groups = defaultdict(list)
+		tax_rows = []
 		for row in self.cost_components:
-			component_groups[self._normalise_cost_bucket(row.cost_bucket)].append(row)
+			bucket = self._normalise_cost_bucket(row.cost_bucket)
+			if bucket == "tax":
+				tax_rows.append(row)
+			else:
+				component_groups[bucket].append(row)
+
+		# Explicit tax table entries
+		for row in getattr(self, "taxes", []):
+			tax_rows.append(row)
 
 		subtotal_local = {name: item_base_local.get(name, 0) for name in item_base_local}
 
-		for bucket in ("foreign", "local", "tax"):
+		for bucket in ("foreign", "local"):
 			for row in component_groups.get(bucket, []):
 				self._normalise_component_row(row)
 				allocations = self._distribute_component_amount(
@@ -552,14 +575,29 @@ class LandingCostWorksheet(Document):
 					entry["total_import"] += amounts["import"]
 					breakdown["totals"]["local"][bucket] += amounts["local"]
 					breakdown["totals"]["import"][bucket] += amounts["import"]
-					if bucket != "tax":
-						subtotal_local[item_name] = subtotal_local.get(item_name, 0) + amounts["local"]
+					subtotal_local[item_name] = subtotal_local.get(item_name, 0) + amounts["local"]
+
+		for row in tax_rows:
+			self._normalise_component_row(row)
+			allocations = self._distribute_component_amount(
+				row, shipment, item_quantities, item_base_import, item_base_local, subtotal_local
+			)
+			for item_name, amounts in allocations.items():
+				entry = breakdown["items"].setdefault(item_name, self._zero_breakdown_row())
+				entry["tax_local"] += amounts["local"]
+				entry["tax_import"] += amounts["import"]
+				entry["total_local"] += amounts["local"]
+				entry["total_import"] += amounts["import"]
+				breakdown["totals"]["local"]["tax"] += amounts["local"]
+				breakdown["totals"]["import"]["tax"] += amounts["import"]
 
 		return breakdown
 
 	def _distribute_component_amount(
 		self, row, shipment, item_quantities, item_base_import, item_base_local, subtotal_local
 	):
+		is_tax = getattr(row, "doctype", "") == "Landing Cost Tax"
+
 		if row.apply_to_item:
 			if row.apply_to_item not in item_quantities:
 				frappe.throw(_("Cost component {0} references an unknown shipment item.").format(row.cost_type))
@@ -608,18 +646,18 @@ class LandingCostWorksheet(Document):
 				result[item_name] = self._convert_component_amount(row, amount_currency)
 
 		elif scope == "Percent of CIF":
-			percent = flt(row.percentage_rate or 0)
+			percent = self._get_component_percent(row, is_tax)
 			if percent == 0:
-				frappe.throw(_("Set 'Percentage Rate' for component {0}.").format(row.cost_type))
+				frappe.throw(_("Set a percent for component {0}.").format(row.cost_type))
 			for item_name in target_items:
 				base_value = self._get_base_value_for_percent(row, item_base_import[item_name], item_base_local[item_name])
 				amount_currency = base_value * percent / 100
 				result[item_name] = self._convert_component_amount(row, amount_currency)
 
 		elif scope == "Percent of Landed Cost":
-			percent = flt(row.percentage_rate or 0)
+			percent = self._get_component_percent(row, is_tax)
 			if percent == 0:
-				frappe.throw(_("Set 'Percentage Rate' for component {0}.").format(row.cost_type))
+				frappe.throw(_("Set a percent for component {0}.").format(row.cost_type))
 			for item_name in target_items:
 				base_value_local = subtotal_local.get(item_name, 0)
 				base_in_component_currency = self._convert_local_to_component_currency(row, base_value_local)
@@ -631,6 +669,16 @@ class LandingCostWorksheet(Document):
 		row.converted_amount = sum(entry["local"] for entry in result.values())
 		return result
 
+	def _get_component_percent(self, row, is_tax: bool) -> float:
+		if is_tax:
+			# Prefer explicit override via amount when used as a percent, else default table percentages
+			if flt(row.amount):
+				return flt(row.amount)
+			key = (row.cost_type or "").strip().lower()
+			return TAX_PERCENT_BY_TYPE.get(key, 0.0)
+
+		return flt(getattr(row, "percentage_rate", 0) or 0)
+
 	def _normalise_cost_bucket(self, bucket_value):
 		value = (bucket_value or "Foreign Cost").lower()
 		if "local" in value:
@@ -640,6 +688,13 @@ class LandingCostWorksheet(Document):
 		return "foreign"
 
 	def _normalise_component_row(self, row):
+		bucket = self._normalise_cost_bucket(getattr(row, "cost_bucket", None))
+		if not row.currency:
+			if bucket == "foreign":
+				row.currency = "USD"
+			elif bucket == "local":
+				row.currency = "ETB"
+
 		row.currency = row.currency or self.currency or self.shipment_currency
 		if row.currency == self.currency:
 			row.exchange_rate = 1

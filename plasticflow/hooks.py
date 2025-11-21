@@ -44,6 +44,7 @@ doctype_js = {
 	"Number Card": "public/js/number_card.js",
 	"Purchase Order": "public/js/purchase_order.js",
 	"Import Shipment": "public/js/import_shipment.js",
+	"Landing Cost Worksheet": "public/js/landing_cost_worksheet.js",
 }
 
 # include custom scss in every website theme (without file extension ".scss")

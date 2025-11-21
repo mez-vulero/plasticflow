@@ -7,7 +7,6 @@
  "engine": "InnoDB",
  "field_order": [
   "cost_type",
-  "cost_bucket",
   "description",
   "apply_to_item",
   "cost_scope",
@@ -19,21 +18,12 @@
  ],
  "fields": [
   {
-   "default": "Freight",
+   "default": "Import Duty Tax 5%",
    "fieldname": "cost_type",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "Cost Type",
-   "options": "\nFreight\nInsurance\nPort Charges\nHandling\nTransport\nOther",
-   "reqd": 1
- },
-  {
-   "default": "Foreign Cost",
-   "fieldname": "cost_bucket",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Cost Bucket",
-   "options": "\nForeign Cost\nLocal Cost",
+   "label": "Tax Type",
+   "options": "\nImport Duty Tax 5%\nExcise Tax 3%\nSur Tax 10%\nSocial Welfare Tax 3%\nWithholding Tax 3%\nVAT 15%",
    "reqd": 1
   },
   {
@@ -47,12 +37,12 @@
    "label": "Apply To Shipment Item",
    "options": "Import Shipment Item"
   },
- {
-  "default": "Total Amount",
-  "fieldname": "cost_scope",
-  "fieldtype": "Select",
-  "label": "Cost Scope",
-   "options": "\nTotal Amount\nPer Ton\nPer Kg"
+  {
+   "default": "Percent of CIF",
+   "fieldname": "cost_scope",
+   "fieldtype": "Select",
+   "label": "Tax Scope",
+   "options": "\nTotal Amount\nPer Ton\nPer Kg\nPercent of CIF\nPercent of Landed Cost"
   },
   {
    "fieldname": "currency",
@@ -87,9 +77,8 @@
   {
    "fieldname": "notes",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Notes"
- }
+  }
  ],
  "grid_page_length": 30,
  "istable": 1,
@@ -97,7 +86,7 @@
  "modified": "2025-01-01 00:00:00",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
- "name": "Landing Cost Component",
+ "name": "Landing Cost Tax",
  "owner": "Administrator",
  "permissions": [],
  "row_format": "Dynamic",
