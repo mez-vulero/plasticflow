@@ -1,18 +1,12 @@
 frappe.ui.form.on("Import Shipment", {
 	refresh(frm) {
-		if (frm.doc.docstatus === 1) {
-			frm.add_custom_button(
-				__("Landing Cost Worksheet"),
-				() => create_landing_cost_worksheet(frm),
-				__("Create")
-			);
+		if (frm.doc.docstatus < 2) {
+			frm.add_custom_button(__("Landing Cost Worksheet"), () => create_landing_cost_worksheet(frm));
 		}
 
 		if (frm.doc.purchase_order) {
-			frm.add_custom_button(
-				__("View Purchase Order"),
-				() => frappe.set_route("Form", "Purchase Order", frm.doc.purchase_order),
-				__("View")
+			frm.add_custom_button(__("View Purchase Order"), () =>
+				frappe.set_route("Form", "Purchase Order", frm.doc.purchase_order)
 			);
 		}
 	},
@@ -20,6 +14,11 @@ frappe.ui.form.on("Import Shipment", {
 
 function create_landing_cost_worksheet(frm) {
 	if (!frm.doc.name) {
+		return;
+	}
+
+	if (frm.doc.docstatus !== 1) {
+		frappe.msgprint(__("Submit the import shipment before creating a landing cost worksheet."));
 		return;
 	}
 
