@@ -34,21 +34,27 @@ class ImportShipment(Document):
 		self._handle_clearance_transition(previous_status, current_status)
 
 	def _populate_from_purchase_order(self):
-		if not self.purchase_order:
+		po_name = self.purchase_order or self.import_reference
+		if not po_name:
 			return
 
-		po = frappe.get_doc("Purchase Order", self.purchase_order)
+		po = frappe.get_doc("Purchase Order", po_name)
 		if po.docstatus != 1:
 			frappe.throw("Submit the linked purchase order before creating a shipment.")
 		self._po_exchange_rate = flt(po.purchase_exchange_rate or 0)
 		if self.currency and self.currency != po.purchase_currency:
 			frappe.throw("Import currency must match the linked purchase order currency.")
+
+		# Keep both fields in sync for downstream links and UI convenience
+		if not self.purchase_order:
+			self.purchase_order = po.name
+		if not self.import_reference:
+			self.import_reference = po.name
+
 		self.currency = po.purchase_currency
 		self.local_currency = self.local_currency or po.local_currency
 		self.supplier = self.supplier or po.supplier
 		self.incoterm = self.incoterm or po.incoterm
-		if not self.import_reference:
-			self.import_reference = po.name
 		if not self.shipment_date:
 			self.shipment_date = po.po_date
 		if not self.expected_arrival:

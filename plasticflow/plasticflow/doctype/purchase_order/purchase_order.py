@@ -49,6 +49,10 @@ class PurchaseOrder(Document):
 		if self.docstatus == 0 and not self.status:
 			self.status = "Draft"
 
+		if not self.purchase_currency:
+			# Ensure purchase currency is set before child rows rely on it for currency formatting
+			self.purchase_currency = frappe.db.get_default("currency") or self.local_currency
+
 		if not self.local_currency:
 			self.local_currency = frappe.db.get_default("currency") or self.purchase_currency
 
