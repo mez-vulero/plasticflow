@@ -1,0 +1,25 @@
+{
+ "chart_name": "Stock Value by Location",
+ "chart_type": "Report",
+ "custom_options": "{\"type\": \"bar\", \"stacked\": true}",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart",
+ "dynamic_filters_json": "{}",
+ "filters_json": "{}",
+ "idx": 0,
+ "is_public": 0,
+ "is_standard": 1,
+ "module": "PlasticFlow",
+ "name": "Stock Value by Location",
+ "number_of_groups": 0,
+ "report_name": "Plasticflow Stock Value",
+ "timeseries": 0,
+ "type": "Bar",
+ "use_report_chart": 1,
+ "y_axis": [],
+ "roles": [
+  {"role": "System Manager"},
+  {"role": "Stock Manager"},
+  {"role": "Management"}
+ ]
+}

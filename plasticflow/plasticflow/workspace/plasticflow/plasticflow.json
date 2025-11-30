@@ -1,0 +1,293 @@
+{
+ "app": "plasticflow",
+ "charts": [
+  {
+   "chart_name": "Daily Sales Amount",
+   "label": "Daily Sales Amount"
+  }
+ ],
+ "content": "[{\"id\":\"hdr_ops\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Operations Overview</b></span>\",\"col\":12}},{\"id\":\"aKY0Sb23sk\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Daily Sales Amount\",\"col\":12}},{\"id\":\"PiytFlY28k\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Revenue\",\"col\":4}},{\"id\":\"gejJCMLp2f\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Outstanding Amount\",\"col\":4}},{\"id\":\"ijVK_vkhd0\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Overdue Credit Invoices\",\"col\":4}},{\"id\":\"shortcut_purchase_orders\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Purchase Orders\",\"link_to\":\"Purchase Order\",\"col\":3}},{\"id\":\"shortcut_import_shipments\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Import Shipments\",\"link_to\":\"Import Shipment\",\"col\":3}},{\"id\":\"shortcut_landing_cost\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Landing Cost Worksheets\",\"link_to\":\"Landing Cost Worksheet\",\"col\":3}},{\"id\":\"shortcut_stock\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Entries\",\"link_to\":\"Stock Entries\",\"col\":3}},{\"id\":\"shortcut_sales_orders\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Orders\",\"link_to\":\"Sales Order\",\"col\":3}},{\"id\":\"shortcut_invoices\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Invoices\",\"link_to\":\"Plasticflow Invoice\",\"col\":3}},{\"id\":\"hdr_logistics\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Logistics</b></span>\",\"col\":12}},{\"id\":\"shortcut_gate_pass\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Gate Passes\",\"link_to\":\"Gate Pass\",\"col\":3}},{\"id\":\"shortcut_delivery\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Delivery Notes\",\"link_to\":\"Delivery Note\",\"col\":3}},{\"id\":\"shortcut_plasticflow_stock_ledger_entry\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Ledger\",\"link_to\":\"Plasticflow Stock Ledger Entry\",\"col\":3}}]",
+ "creation": "2024-01-01 00:00:00",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "gantt",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "PlasticFlow",
+ "links": [
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Purchase Orders",
+   "link_count": 0,
+   "link_to": "Purchase Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Import Shipments",
+   "link_count": 0,
+   "link_to": "Import Shipment",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Landing Cost Worksheets",
+   "link_count": 0,
+   "link_to": "Landing Cost Worksheet",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Entries",
+   "link_count": 0,
+   "link_to": "Stock Entries",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Warehouses",
+   "link_count": 0,
+   "link_to": "Warehouse",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sales Orders",
+   "link_count": 0,
+   "link_to": "Sales Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Customers",
+   "link_count": 0,
+   "link_to": "Customer",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Brokers",
+   "link_count": 0,
+   "link_to": "Broker",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Invoices",
+   "link_count": 0,
+   "link_to": "Plasticflow Invoice",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Gate Passes",
+   "link_count": 0,
+   "link_to": "Gate Pass",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Delivery Notes",
+   "link_count": 0,
+   "link_to": "Delivery Note",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Drivers",
+   "link_count": 0,
+   "link_to": "Driver",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Stock Entries",
+   "link_count": 0,
+   "link_to": "Stock Entries",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Plasticflow Stock Ledger Entry",
+   "link_count": 0,
+   "link_to": "Plasticflow Stock Ledger Entry",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Customs Documents",
+   "link_count": 0,
+   "link_to": "Customs Documents",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Unit of Measurement",
+   "link_count": 0,
+   "link_to": "Unit of Measurement",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2025-11-11 09:53:00.162922",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "PlasticFlow",
+ "number_cards": [
+  {
+   "label": "Total Revenue",
+   "number_card_name": "Total Revenue"
+  },
+  {
+   "label": "Outstanding Amount",
+   "number_card_name": "Outstanding Amount"
+  },
+  {
+   "label": "Overdue Credit Invoices",
+   "number_card_name": "Overdue Credit Invoices"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Management"
+  },
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Finance Officer"
+  },
+  {
+   "role": "Stock Manager"
+  }
+ ],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "doc_view": "List",
+   "label": "Purchase Orders",
+   "link_to": "Purchase Order",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Import Shipments",
+   "link_to": "Import Shipment",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Landing Cost Worksheets",
+   "link_to": "Landing Cost Worksheet",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Stock Entries",
+   "link_to": "Stock Entries",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Sales Orders",
+   "link_to": "Sales Order",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Invoices",
+   "link_to": "Plasticflow Invoice",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Gate Passes",
+   "link_to": "Gate Pass",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Delivery Notes",
+   "link_to": "Delivery Note",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Stock Ledger",
+   "link_to": "Plasticflow Stock Ledger Entry",
+   "type": "DocType"
+  }
+ ],
+ "title": "PlasticFlow",
+ "type": "Workspace"
+}

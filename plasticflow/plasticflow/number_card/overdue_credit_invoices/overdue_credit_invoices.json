@@ -1,0 +1,19 @@
+{
+ "color": "#dc2626",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Plasticflow Invoice",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[[\"Plasticflow Invoice\",\"docstatus\",\"=\",\"1\"],[\"Plasticflow Invoice\",\"invoice_type\",\"=\",\"Credit\"],[\"Plasticflow Invoice\",\"status\",\"=\",\"Overdue\"]]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 0,
+ "is_standard": 1,
+ "label": "Overdue Credit Invoices",
+ "module": "PlasticFlow",
+ "name": "Overdue Credit Invoices",
+ "show_full_number": 0,
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Monthly",
+ "type": "Document Type"
+}

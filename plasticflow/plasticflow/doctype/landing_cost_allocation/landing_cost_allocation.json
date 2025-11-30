@@ -1,0 +1,130 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-01-01 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "shipment_item",
+  "product",
+  "import_currency",
+  "quantity",
+  "base_amount",
+  "base_amount_import",
+  "allocation_ratio",
+  "additional_cost",
+  "additional_cost_import",
+  "landed_cost_amount",
+  "landed_cost_amount_import",
+  "landed_cost_rate",
+  "landed_cost_rate_import"
+ ],
+ "fields": [
+  {
+   "fieldname": "shipment_item",
+   "fieldtype": "Link",
+   "label": "Shipment Item",
+   "options": "Import Shipment Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "product",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Product",
+   "options": "Product",
+   "read_only": 1
+ },
+  {
+   "fieldname": "import_currency",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Import Currency",
+   "options": "Currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Float",
+   "label": "Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "base_amount",
+   "fieldtype": "Currency",
+   "label": "Base Amount",
+   "options": "parent.currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "base_amount_import",
+   "fieldtype": "Currency",
+   "label": "Base Amount (Import Currency)",
+    "options": "import_currency",
+   "read_only": 1
+ },
+  {
+   "fieldname": "allocation_ratio",
+   "fieldtype": "Percent",
+   "label": "Allocation %",
+   "read_only": 1
+  },
+  {
+   "fieldname": "additional_cost",
+   "fieldtype": "Currency",
+   "label": "Additional Cost",
+   "options": "parent.currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "additional_cost_import",
+   "fieldtype": "Currency",
+   "label": "Additional Cost (Import Currency)",
+   "options": "import_currency",
+   "read_only": 1
+ },
+  {
+   "fieldname": "landed_cost_amount",
+   "fieldtype": "Currency",
+   "label": "Total Landed Cost",
+   "options": "parent.currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "landed_cost_amount_import",
+   "fieldtype": "Currency",
+   "label": "Total Landed Cost (Import Currency)",
+   "options": "import_currency",
+   "read_only": 1
+ },
+  {
+   "fieldname": "landed_cost_rate",
+   "fieldtype": "Currency",
+   "label": "Landed Cost Rate",
+   "options": "parent.currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "landed_cost_rate_import",
+   "fieldtype": "Currency",
+   "label": "Landed Cost Rate (Import Currency)",
+   "options": "import_currency",
+   "read_only": 1
+ }
+],
+ "grid_page_length": 30,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Landing Cost Allocation",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

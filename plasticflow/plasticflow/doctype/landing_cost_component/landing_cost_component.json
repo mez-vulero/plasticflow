@@ -1,0 +1,108 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-01-01 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "cost_type",
+  "cost_bucket",
+  "description",
+  "apply_to_item",
+  "cost_scope",
+  "currency",
+  "exchange_rate",
+  "amount",
+  "converted_amount",
+  "notes"
+ ],
+ "fields": [
+  {
+   "default": "Freight",
+   "fieldname": "cost_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Cost Type",
+   "options": "\nFreight\nInsurance\nPort Charges\nHandling\nTransport\nOther",
+   "reqd": 1
+ },
+  {
+   "default": "Foreign Cost",
+   "fieldname": "cost_bucket",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Cost Bucket",
+   "options": "\nForeign Cost\nLocal Cost",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description"
+  },
+  {
+   "fieldname": "apply_to_item",
+   "fieldtype": "Link",
+   "label": "Apply To Shipment Item",
+   "options": "Import Shipment Item"
+  },
+ {
+  "default": "Total Amount",
+  "fieldname": "cost_scope",
+  "fieldtype": "Select",
+  "label": "Cost Scope",
+   "options": "\nTotal Amount\nPer Ton\nPer Kg"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "exchange_rate",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Exchange Rate",
+   "precision": "6"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount / Rate",
+   "options": "currency"
+  },
+  {
+   "fieldname": "converted_amount",
+   "fieldtype": "Currency",
+   "label": "Amount (Worksheet Currency)",
+   "options": "parent.currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Notes"
+ }
+ ],
+ "grid_page_length": 30,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Landing Cost Component",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

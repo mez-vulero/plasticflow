@@ -1,0 +1,405 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "format:SO-{YYYY}-{#####}",
+ "creation": "2025-11-24 09:03:01.370205",
+ "default_view": "List",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "order_date",
+  "customer",
+  "delivery_source",
+  "import_shipment",
+  "sales_type",
+  "payment_status",
+  "withholding_rate",
+  "column_break_meta",
+  "status",
+  "currency",
+  "sales_manager",
+  "broker",
+  "broker_commission_rate",
+  "section_break_bfgg",
+  "items",
+  "section_break_items",
+  "total_quantity",
+  "total_amount",
+  "total_gross_amount",
+  "total_net_amount",
+  "invoiced_amount",
+  "outstanding_amount",
+  "column_break_zymo",
+  "landed_cost_total",
+  "total_withholding",
+  "total_commission",
+  "margin_percent",
+  "profit_before_tax",
+  "section_break_links",
+  "payment_slips",
+  "invoice",
+  "gate_pass",
+  "delivery_note",
+  "notes",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "default": "Today",
+   "fieldname": "order_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Order Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "default": "Warehouse",
+   "fieldname": "delivery_source",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Delivery Source",
+   "options": "\nWarehouse\nDirect from Customs",
+   "reqd": 1
+  },
+  {
+   "fieldname": "import_shipment",
+   "fieldtype": "Link",
+   "label": "Import Shipment",
+   "options": "Import Shipment"
+  },
+  {
+   "default": "Cash",
+   "fieldname": "sales_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Sales Type",
+   "options": "\nCash\nCredit",
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Draft",
+   "fieldname": "payment_status",
+   "fieldtype": "Select",
+   "label": "Payment Status",
+   "options": "\nDraft\nPayment Pending\nPayment Verified\nPayment Failed",
+   "reqd": 1
+  },
+  {
+   "default": "2",
+   "fieldname": "withholding_rate",
+   "fieldtype": "Percent",
+   "label": "Withholding %",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_meta",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Order Status",
+   "options": "Draft\nPayment Pending\nPayment Verified\nSettled\nCredit Sales\nInvoiced\nReady for Delivery\nCompleted\nCancelled\nHeld",
+   "reqd": 1
+  },
+  {
+   "default": "ETB",
+   "fieldname": "currency",
+   "fieldtype": "Data",
+   "label": "Currency"
+  },
+  {
+   "fieldname": "sales_manager",
+   "fieldtype": "Link",
+   "label": "Sales Manager",
+   "options": "User"
+  },
+  {
+   "fieldname": "broker",
+   "fieldtype": "Link",
+   "label": "Broker",
+   "options": "Broker"
+  },
+  {
+   "default": "0",
+   "fieldname": "broker_commission_rate",
+   "fieldtype": "Percent",
+   "label": "Broker Commission %",
+   "precision": "2"
+  },
+  {
+   "fieldname": "section_break_items",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Order Items",
+   "options": "Sales Order Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_quantity",
+   "fieldtype": "Float",
+   "label": "Total Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_gross_amount",
+   "fieldtype": "Currency",
+   "label": "Total Sales (VAT Incl.)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_withholding",
+   "fieldtype": "Currency",
+   "label": "Total Withholding",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_net_amount",
+   "fieldtype": "Currency",
+   "label": "Net Receivable",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_commission",
+   "fieldtype": "Currency",
+   "label": "Total Commission",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "landed_cost_total",
+   "fieldtype": "Currency",
+   "label": "Total Landed Cost",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "profit_before_tax",
+   "fieldtype": "Currency",
+   "label": "Profit Before Tax",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "margin_percent",
+   "fieldtype": "Percent",
+   "label": "Margin %",
+   "allow_on_submit": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "invoiced_amount",
+   "fieldtype": "Currency",
+   "label": "Invoiced Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "section_break_links",
+   "fieldtype": "Section Break",
+   "label": "Linked Documents"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "invoice",
+   "fieldtype": "Link",
+   "label": "Invoice",
+   "options": "Plasticflow Invoice",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "gate_pass",
+   "fieldtype": "Link",
+   "label": "Gate Pass",
+   "options": "Gate Pass",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "delivery_note",
+   "fieldtype": "Link",
+   "label": "Delivery Note",
+   "options": "Delivery Note",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Internal Notes"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Sales Order",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "payment_slips",
+   "fieldtype": "Table",
+   "label": "Payment Slips",
+   "options": "Payment Slips"
+  },
+  {
+   "fieldname": "section_break_bfgg",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_zymo",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-11-24 09:21:07.086635",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Sales Order",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Finance Officer",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Management",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Gray",
+   "title": "Draft"
+  },
+  {
+   "color": "Orange",
+   "title": "Payment Pending"
+  },
+  {
+   "color": "Light Blue",
+   "title": "Payment Verified"
+  },
+  {
+   "color": "Green",
+   "title": "Settled"
+  },
+  {
+   "color": "Light Blue",
+   "title": "Credit Sales"
+  },
+  {
+   "color": "Orange",
+   "title": "Invoiced"
+  },
+  {
+   "color": "Yellow",
+   "title": "Ready for Delivery"
+  },
+  {
+   "color": "Green",
+   "title": "Completed"
+  },
+  {
+   "color": "Red",
+   "title": "Cancelled"
+  },
+  {
+   "color": "Purple",
+   "title": "Held"
+  }
+ ],
+ "track_changes": 1
+}

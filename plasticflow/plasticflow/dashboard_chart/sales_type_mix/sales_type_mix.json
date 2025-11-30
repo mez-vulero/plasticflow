@@ -1,0 +1,31 @@
+{
+ "chart_name": "Sales Type Mix",
+ "chart_type": "Report",
+ "custom_options": "{\"type\": \"donut\"}",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart",
+ "dynamic_filters_json": "{}",
+ "filters_json": "{}",
+ "idx": 0,
+ "is_public": 0,
+ "is_standard": 1,
+ "module": "PlasticFlow",
+ "name": "Sales Type Mix",
+ "number_of_groups": 0,
+ "report_name": "Plasticflow Sales Mix",
+ "timeseries": 0,
+ "type": "Donut",
+ "use_report_chart": 1,
+ "y_axis": [],
+ "roles": [
+  {
+   "role": "Finance Officer"
+  },
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Management"
+  }
+ ]
+}

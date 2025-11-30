@@ -1,0 +1,428 @@
+{
+ "actions": [],
+ "autoname": "format:LCW-{YYYY}-{#####}",
+ "creation": "2025-01-01 00:00:00",
+ "default_view": "Form",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "import_shipment",
+  "purchase_order",
+  "section_break_shipment_overview",
+  "supplier",
+  "country_of_origin",
+  "port_of_loading",
+  "port_of_discharge",
+  "shipment_quantity_tons",
+  "shipment_amount_import",
+  "column_break_shipment_overview",
+  "posting_date",
+  "currency",
+  "shipment_currency",
+  "shipment_exchange_rate",
+  "default_selling_price_per_kg",
+  "profit_tax_percent",
+  "allocation_method",
+  "section_break_eicd",
+  "cost_components",
+  "taxes",
+  "section_break_costs",
+  "total_base_amount",
+  "total_additional_cost",
+  "tax_cost_total",
+  "total_landed_cost",
+  "avg_landed_cost",
+  "local_cost_total",
+  "column_break_totals",
+  "total_base_amount_import",
+  "total_additional_cost_import",
+  "tax_cost_total_import",
+  "total_landed_cost_import",
+  "avg_landed_cost_import",
+  "foreign_cost_total",
+  "total_quantity",
+  "section_break_profitability",
+  "product_summaries",
+  "estimated_total_net_profit",
+  "section_break_allocations",
+  "allocations",
+  "status",
+  "locked_on",
+  "lock_note",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "import_shipment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Import Shipment",
+   "options": "Import Shipment",
+   "reqd": 1
+  },
+  {
+   "fieldname": "purchase_order",
+   "fieldtype": "Link",
+   "label": "Purchase Order",
+   "options": "Purchase Order",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_shipment_overview",
+   "fieldtype": "Section Break",
+   "label": "Shipment Overview"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
+   "read_only": 1
+  },
+  {
+   "fieldname": "country_of_origin",
+   "fieldtype": "Data",
+   "label": "Country of Origin",
+   "read_only": 1
+  },
+  {
+   "fieldname": "port_of_loading",
+   "fieldtype": "Data",
+   "label": "Port of Loading",
+   "read_only": 1
+  },
+  {
+   "fieldname": "port_of_discharge",
+   "fieldtype": "Data",
+   "label": "Port of Discharge",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shipment_quantity_tons",
+   "fieldtype": "Float",
+   "label": "Quantity (Tons)",
+   "precision": "3",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shipment_amount_import",
+   "fieldtype": "Currency",
+   "label": "Shipment Amount (Import Currency)",
+   "options": "shipment_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_shipment_overview",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shipment_currency",
+   "fieldtype": "Link",
+   "label": "Shipment Currency",
+   "options": "Currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shipment_exchange_rate",
+   "fieldtype": "Float",
+   "label": "Exchange Rate (Shipment \u2192 Worksheet)",
+   "precision": "6"
+  },
+  {
+   "fieldname": "default_selling_price_per_kg",
+   "fieldtype": "Currency",
+   "label": "Default Selling Price / Kg",
+   "options": "currency"
+  },
+  {
+   "default": "30",
+   "fieldname": "profit_tax_percent",
+   "fieldtype": "Percent",
+   "label": "Profit Tax %",
+   "precision": "2"
+  },
+  {
+   "default": "By Value",
+   "fieldname": "allocation_method",
+   "fieldtype": "Select",
+   "label": "Allocation Method",
+   "options": "\nBy Value\nBy Quantity"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_costs",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "cost_components",
+   "fieldtype": "Table",
+   "label": "Additional Costs",
+   "options": "Landing Cost Component"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_taxes",
+   "fieldtype": "Section Break",
+   "label": "Taxes"
+  },
+  {
+   "fieldname": "taxes",
+   "fieldtype": "Table",
+   "label": "Taxes",
+   "options": "Landing Cost Tax"
+  },
+  {
+   "fieldname": "column_break_totals",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_base_amount",
+   "fieldtype": "Currency",
+   "label": "Base Amount (Local Currency)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_base_amount_import",
+   "fieldtype": "Currency",
+   "label": "Base Amount (Import Currency)",
+   "options": "shipment_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_quantity",
+   "fieldtype": "Float",
+   "label": "Total Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_additional_cost",
+   "fieldtype": "Currency",
+   "label": "Additional Cost (Local Currency, Excl. Taxes)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_additional_cost_import",
+   "fieldtype": "Currency",
+   "label": "Additional Cost (Import Currency, Excl. Taxes)",
+   "options": "shipment_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_landed_cost",
+   "fieldtype": "Currency",
+   "label": "Total Landed Cost (Local Currency)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_landed_cost_import",
+   "fieldtype": "Currency",
+   "label": "Total Landed Cost (Import Currency)",
+   "options": "shipment_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "avg_landed_cost",
+   "fieldtype": "Currency",
+   "label": "Avg Landed Cost / Unit (Local Currency)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "avg_landed_cost_import",
+   "fieldtype": "Currency",
+   "label": "Avg Landed Cost / Unit (Import Currency)",
+   "options": "shipment_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "foreign_cost_total",
+   "fieldtype": "Currency",
+   "label": "Foreign Cost Total",
+   "options": "shipment_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "local_cost_total",
+   "fieldtype": "Currency",
+   "label": "Local Cost Total",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tax_cost_total",
+   "fieldtype": "Currency",
+   "label": "Tax Cost Total",
+   "options": "currency",
+   "read_only": 1
+ },
+  {
+   "fieldname": "tax_cost_total_import",
+   "fieldtype": "Currency",
+   "label": "Tax Cost Total (Import Currency)",
+   "options": "shipment_currency",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_profitability",
+   "fieldtype": "Section Break",
+   "label": "Per Product Profitability"
+  },
+  {
+   "fieldname": "product_summaries",
+   "fieldtype": "Table",
+   "label": "Product Cost Summary",
+   "options": "Landing Cost Product Summary"
+  },
+  {
+   "fieldname": "estimated_total_net_profit",
+   "fieldtype": "Currency",
+   "label": "Estimated Total Net Profit",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_allocations",
+   "fieldtype": "Section Break",
+   "label": "Allocation Summary"
+  },
+  {
+   "fieldname": "allocations",
+   "fieldtype": "Table",
+   "label": "Item Allocation",
+   "options": "Landing Cost Allocation"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nDraft\nIn Review\nLocked",
+   "read_only": 1
+  },
+  {
+   "fieldname": "locked_on",
+   "fieldtype": "Datetime",
+   "label": "Locked On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "lock_note",
+   "fieldtype": "Data",
+   "label": "Lock Note",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_eicd",
+   "fieldtype": "Section Break",
+   "label": "Costs & Taxes"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Landing Cost Worksheet",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-11-20 22:25:19.890676",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Landing Cost Worksheet",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Finance Officer",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Management",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Yellow",
+   "title": "Draft"
+  },
+  {
+   "color": "Blue",
+   "title": "In Review"
+  },
+  {
+   "color": "Green",
+   "title": "Locked"
+  }
+ ],
+ "track_changes": 1
+}

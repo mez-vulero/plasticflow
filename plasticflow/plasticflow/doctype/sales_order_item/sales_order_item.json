@@ -1,0 +1,164 @@
+{
+ "actions": [],
+ "creation": "2024-01-01 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "product",
+  "product_name",
+  "description",
+  "quantity",
+  "uom",
+  "rate",
+  "amount",
+  "price_with_vat",
+  "gross_amount",
+  "withholding_rate",
+  "withholding_amount",
+  "net_amount",
+  "commission_rate",
+  "commission_amount",
+  "import_shipment_item",
+  "batch_item",
+  "warehouse",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "product",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Product",
+   "options": "Product",
+   "reqd": 1
+  },
+  {
+   "fieldname": "product_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Product Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Quantity",
+   "reqd": 1
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "Unit of Measurement"
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "label": "Rate",
+   "options": "currency"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount",
+   "options": "currency",
+   "read_only": 1
+ },
+  {
+   "fieldname": "price_with_vat",
+   "fieldtype": "Currency",
+   "label": "VAT",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "gross_amount",
+   "fieldtype": "Currency",
+   "label": "Gross Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "withholding_rate",
+   "fieldtype": "Percent",
+   "label": "Withholding %",
+   "precision": "2",
+   "read_only": 1,
+   "fetch_from": "parent.withholding_rate"
+  },
+  {
+   "fieldname": "withholding_amount",
+   "fieldtype": "Currency",
+   "label": "Withholding Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "net_amount",
+   "fieldtype": "Currency",
+   "label": "Net Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commission_rate",
+   "fieldtype": "Percent",
+   "label": "Commission %",
+   "precision": "2",
+   "read_only": 1,
+   "fetch_from": "parent.broker_commission_rate"
+  },
+  {
+   "fieldname": "commission_amount",
+   "fieldtype": "Currency",
+   "label": "Commission Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "import_shipment_item",
+   "fieldtype": "Link",
+   "label": "Import Shipment Item",
+   "options": "Import Shipment Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "batch_item",
+   "fieldtype": "Link",
+   "label": "Stock Entry Items",
+   "options": "Stock Entry Items"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Delivery Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2025-10-28 14:28:51.421654",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Sales Order Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

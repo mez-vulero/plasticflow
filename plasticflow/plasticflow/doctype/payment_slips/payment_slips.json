@@ -1,0 +1,90 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-10-28 18:45:07.475443",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "transfer_slip",
+  "amount_paid",
+  "deposit_date",
+  "payment_bank",
+  "slip_status",
+  "payment_mode",
+  "date_uploaded",
+  "invoice"
+ ],
+ "fields": [
+  {
+   "fieldname": "transfer_slip",
+   "fieldtype": "Attach",
+   "in_list_view": 1,
+   "label": "Transfer Slip"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date_uploaded",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date uploaded",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amount_paid",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount Paid",
+   "options": "currency"
+  },
+  {
+   "default": "Today",
+   "fieldname": "deposit_date",
+   "fieldtype": "Date",
+   "label": "Deposit Date"
+  },
+  {
+   "fieldname": "payment_bank",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Bank",
+   "options": "Banks"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "slip_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Pending\nVerified"
+  },
+  {
+   "fieldname": "payment_mode",
+   "fieldtype": "Select",
+   "label": "Payment Mode",
+   "options": "\nBank Transfer\nCash Deposit\nCheque\nRTGS\nOther"
+  },
+  {
+   "fieldname": "invoice",
+   "fieldtype": "Link",
+   "label": "Invoice",
+   "options": "Plasticflow Invoice",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-10-28 18:47:07.953983",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Payment Slips",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

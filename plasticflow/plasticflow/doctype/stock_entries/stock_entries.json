@@ -1,0 +1,225 @@
+{
+ "actions": [],
+ "autoname": "format:PSE-{YYYY}-{#####}",
+ "creation": "2024-01-01 00:00:00",
+ "default_view": "List",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "import_shipment",
+  "arrival_date",
+  "warehouse",
+  "import_currency",
+  "local_currency",
+  "status",
+  "section_break_items",
+  "items",
+  "total_received_qty",
+  "total_reserved_qty",
+  "total_issued_qty",
+  "available_qty",
+  "notes",
+  "ammended_from",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "import_shipment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Import Shipment",
+   "options": "Import Shipment",
+   "reqd": 1,
+   "set_null_on_delete": 1
+  },
+  {
+   "fieldname": "arrival_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Arrival Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Warehouse",
+   "options": "Warehouse"
+ },
+  {
+   "fieldname": "import_currency",
+   "fieldtype": "Link",
+   "label": "Import Currency",
+   "options": "Currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "local_currency",
+   "fieldtype": "Link",
+   "label": "Local Currency",
+   "options": "Currency",
+   "read_only": 1
+  },
+ {
+  "default": "Available",
+  "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "\nAt Customs\nAvailable\nReserved\nPartially Issued\nDepleted",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_items",
+   "fieldtype": "Section Break",
+   "label": "Batch Items"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Stock Entry Items",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_received_qty",
+   "fieldtype": "Float",
+   "label": "Total Received Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_reserved_qty",
+   "fieldtype": "Float",
+   "label": "Total Reserved Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_issued_qty",
+   "fieldtype": "Float",
+   "label": "Total Issued Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "available_qty",
+   "fieldtype": "Float",
+   "label": "Available Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "ammended_from",
+   "fieldtype": "Link",
+   "label": "Ammended From",
+   "options": "Stock Entries"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Stock Entries",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2025-10-28 15:53:02.456777",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Stock Entries",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Finance Officer",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Management",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Blue",
+   "title": "At Customs"
+  },
+  {
+   "color": "Blue",
+   "title": "Available"
+  },
+  {
+   "color": "Blue",
+   "title": "Reserved"
+  },
+  {
+   "color": "Blue",
+   "title": "Partially Issued"
+  },
+  {
+   "color": "Blue",
+   "title": "Depleted"
+  }
+ ],
+ "track_changes": 1
+}

@@ -1,0 +1,19 @@
+{
+ "aggregate_function_based_on": "",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Sales Order",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[[\"Sales Order\",\"docstatus\",\"=\",1],[\"Sales Order\",\"sales_type\",\"=\",\"Cash\"],[\"Sales Order\",\"status\",\"=\",\"Payment Pending\"]]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 0,
+ "is_standard": 1,
+ "label": "Cash Orders Awaiting Verification",
+ "module": "PlasticFlow",
+ "name": "Cash Orders Awaiting Verification",
+ "show_full_number": 0,
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Monthly",
+ "type": "Document Type"
+}

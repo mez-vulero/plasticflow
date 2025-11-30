@@ -1,0 +1,97 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-01-01 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "cost_type",
+  "description",
+  "apply_to_item",
+  "cost_scope",
+  "currency",
+  "exchange_rate",
+  "percentage",
+  "converted_amount",
+  "notes"
+ ],
+ "fields": [
+  {
+   "default": "Import Duty Tax 5%",
+   "fieldname": "cost_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Tax Type",
+   "options": "\nImport Duty Tax 5%\nExcise Tax 3%\nSur Tax 10%\nSocial Welfare Tax 3%\nWithholding Tax 3%\nVAT 15%",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description"
+  },
+  {
+   "fieldname": "apply_to_item",
+   "fieldtype": "Link",
+   "label": "Apply To Shipment Item",
+   "options": "Import Shipment Item"
+  },
+  {
+   "default": "Percent of CIF",
+   "fieldname": "cost_scope",
+   "fieldtype": "Select",
+   "label": "Tax Scope",
+   "options": "\nPercent of CIF\nPercent of Landed Cost"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "exchange_rate",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Exchange Rate",
+   "precision": "6"
+  },
+  {
+   "fieldname": "percentage",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Percentage",
+   "precision": "6"
+  },
+  {
+   "fieldname": "converted_amount",
+   "fieldtype": "Currency",
+   "label": "Amount (Worksheet Currency)",
+   "options": "parent.currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Data",
+   "label": "Notes"
+  }
+ ],
+ "grid_page_length": 30,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Landing Cost Tax",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

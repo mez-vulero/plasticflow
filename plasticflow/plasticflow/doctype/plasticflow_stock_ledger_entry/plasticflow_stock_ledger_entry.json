@@ -1,0 +1,151 @@
+{
+ "actions": [],
+ "allow_import": 0,
+ "autoname": "format:SLE-{YYYY}-{#####}",
+ "creation": "2024-01-01 00:00:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "document_type": "System",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "product",
+  "location_type",
+  "location_reference",
+  "warehouse",
+  "stock_entry",
+  "import_shipment",
+  "landed_cost_rate",
+  "landed_cost_amount",
+  "available_qty",
+  "reserved_qty",
+  "issued_qty",
+  "last_movement",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "product",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Product",
+   "options": "Product",
+   "reqd": 1
+  },
+  {
+   "default": "Customs",
+   "fieldname": "location_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Location Type",
+   "options": "\nCustoms\nWarehouse",
+   "reqd": 1
+  },
+  {
+   "fieldname": "location_reference",
+   "fieldtype": "Data",
+   "label": "Location Reference",
+   "in_list_view": 1
+  },
+  {
+   "depends_on": "eval:doc.location_type===\"Warehouse\"",
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "stock_entry",
+   "fieldtype": "Link",
+   "label": "Stock Entries",
+   "options": "Stock Entries"
+ },
+  {
+   "fieldname": "import_shipment",
+   "fieldtype": "Link",
+   "label": "Import Shipment",
+   "options": "Import Shipment"
+  },
+  {
+   "fieldname": "landed_cost_rate",
+   "fieldtype": "Currency",
+   "label": "Landed Cost Rate",
+   "options": "currency"
+  },
+  {
+   "fieldname": "landed_cost_amount",
+   "fieldtype": "Currency",
+   "label": "Landed Cost Amount",
+   "options": "currency"
+  },
+  {
+   "default": "0",
+   "fieldname": "available_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Available Qty"
+  },
+  {
+   "default": "0",
+   "fieldname": "reserved_qty",
+   "fieldtype": "Float",
+   "label": "Reserved Qty"
+  },
+  {
+   "default": "0",
+   "fieldname": "issued_qty",
+   "fieldtype": "Float",
+   "label": "Issued Qty"
+  },
+  {
+   "fieldname": "last_movement",
+   "fieldtype": "Datetime",
+   "label": "Last Movement"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Plasticflow Stock Ledger Entry",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Management",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
