@@ -8,14 +8,8 @@ frappe.ui.form.on("Sales Order", {
 		}
 
 		const outstanding = flt(frm.doc.outstanding_amount || 0);
-		const can_create_invoice =
-			outstanding > 0.001 &&
-			((frm.doc.sales_type === "Cash" &&
-				(frm.doc.status === "Payment Verified" || frm.doc.status === "Invoiced")) ||
-				(frm.doc.sales_type === "Credit" &&
-					(frm.doc.status === "Credit Sales" || frm.doc.status === "Invoiced")));
 
-		if (can_create_invoice) {
+		if (outstanding > 0.001) {
 			const label =
 				frm.doc.sales_type === "Cash" ? __("Create Cash Invoice") : __("Create Credit Invoice");
 			frm.add_custom_button(label, () => {
@@ -46,24 +40,6 @@ frappe.ui.form.on("Sales Order", {
 					},
 					__("Create Invoice")
 				);
-			});
-		}
-
-		if (frm.doc.status === "Invoiced" && !frm.doc.gate_pass) {
-			frm.add_custom_button(__("Ready for Delivery"), () => {
-				frappe.call({
-					method: "plasticflow.plasticflow.doctype.sales_order.sales_order.create_sales_order_gate_pass",
-					args: {
-						sales_order: frm.doc.name,
-					},
-					callback: (r) => {
-						if (!r.message) {
-							return;
-						}
-						frappe.model.sync(r.message);
-						frappe.set_route("Form", r.message.doctype, r.message.name);
-					},
-				});
 			});
 		}
 	},

@@ -139,8 +139,14 @@
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
- "links": [],
- "modified": "2025-11-18 14:41:19.017637",
+ "links": [
+  {
+   "group": "Shipment",
+   "link_doctype": "Import Shipment",
+   "link_fieldname": "import_reference"
+  }
+ ],
+ "modified": "2025-11-30 16:21:45.866578",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Purchase Order",

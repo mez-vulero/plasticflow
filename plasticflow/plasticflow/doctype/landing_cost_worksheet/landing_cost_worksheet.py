@@ -377,6 +377,7 @@ class LandingCostWorksheet(Document):
 
 		# Update downstream stock entry items
 		for item in shipment.items:
+			item.flags.ignore_validate_update_after_submit = True
 			stock_entry_items = frappe.db.get_all(
 				"Stock Entry Items",
 				filters={"import_shipment_item": item.name},
@@ -402,6 +403,7 @@ class LandingCostWorksheet(Document):
 		)
 		for name in stock_entries:
 			batch_doc = frappe.get_doc("Stock Entries", name)
+			batch_doc.flags.ignore_validate_update_after_submit = True
 			stock_ledger.update_stock_entry_balances(batch_doc)
 
 		self.locked_on = now_datetime()
@@ -414,7 +416,10 @@ class LandingCostWorksheet(Document):
 		if shipment.landing_cost_status != "Locked":
 			return
 
+		shipment.flags.ignore_validate_update_after_submit = True
+
 		for item in shipment.items:
+			item.flags.ignore_validate_update_after_submit = True
 			item.landed_cost_amount = 0
 			item.landed_cost_amount_local = 0
 			item.landed_cost_rate = 0
@@ -438,7 +443,9 @@ class LandingCostWorksheet(Document):
 		)
 		for name in stock_entries:
 			batch_doc = frappe.get_doc("Stock Entries", name)
+			batch_doc.flags.ignore_validate_update_after_submit = True
 			for row in batch_doc.items:
+				row.flags.ignore_validate_update_after_submit = True
 				row.landed_cost_rate = 0
 				row.landed_cost_amount = 0
 				row.landed_cost_rate_local = 0
@@ -648,7 +655,8 @@ class LandingCostWorksheet(Document):
 				frappe.throw(_("Taxes must be a percentage-based scope."))
 			total_amount = flt(row.amount or 0)
 			if total_amount <= 0:
-				frappe.throw(_("Set 'Amount / Rate' for component {0}.").format(row.cost_type))
+				row.converted_amount = 0
+				return {}
 			basis = self._get_allocation_basis_for_targets(shipment, target_items)
 			total_basis = sum(basis.values())
 			if not total_basis:
@@ -663,7 +671,8 @@ class LandingCostWorksheet(Document):
 				frappe.throw(_("Taxes must be a percentage-based scope."))
 			rate = flt(row.amount or 0)
 			if rate == 0:
-				frappe.throw(_("Set 'Amount / Rate' for component {0}.").format(row.cost_type))
+				row.converted_amount = 0
+				return {}
 			for item_name in target_items:
 				qty = item_quantities.get(item_name) or 0
 				if not qty:
@@ -676,7 +685,8 @@ class LandingCostWorksheet(Document):
 				frappe.throw(_("Taxes must be a percentage-based scope."))
 			rate = flt(row.amount or 0)
 			if rate == 0:
-				frappe.throw(_("Set 'Amount / Rate' for component {0}.").format(row.cost_type))
+				row.converted_amount = 0
+				return {}
 			for item_name in target_items:
 				qty = (item_quantities.get(item_name) or 0) * 1000
 				if not qty:

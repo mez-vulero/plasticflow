@@ -56,7 +56,8 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Pending\nVerified"
+   "options": "Pending\nVerified",
+   "allow_on_submit": 1
   },
   {
    "fieldname": "payment_mode",

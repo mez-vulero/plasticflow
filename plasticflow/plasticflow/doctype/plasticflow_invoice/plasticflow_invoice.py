@@ -20,14 +20,9 @@ class PlasticflowInvoice(Document):
 
 	def on_submit(self):
 		self._sync_sales_order_progress()
-		self._maybe_create_gate_pass()
 
 	def on_cancel(self):
 		self._sync_sales_order_progress()
-		if self.gate_pass:
-			frappe.db.set_value("Gate Pass", self.gate_pass, "status", "Cancelled")
-			frappe.db.set_value("Plasticflow Invoice", self.name, "gate_pass", None, update_modified=False)
-			self.gate_pass = None
 		frappe.db.set_value("Plasticflow Invoice", self.name, "sales_order", None, update_modified=False)
 		self.sales_order = None
 
@@ -53,15 +48,18 @@ class PlasticflowInvoice(Document):
 		if self.invoice_type != expected_type:
 			frappe.throw(_("Invoice type must match the sales order sales type ({0}).").format(expected_type))
 
-		outstanding_capacity = sales_order.get_outstanding_amount(exclude_invoice=self.name if self.name else None)
+		total_gross = flt(sales_order.total_gross_amount or sales_order.total_amount or 0)
+		total_invoiced = flt(sales_order._get_total_invoiced_amount() or 0)
 		if self.docstatus == 1:
-			# When updating an already submitted invoice (rare), include its current total
-			outstanding_capacity += flt(self.total_amount or 0)
+			# When updating an already submitted invoice, exclude this invoice from the already invoiced sum
+			total_invoiced = max(total_invoiced - flt(self.total_amount or 0), 0)
 
-		if flt(self.total_amount) - outstanding_capacity > 0.01:
+		remaining_gross = max(total_gross - total_invoiced, 0)
+
+		if flt(self.total_amount) - remaining_gross > 0.01:
 			frappe.throw(
-				_("Invoice value exceeds the remaining amount for this sales order ({0}).").format(
-					frappe.utils.fmt_money(outstanding_capacity, currency=sales_order.currency)
+				_("Invoice value exceeds the remaining gross amount for this sales order ({0}).").format(
+					frappe.utils.fmt_money(remaining_gross, currency=sales_order.currency)
 				)
 			)
 
@@ -72,14 +70,3 @@ class PlasticflowInvoice(Document):
 		sales_order.update_invoicing_progress()
 		if flt(sales_order.outstanding_amount) <= PAYMENT_TOLERANCE:
 			sales_order._finalize_reservations()
-
-	def _maybe_create_gate_pass(self):
-		if not self.sales_order:
-			return
-		if self.gate_pass:
-			return
-		sales_order = frappe.get_doc("Sales Order", self.sales_order)
-		# Auto-create for both credit and cash invoices; allow partial for cash or credit
-		gate_pass = sales_order.create_gate_pass(allow_partial=True)
-		self.gate_pass = gate_pass.name
-		self.db_set("gate_pass", gate_pass.name, update_modified=False)

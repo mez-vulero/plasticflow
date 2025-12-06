@@ -14,7 +14,6 @@
   "delivery_source",
   "import_shipment",
   "sales_type",
-  "payment_status",
   "withholding_rate",
   "column_break_meta",
   "status",
@@ -87,15 +86,6 @@
    "reqd": 1
   },
   {
-   "allow_on_submit": 1,
-   "default": "Draft",
-   "fieldname": "payment_status",
-   "fieldtype": "Select",
-   "label": "Payment Status",
-   "options": "\nDraft\nPayment Pending\nPayment Verified\nPayment Failed",
-   "reqd": 1
-  },
-  {
    "default": "2",
    "fieldname": "withholding_rate",
    "fieldtype": "Percent",
@@ -113,7 +103,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Order Status",
-   "options": "Draft\nPayment Pending\nPayment Verified\nSettled\nCredit Sales\nInvoiced\nReady for Delivery\nCompleted\nCancelled\nHeld",
+   "options": "Draft\nPayment Pending\nPayment Verified\nSettled\nCredit Sales\nCompleted\nCancelled\nHeld",
    "reqd": 1
   },
   {
@@ -247,8 +237,8 @@
    "allow_on_submit": 1,
    "fieldname": "gate_pass",
    "fieldtype": "Link",
-   "label": "Gate Pass",
-   "options": "Gate Pass",
+   "label": "Gate Pass Request",
+   "options": "Gate Pass Request",
    "read_only": 1
   },
   {
@@ -379,14 +369,6 @@
   {
    "color": "Light Blue",
    "title": "Credit Sales"
-  },
-  {
-   "color": "Orange",
-   "title": "Invoiced"
-  },
-  {
-   "color": "Yellow",
-   "title": "Ready for Delivery"
   },
   {
    "color": "Green",

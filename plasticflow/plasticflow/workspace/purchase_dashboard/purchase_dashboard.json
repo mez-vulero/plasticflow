@@ -1,0 +1,83 @@
+{
+ "app": "plasticflow",
+ "charts": [],
+ "content": "[{\"id\": \"hdr_purchase\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Purchase &amp; Imports</b></span>\", \"col\": 12}}, {\"id\": \"card_po_submitted\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Purchase Orders Submitted\", \"col\": 3}}, {\"id\": \"card_pending_shipments\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Pending Import Shipments\", \"col\": 3}}, {\"id\": \"card_locked_lc\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Locked Landing Cost Worksheets\", \"col\": 3}}, {\"id\": \"card_avg_clearance\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Average Clearance Days\", \"col\": 3}}, {\"id\": \"hdr_shortcuts\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Quick Actions</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_pos\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Purchase Orders\", \"col\": 3}}, {\"id\": \"shortcut_shipments\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Import Shipments\", \"col\": 3}}, {\"id\": \"shortcut_lc\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Landing Cost Worksheets\", \"col\": 3}}, {\"id\": \"shortcut_stock_entries\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Entries\", \"col\": 3}}, {\"id\": \"hdr_reports\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Reports</b></span>\", \"col\": 12}}, {\"id\": \"report_profitability\", \"type\": \"report\", \"data\": {\"report_name\": \"PlasticFlow Profitability Summary\", \"col\": 6}}, {\"id\": \"report_cycle\", \"type\": \"report\", \"data\": {\"report_name\": \"Plasticflow Cycle Time\", \"col\": 6}}]",
+ "creation": "2025-12-01 00:00:00",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "buying",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Purchase Dashboard",
+ "links": [],
+ "modified": "2025-11-30 17:53:43.903960",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Purchase Dashboard",
+ "number_cards": [
+  {
+   "label": "Purchase Orders Submitted",
+   "number_card_name": "Purchase Orders Submitted"
+  },
+  {
+   "label": "Pending Import Shipments",
+   "number_card_name": "Pending Import Shipments"
+  },
+  {
+   "label": "Locked Landing Cost Worksheets",
+   "number_card_name": "Locked Landing Cost Worksheets"
+  },
+  {
+   "label": "Average Clearance Days",
+   "number_card_name": "Average Clearance Days"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Finance Officer"
+  }
+ ],
+ "sequence_id": 3.0,
+ "shortcuts": [
+  {
+   "doc_view": "List",
+   "label": "Purchase Orders",
+   "link_to": "Purchase Order",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Import Shipments",
+   "link_to": "Import Shipment",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Landing Cost Worksheets",
+   "link_to": "Landing Cost Worksheet",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Stock Entries",
+   "link_to": "Stock Entries",
+   "type": "DocType"
+  }
+ ],
+ "title": "Purchase Dashboard",
+ "type": "Workspace"
+}

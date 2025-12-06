@@ -25,7 +25,7 @@ def get_data():
 				{"type": "doctype", "name": "Broker"},
 				{"type": "doctype", "name": "Sales Order"},
 				{"type": "doctype", "name": "Plasticflow Invoice"},
-				{"type": "doctype", "name": "Gate Pass"},
+				{"type": "doctype", "name": "Gate Pass Request"},
 				{"type": "doctype", "name": "Delivery Note"},
 				{"type": "doctype", "name": "Driver"},
 				{"type": "doctype", "name": "Customs Documents"},

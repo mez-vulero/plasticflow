@@ -293,14 +293,16 @@
    "fieldname": "product_summaries",
    "fieldtype": "Table",
    "label": "Product Cost Summary",
-   "options": "Landing Cost Product Summary"
+   "options": "Landing Cost Product Summary",
+   "allow_on_submit": 1
   },
   {
    "fieldname": "estimated_total_net_profit",
    "fieldtype": "Currency",
    "label": "Estimated Total Net Profit",
    "options": "currency",
-   "read_only": 1
+   "read_only": 1,
+   "allow_on_submit": 1
   },
   {
    "collapsible": 1,

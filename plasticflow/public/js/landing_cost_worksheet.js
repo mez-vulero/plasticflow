@@ -4,6 +4,9 @@ frappe.ui.form.on("Landing Cost Worksheet", {
 	refresh(frm) {
 		set_component_currency_defaults(frm);
 	},
+	cost_components_add(frm, cdt, cdn) {
+		set_component_currency_defaults(frm, cdt, cdn);
+	},
 });
 
 frappe.ui.form.on("Landing Cost Component", {
@@ -30,15 +33,26 @@ function set_component_currency_defaults(frm, cdt, cdn) {
 	const rows = cdt && cdn ? [frappe.get_doc(cdt, cdn)] : frm.doc.cost_components || [];
 	rows.forEach((row) => {
 		const bucket = (row.cost_bucket || "").toLowerCase();
-		let target = null;
-		if (bucket.includes("foreign")) {
-			target = "USD";
-		} else if (bucket.includes("local")) {
-			target = "ETB";
-		}
+		const is_foreign = bucket.includes("foreign");
+		const target = is_foreign
+			? frm.doc.shipment_currency || frm.doc.currency
+			: frm.doc.currency || frm.doc.shipment_currency;
 
 		if (target && row.currency !== target) {
 			frappe.model.set_value(row.doctype, row.name, "currency", target);
+		}
+
+		// Keep exchange rate aligned to the current doc context
+		const row_rate = Number(row.exchange_rate) || 0;
+		const target_rate =
+			is_foreign && row.currency === (frm.doc.shipment_currency || "")
+				? frm.doc.shipment_exchange_rate || 1
+				: !is_foreign && row.currency === (frm.doc.currency || "")
+					? 1
+					: null;
+
+		if (target_rate && Math.abs(row_rate - target_rate) > 0.000001) {
+			frappe.model.set_value(row.doctype, row.name, "exchange_rate", target_rate);
 		}
 	});
 }

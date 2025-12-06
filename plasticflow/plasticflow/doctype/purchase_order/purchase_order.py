@@ -108,8 +108,25 @@ def create_import_shipment(purchase_order: str):
 	shipment.local_currency = po.local_currency
 	shipment.shipment_date = po.po_date
 
+	def _allocated_quantity(po_item_name: str) -> float:
+		if not po_item_name:
+			return 0.0
+		row = frappe.db.get_all(
+			"Import Shipment Item",
+			filters={"purchase_order_item": po_item_name, "docstatus": 1},
+			fields=["sum(quantity) as qty"],
+		)
+		return flt(row[0].qty) if row else 0.0
+
+	def _available_quantity(po_row) -> float:
+		ordered = flt(po_row.quantity or 0)
+		received = flt(po_row.received_qty or 0)
+		allocated = _allocated_quantity(po_row.name)
+		# Avoid double-subtracting received vs. allocated quantities
+		return ordered - max(received, allocated)
+
 	for item in po.items:
-		pending_qty = flt(item.quantity or 0) - flt(item.received_qty or 0)
+		pending_qty = _available_quantity(item)
 		if pending_qty <= QTY_TOLERANCE:
 			continue
 		shipment.append(
@@ -126,7 +143,7 @@ def create_import_shipment(purchase_order: str):
 		)
 
 	if not shipment.items:
-		frappe.throw(_("All items on Purchase Order {0} are fully received.").format(po.name))
+		frappe.throw(_("All items on Purchase Order {0} are already allocated to import shipments or received.").format(po.name))
 
 	shipment.insert(ignore_permissions=True)
 	return shipment.as_dict()
@@ -145,3 +162,27 @@ def get_dashboard_data():
 			"Supplier": ["supplier"],
 		},
 	}
+
+
+@frappe.whitelist()
+def get_remaining_shipment_quantity(purchase_order: str) -> dict:
+	"""Return total remaining quantity available for import shipments on a purchase order."""
+	if not purchase_order:
+		return {"remaining_quantity": 0}
+
+	po = frappe.get_doc("Purchase Order", purchase_order)
+
+	total_remaining = 0.0
+	for item in po.items:
+		allocated = frappe.db.get_all(
+			"Import Shipment Item",
+			filters={"purchase_order_item": item.name, "docstatus": ["!=", 2]},
+			fields=["sum(quantity) as qty"],
+		)
+		allocated_qty = flt(allocated[0].qty) if allocated else 0.0
+
+		pending = flt(item.quantity or 0) - flt(item.received_qty or 0) - allocated_qty
+		if pending > QTY_TOLERANCE:
+			total_remaining += pending
+
+	return {"remaining_quantity": max(total_remaining, 0)}

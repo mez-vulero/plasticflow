@@ -1,0 +1,29 @@
+{
+ "creation": "2025-12-01 00:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Landing Cost Worksheet",
+ "filters_json": "[[\"docstatus\", \"!=\", 2], [\"status\", \"=\", \"Locked\"]]",
+ "function": "Count",
+ "is_public": 0,
+ "is_standard": 1,
+ "label": "Locked Landing Cost Worksheets",
+ "module": "PlasticFlow",
+ "name": "Locked Landing Cost Worksheets",
+ "type": "Document Type",
+ "dynamic_filters_json": "{}",
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Daily",
+ "show_full_number": 0,
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Finance Officer"
+  }
+ ]
+}

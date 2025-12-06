@@ -35,12 +35,11 @@
   "total_quantity",
   "total_landed_cost",
   "total_landed_cost_local",
-  "actual_paid_cost",
-  "difference_in_cost",
   "per_unit_landed_cost",
   "per_unit_landed_cost_local",
   "landing_cost_status",
   "landing_cost_note",
+  "description",
   "remarks",
   "section_break_documents",
   "customs_documents",
@@ -56,6 +55,7 @@
    "options": "Purchase Order",
    "reqd": 1,
    "search_index": 1,
+   "in_preview": 1,
    "set_null_on_delete": 1
   },
   {
@@ -64,12 +64,14 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Shipment Date",
+   "in_preview": 1,
    "reqd": 1
   },
  {
   "fieldname": "expected_arrival",
   "fieldtype": "Date",
-  "label": "Expected Arrival"
+  "label": "Expected Arrival",
+  "in_preview": 1
  },
   {
    "fieldname": "section_break_customs",
@@ -85,7 +87,8 @@
   {
    "fieldname": "bill_of_lading",
    "fieldtype": "Data",
-   "label": "Bill of Lading"
+   "label": "Bill of Lading",
+   "allow_on_submit": 1
   },
   {
    "fieldname": "destination_warehouse",
@@ -138,7 +141,8 @@
    "in_list_view": 1,
    "label": "Supplier",
    "options": "Supplier",
-   "reqd": 1
+   "reqd": 1,
+   "in_preview": 1
   },
   {
    "fieldname": "purchase_order",
@@ -146,6 +150,7 @@
    "in_list_view": 1,
    "label": "Purchase Order",
    "options": "Purchase Order",
+   "in_preview": 1,
    "set_null_on_delete": 1
   },
   {
@@ -201,6 +206,7 @@
    "label": "Base Shipment Amount",
    "options": "currency",
    "read_only": 1,
+   "in_preview": 1,
    "allow_on_submit": 1
   },
   {
@@ -208,6 +214,7 @@
    "fieldtype": "Float",
    "label": "Total Quantity",
    "read_only": 1,
+   "in_preview": 1,
    "allow_on_submit": 1
   },
   {
@@ -222,21 +229,6 @@
    "fieldname": "total_landed_cost_local",
    "fieldtype": "Currency",
    "label": "Total Landed Cost (Local Currency)",
-   "options": "local_currency",
-   "read_only": 1,
-   "allow_on_submit": 1
-  },
-  {
-   "fieldname": "actual_paid_cost",
-   "fieldtype": "Currency",
-   "label": "Actual Paid Cost",
-   "options": "local_currency",
-   "allow_on_submit": 1
-  },
-  {
-   "fieldname": "difference_in_cost",
-   "fieldtype": "Currency",
-   "label": "Difference in Cost",
    "options": "local_currency",
    "read_only": 1,
    "allow_on_submit": 1
@@ -267,11 +259,18 @@
    "allow_on_submit": 1
   },
   {
-  "fieldname": "landing_cost_note",
-  "fieldtype": "Small Text",
-  "label": "Landing Cost Notes",
-  "allow_on_submit": 1
+   "fieldname": "landing_cost_note",
+   "fieldtype": "Small Text",
+   "label": "Landing Cost Notes",
+   "allow_on_submit": 1
 },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description",
+   "in_preview": 1,
+   "allow_on_submit": 1
+  },
   {
    "fieldname": "remarks",
    "fieldtype": "Small Text",

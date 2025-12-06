@@ -24,12 +24,11 @@ class DeliveryNote(Document):
 			self.db_set("status", "In Transit")
 		else:
 			self.db_set("status", self.status)
-		frappe.db.set_value("Sales Order", self.sales_order, "status", "Completed")
-		frappe.db.set_value("Gate Pass", self.gate_pass, "status", "Closed")
+		self._update_sales_order_status()
 
 	def on_update_after_submit(self):
 		if self.status == "Delivered":
-			frappe.db.set_value("Sales Order", self.sales_order, "status", "Completed")
+			self._update_sales_order_status()
 
 	def on_cancel(self):
 		self._reverse_stock()
@@ -39,13 +38,6 @@ class DeliveryNote(Document):
 				"Sales Order",
 				self.sales_order,
 				{"status": "Invoiced", "delivery_note": None},
-				update_modified=False,
-			)
-		if self.gate_pass and frappe.db.exists("Gate Pass", self.gate_pass):
-			frappe.db.set_value(
-				"Gate Pass",
-				self.gate_pass,
-				{"status": "Issued", "delivery_note": None},
 				update_modified=False,
 			)
 
@@ -137,6 +129,18 @@ class DeliveryNote(Document):
 					warehouse=warehouse if location_type == "Warehouse" else None,
 					remarks=f"Issue reversed for Delivery Note {self.name}",
 				)
+
+	def _update_sales_order_status(self):
+		if not self.sales_order or not frappe.db.exists("Sales Order", self.sales_order):
+			return
+		so = frappe.get_doc("Sales Order", self.sales_order)
+		target_status = so.status
+		if so.gate_pass and frappe.db.exists("Gate Pass Request", so.gate_pass):
+			gp_status = frappe.db.get_value("Gate Pass Request", so.gate_pass, "status")
+			if gp_status == "Dispatched":
+				target_status = "Completed"
+		if target_status != so.status:
+			so.db_set("status", target_status, update_modified=False)
 
 	@staticmethod
 	def _ledger_reference(location_type: str, warehouse: str | None = None) -> str:

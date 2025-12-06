@@ -17,12 +17,12 @@ class ImportShipment(Document):
 		self._set_item_defaults()
 		self._calculate_totals()
 		self._set_clearance_defaults()
+		self._validate_purchase_order_quantities()
 
 	def before_save(self):
 		# Allow recalculations on submitted docs
 		self.flags.ignore_validate_update_after_submit = True
 		self._record_clearance_transition()
-		self._assign_item_row_names()
 		self._calculate_totals()
 
 	def on_update_after_submit(self):
@@ -97,8 +97,24 @@ class ImportShipment(Document):
 		if self.items:
 			return
 
+		def _allocated_quantity(po_item_name: str) -> float:
+			if not po_item_name:
+				return 0.0
+			row = frappe.db.get_all(
+				"Import Shipment Item",
+				filters={"purchase_order_item": po_item_name, "docstatus": 1},
+				fields=["sum(quantity) as qty"],
+			)
+			return flt(row[0].qty) if row else 0.0
+
+		def _available_quantity(po_row) -> float:
+			ordered = flt(po_row.quantity or 0)
+			received = flt(po_row.received_qty or 0)
+			allocated = _allocated_quantity(po_row.name)
+			return ordered - max(received, allocated)
+
 		for item in po.items:
-			pending_qty = flt(item.quantity or 0) - flt(item.received_qty or 0)
+			pending_qty = _available_quantity(item)
 			if pending_qty <= QTY_TOLERANCE:
 				continue
 			base_rate = flt(item.rate or 0)
@@ -113,6 +129,13 @@ class ImportShipment(Document):
 					"base_rate": base_rate,
 					"purchase_order_item": item.name,
 				},
+			)
+
+		if po_name and not self.items:
+			frappe.throw(
+				_("All items on Purchase Order {0} are already allocated to import shipments or received.").format(
+					po_name
+				)
 			)
 
 	def _set_item_defaults(self):
@@ -166,10 +189,6 @@ class ImportShipment(Document):
 		self.per_unit_landed_cost_local = (
 			flt(total_landed_local / total_quantity) if total_quantity else 0
 		)
-		if self.actual_paid_cost in (None, ""):
-			self.difference_in_cost = 0
-		else:
-			self.difference_in_cost = flt(self.actual_paid_cost) - flt(total_landed_local or 0)
 		if not self.landing_cost_status:
 			self.landing_cost_status = "Draft"
 
@@ -244,33 +263,6 @@ class ImportShipment(Document):
 		self.db_set("stock_entry", stock_entry.name, update_modified=False)
 		return stock_entry
 
-	def _assign_item_row_names(self):
-		"""Ensure shipment items carry deterministic names for downstream linking."""
-		if not self.name or self.name.startswith("New "):
-			return
-
-		prefix = f"{self.name}-ITEM-"
-		existing_sequences = []
-		for row in self.items:
-			sequence = self._extract_child_sequence(row.name, prefix)
-			if sequence is not None:
-				existing_sequences.append(sequence)
-
-		next_sequence = (max(existing_sequences) if existing_sequences else 0) + 1
-
-		for row in self.items:
-			if row.name and not row.name.startswith("new-"):
-				continue
-			row.name = f"{prefix}{next_sequence:03d}"
-			next_sequence += 1
-
-	@staticmethod
-	def _extract_child_sequence(value, prefix):
-		if not value or not value.startswith(prefix):
-			return None
-		suffix = value[len(prefix) :]
-		return int(suffix) if suffix.isdigit() else None
-
 	def _prepare_stock_entry_for_warehouse(self, stock_entry):
 		stock_entry.flags.ignore_validate_update_after_submit = True
 		updated = False
@@ -313,6 +305,58 @@ class ImportShipment(Document):
 			stock_entry.delete(ignore_permissions=True)
 
 		self.db_set("stock_entry", None, update_modified=False)
+
+	def _validate_purchase_order_quantities(self):
+		"""Guard against over-allocating shipments beyond purchase order availability."""
+		if not self.purchase_order:
+			return
+
+		po_items = frappe.db.get_all(
+			"Purchase Order Item",
+			filters={"parent": self.purchase_order},
+			fields=["name", "product", "product_name", "quantity", "received_qty"],
+		)
+		if not po_items:
+			return
+
+		po_map = {row.name: row for row in po_items}
+
+		for row in self.items:
+			if not row.purchase_order_item or row.purchase_order_item not in po_map:
+				continue
+
+			po_row = po_map[row.purchase_order_item]
+			ordered = flt(po_row.quantity or 0)
+			received = flt(po_row.received_qty or 0)
+
+			allocated_filters = {"purchase_order_item": row.purchase_order_item, "docstatus": 1}
+			if self.name:
+				allocated_filters["parent"] = ["!=", self.name]
+
+			allocated = frappe.db.get_all(
+				"Import Shipment Item", filters=allocated_filters, fields=["sum(quantity) as qty"]
+			)
+			allocated_qty = flt(allocated[0].qty) if allocated else 0.0
+
+			available = max(ordered - max(received, allocated_qty), 0)
+			requested = flt(row.quantity or 0)
+
+			if requested - available > QTY_TOLERANCE:
+				product_label = row.product_name or row.product or row.purchase_order_item
+				frappe.throw(
+					_(
+						"Quantity {0} for product {1} exceeds remaining {2} on Purchase Order {3} "
+						"(ordered {4}, received {5}, already in other shipments {6})."
+					).format(
+						frappe.format(requested, {"fieldtype": "Float"}),
+						product_label,
+						frappe.format(available if available > 0 else 0, {"fieldtype": "Float"}),
+						self.purchase_order,
+						frappe.format(ordered, {"fieldtype": "Float"}),
+						frappe.format(received, {"fieldtype": "Float"}),
+						frappe.format(allocated_qty, {"fieldtype": "Float"}),
+					)
+				)
 
 
 def get_dashboard_data():
@@ -358,3 +402,46 @@ def create_landing_cost_worksheet(import_shipment: str):
 	worksheet.insert(ignore_permissions=True)
 
 	return {"name": worksheet.name, "status": "created"}
+
+
+@frappe.whitelist()
+def create_sales_order_from_shipment(import_shipment: str, customer: str, sales_type: str = "Cash", delivery_source: str = "Warehouse"):
+	if not import_shipment:
+		frappe.throw(_("Import Shipment is required."))
+	if not customer:
+		frappe.throw(_("Customer is required to create a Sales Order."))
+
+	shipment = frappe.get_doc("Import Shipment", import_shipment)
+	if shipment.docstatus == 2:
+		frappe.throw(_("Cannot create a Sales Order from a cancelled shipment."))
+
+	so = frappe.new_doc("Sales Order")
+	so.customer = customer
+	so.import_shipment = shipment.name
+	so.delivery_source = delivery_source or "Warehouse"
+	so.sales_type = sales_type or "Cash"
+	so.currency = frappe.db.get_default("currency") or "ETB"
+	so.withholding_rate = 2
+	so.order_date = nowdate()
+
+	for item in shipment.items:
+		if not item.product or not item.quantity:
+			continue
+		so.append(
+			"items",
+			{
+				"product": item.product,
+				"product_name": item.product_name,
+				"description": item.description,
+				"quantity": item.quantity,
+				"uom": item.uom,
+				"import_shipment_item": item.name,
+				"rate": item.landed_cost_rate_local or item.base_rate or 0,
+			},
+		)
+
+	if not so.items:
+		frappe.throw(_("No shippable items found on Import Shipment {0}.").format(shipment.name))
+
+	so.insert(ignore_permissions=True)
+	return {"name": so.name, "doctype": so.doctype}

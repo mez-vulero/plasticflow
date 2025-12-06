@@ -1,0 +1,28 @@
+{
+ "creation": "2025-12-01 00:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "dynamic_filters_json": "{}",
+ "function": "Custom",
+ "is_public": 0,
+ "is_standard": 1,
+ "label": "Average Clearance Days",
+ "method": "plasticflow.dashboard.metrics.get_average_clearance_days",
+ "module": "PlasticFlow",
+ "name": "Average Clearance Days",
+ "show_full_number": 0,
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Daily",
+ "type": "Custom",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "Finance Officer"
+  }
+ ]
+}

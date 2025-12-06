@@ -38,10 +38,8 @@ class SalesOrder(Document):
 
 		if self.sales_type == "Cash":
 			self.status = "Payment Pending"
-			self.payment_status = "Payment Pending"
 		else:
 			self.status = "Credit Sales"
-			self.payment_status = "Draft"
 
 	def on_submit(self):
 		reservations = self._collect_batch_reservations()
@@ -49,7 +47,6 @@ class SalesOrder(Document):
 		self.db_set(
 			{
 				"status": self.status,
-				"payment_status": self.payment_status,
 			}
 		)
 		self.update_invoicing_progress()
@@ -67,7 +64,6 @@ class SalesOrder(Document):
 		self.db_set(
 			{
 				"status": "Cancelled",
-				"payment_status": "Payment Failed" if self.sales_type == "Cash" else "Draft",
 			}
 		)
 		self._clear_links()
@@ -228,25 +224,21 @@ class SalesOrder(Document):
 		if not is_cash:
 			# Credit sales: skip verification gating, track settlement when fully paid
 			if expected_payment <= PAYMENT_TOLERANCE or abs(expected_payment - total_paid) <= PAYMENT_TOLERANCE:
-				self.payment_status = "Payment Verified"
-				self.status = "Completed"
+				self.status = "Settled"
 			else:
-				self.payment_status = "Draft"
-				if self.status not in {"Invoiced", "Ready for Delivery", "Completed", "Settled"}:
+				if self.status not in {"Completed", "Settled"}:
 					self.status = "Credit Sales"
 			return
 
 		# Cash sales: require at least one verified slip to move forward
 		if not has_verified:
-			self.payment_status = "Payment Pending"
 			if self.status in {"Draft", "Payment Pending", "Payment Verified", "Settled"}:
 				self.status = "Payment Pending"
 			return
 
 		if abs(expected_payment - total_paid) <= PAYMENT_TOLERANCE:
-			self.payment_status = "Payment Verified"
 			if self.status in {"Draft", "Payment Pending", "Payment Verified"}:
-				self.status = "Payment Verified"
+				self.status = "Settled"
 			self._maybe_mark_settled(
 				total_paid=total_paid,
 				expected_payment=expected_payment,
@@ -255,8 +247,6 @@ class SalesOrder(Document):
 		else:
 			if self.status in {"Draft", "Payment Pending", "Payment Verified", "Settled"}:
 				self.status = "Payment Pending"
-			if self.payment_status != "Payment Pending":
-				self.payment_status = "Payment Pending"
 
 	def _sum_payment_slips(self, verified_only: bool = False):
 		slip_rows = self.payment_slips or []
@@ -270,16 +260,24 @@ class SalesOrder(Document):
 		total_paid: float | None = None,
 		expected_payment: float | None = None,
 		outstanding: float | None = None,
+		total_invoiced: float | None = None,
 	) -> bool:
 		total_paid = flt(total_paid if total_paid is not None else self._sum_payment_slips())
 		expected_payment = flt(expected_payment if expected_payment is not None else self._net_receivable())
 		outstanding = flt(outstanding if outstanding is not None else (self.outstanding_amount or 0))
+		invoice_target = flt(self.total_gross_amount or self.total_amount or 0)
+		invoice_coverage = invoice_target <= PAYMENT_TOLERANCE or (
+			total_invoiced is not None and flt(total_invoiced) >= invoice_target - PAYMENT_TOLERANCE
+		)
 
 		if not self.payment_slips:
 			return False
 
-		if outstanding <= PAYMENT_TOLERANCE and abs(total_paid - expected_payment) <= PAYMENT_TOLERANCE:
-			self.payment_status = "Payment Verified"
+		if (
+			outstanding <= PAYMENT_TOLERANCE
+			and abs(total_paid - expected_payment) <= PAYMENT_TOLERANCE
+			and invoice_coverage
+		):
 			self.status = "Settled"
 			return True
 		return False
@@ -293,6 +291,21 @@ class SalesOrder(Document):
 	@staticmethod
 	def _ledger_reference(location_type: str, warehouse: str | None = None) -> str:
 		return f"{location_type}::{warehouse or 'GLOBAL'}"
+
+	def _gate_pass_dispatched(self) -> bool:
+		if not self.gate_pass or not frappe.db.exists("Gate Pass Request", self.gate_pass):
+			return False
+		return frappe.db.get_value("Gate Pass Request", self.gate_pass, "status") == "Dispatched"
+
+	# Compatibility shim for legacy notifications referencing payment_status
+	@property
+	def payment_status(self):
+		return None
+
+	@payment_status.setter
+	def payment_status(self, value):
+		# Intentionally ignore to keep status-driven flow
+		pass
 
 	def _collect_batch_reservations(self):
 		reservations: dict[str, dict[str, object]] = {}
@@ -389,8 +402,6 @@ class SalesOrder(Document):
 			updates["invoice"] = None
 			self.invoice = None
 		if self.gate_pass:
-			if frappe.db.exists("Gate Pass", self.gate_pass):
-				frappe.db.set_value("Gate Pass", self.gate_pass, {"sales_order": None, "invoice": None, "delivery_note": None}, update_modified=False)
 			updates["gate_pass"] = None
 			self.gate_pass = None
 		if self.delivery_note:
@@ -736,6 +747,10 @@ class SalesOrder(Document):
 		total_paid = self._sum_payment_slips(verified_only=self.sales_type == "Cash")
 		outstanding = max(net_receivable - total_paid, 0)
 		latest_invoice = self._get_latest_invoice_name()
+		invoice_target = flt(self.total_gross_amount or self.total_amount or 0)
+		invoice_coverage = invoice_target <= PAYMENT_TOLERANCE or (
+			total_invoiced >= invoice_target - PAYMENT_TOLERANCE
+		)
 
 		updates = {
 			"invoiced_amount": total_invoiced,
@@ -748,31 +763,42 @@ class SalesOrder(Document):
 				total_paid=total_paid,
 				expected_payment=net_receivable,
 				outstanding=outstanding,
+				total_invoiced=total_invoiced,
 			)
 			if outstanding <= PAYMENT_TOLERANCE:
-				updates["status"] = "Completed"
-				self.status = "Completed"
-				self.payment_status = "Payment Verified"
-				self._finalize_reservations()
-			else:
-				if self.sales_type == "Cash":
-					target_status = "Payment Verified" if self.payment_status == "Payment Verified" else "Payment Pending"
+				if invoice_coverage:
+					updates["status"] = "Settled"
+					self.status = "Settled"
+					self._finalize_reservations()
 				else:
-					target_status = "Credit Sales"
-				if self.status == "Ready for Delivery":
-					updates["gate_pass"] = None
+					updates["status"] = "Payment Verified"
+					self.status = "Payment Verified"
+			else:
+				target_status = "Payment Pending" if self.sales_type == "Cash" else "Credit Sales"
 				if self.status != "Completed":
 					updates["status"] = target_status
 					self.status = target_status
 				self._restore_reservations()
 		else:
-			settled = self._maybe_mark_settled(total_paid=total_paid, expected_payment=net_receivable, outstanding=outstanding)
+			settled = self._maybe_mark_settled(
+				total_paid=total_paid,
+				expected_payment=net_receivable,
+				outstanding=outstanding,
+				total_invoiced=total_invoiced,
+			)
 
 		if self.status == "Settled":
 			updates["status"] = "Settled"
-			self.payment_status = "Payment Verified"
 
-		updates["payment_status"] = self.payment_status
+		gate_pass_dispatched = self._gate_pass_dispatched()
+		if gate_pass_dispatched and self.sales_type == "Credit":
+			# Credit orders complete only when dispatch is done and balance is cleared
+			if outstanding <= PAYMENT_TOLERANCE:
+				updates["status"] = "Completed"
+				self.status = "Completed"
+			else:
+				updates["status"] = "Credit Sales"
+				self.status = "Credit Sales"
 
 		frappe.db.set_value("Sales Order", self.name, updates, update_modified=False)
 		self.invoiced_amount = total_invoiced
@@ -787,24 +813,24 @@ class SalesOrder(Document):
 
 		is_cash = self.sales_type == "Cash"
 		outstanding = self.get_outstanding_amount()
+		total_gross = flt(self.total_gross_amount or self.total_amount or 0)
+		total_invoiced = flt(self._get_total_invoiced_amount() or 0)
+		remaining_gross = max(total_gross - total_invoiced, 0)
 
 		if is_cash and not self._has_verified_payments():
 			frappe.throw(_("Verify at least one payment slip before creating a cash invoice."))
 
-		if outstanding <= PAYMENT_TOLERANCE:
-			frappe.throw(_("This sales order is already fully invoiced or paid."))
+		if remaining_gross <= PAYMENT_TOLERANCE:
+			frappe.throw(_("This sales order is already fully invoiced."))
 
-		if is_cash:
-			amount = self._sum_payment_slips(verified_only=True)
-		else:
-			amount = outstanding if invoice_amount is None else flt(invoice_amount)
+		amount = remaining_gross if invoice_amount is None else flt(invoice_amount)
 
 		if amount <= PAYMENT_TOLERANCE:
 			frappe.throw(_("Invoice amount must be greater than zero."))
-		if amount - outstanding > PAYMENT_TOLERANCE:
+		if amount - remaining_gross > PAYMENT_TOLERANCE:
 			frappe.throw(
-				_("Invoice amount cannot exceed the outstanding net receivable ({0}).").format(
-					frappe.utils.fmt_money(outstanding, currency=self.currency)
+				_("Invoice amount cannot exceed the remaining gross sales ({0}).").format(
+					frappe.utils.fmt_money(remaining_gross, currency=self.currency)
 				)
 			)
 
@@ -894,48 +920,7 @@ class SalesOrder(Document):
 			row.invoice = invoice.name
 
 	def create_gate_pass(self, allow_partial: bool = False):
-		if self.docstatus != 1:
-			frappe.throw(_("Submit the sales order before generating a gate pass."))
-
-		if self.gate_pass and frappe.db.exists("Gate Pass", self.gate_pass):
-			return frappe.get_doc("Gate Pass", self.gate_pass)
-
-		latest_invoice = self._get_latest_invoice_name()
-		if not latest_invoice:
-			frappe.throw(_("Submit at least one invoice before generating the gate pass."))
-
-		if not allow_partial and self.get_outstanding_amount() > PAYMENT_TOLERANCE:
-			frappe.throw(_("Invoice the full value before generating a gate pass."))
-
-		gate_pass = self._build_gate_pass_doc(latest_invoice)
-		gate_pass.insert(ignore_permissions=True)
-		frappe.db.set_value("Plasticflow Invoice", latest_invoice, "gate_pass", gate_pass.name, update_modified=False)
-		new_status = "Completed" if self.get_outstanding_amount() <= PAYMENT_TOLERANCE else "Ready for Delivery"
-		self.db_set({"gate_pass": gate_pass.name, "status": new_status})
-		self.status = new_status
-		return gate_pass
-
-	def _build_gate_pass_doc(self, invoice_name):
-		gate_pass = frappe.new_doc("Gate Pass")
-		gate_pass.invoice = invoice_name
-		gate_pass.sales_order = self.name
-		gate_pass.warehouse = None
-		gate_pass.gate_pass_date = nowdate()
-		gate_pass.status = "Pending"
-
-		for item in self.items:
-			gate_pass.append(
-				"items",
-				{
-					"product": item.product,
-					"product_name": item.product_name,
-					"quantity": item.quantity,
-					"uom": item.uom,
-					"stock_entry_item": item.batch_item,
-					"warehouse": item.warehouse,
-				},
-			)
-		return gate_pass
+		frappe.throw(_("Gate Pass is no longer used. Please create a Gate Pass Request via Loading Order."))
 
 
 @frappe.whitelist()
@@ -948,7 +933,4 @@ def create_sales_invoice(sales_order, amount=None):
 
 @frappe.whitelist()
 def create_sales_order_gate_pass(sales_order):
-	so = frappe.get_doc("Sales Order", sales_order)
-	so.check_permission("submit")
-	gate_pass = so.create_gate_pass()
-	return gate_pass.as_dict()
+	frappe.throw(_("Gate Pass is no longer used. Please create a Gate Pass Request via Loading Order."))

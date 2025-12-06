@@ -7,16 +7,24 @@
  "engine": "InnoDB",
  "field_order": [
   "document_type",
+  "description",
   "document",
   "date_uploaded"
  ],
  "fields": [
   {
    "fieldname": "document_type",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Document Type",
+   "options": "\nCommercial Invoice\nPermit\nECZN Certificate\nOther",
    "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description",
+   "mandatory_depends_on": "eval:doc.document_type==\"Other\""
   },
   {
    "fieldname": "document",

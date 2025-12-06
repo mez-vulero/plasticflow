@@ -2,6 +2,7 @@ frappe.ui.form.on("Import Shipment", {
 	refresh(frm) {
 		if (frm.doc.docstatus < 2) {
 			frm.add_custom_button(__("Landing Cost Worksheet"), () => create_landing_cost_worksheet(frm));
+			frm.add_custom_button(__("Create Sales Order"), () => create_sales_order(frm));
 		}
 
 		if (frm.doc.purchase_order) {
@@ -48,4 +49,64 @@ function create_landing_cost_worksheet(frm) {
 	}
 
 	proceed();
+}
+
+function create_sales_order(frm) {
+	const proceed = (values) => {
+		frappe.call({
+			method: "plasticflow.plasticflow.doctype.import_shipment.import_shipment.create_sales_order_from_shipment",
+			args: {
+				import_shipment: frm.doc.name,
+				customer: values.customer,
+				sales_type: values.sales_type,
+				delivery_source: values.delivery_source,
+			},
+			freeze: true,
+			freeze_message: __("Creating Sales Order..."),
+			callback: ({ message }) => {
+				if (!message || !message.name) return;
+				frappe.set_route("Form", "Sales Order", message.name);
+			},
+		});
+	};
+
+	const prompt_and_create = () => {
+		frappe.prompt(
+			[
+				{
+					fieldname: "customer",
+					fieldtype: "Link",
+					options: "Customer",
+					label: __("Customer"),
+					reqd: 1,
+				},
+				{
+					fieldname: "sales_type",
+					fieldtype: "Select",
+					label: __("Sales Type"),
+					options: ["Cash", "Credit"],
+					default: "Cash",
+					reqd: 1,
+				},
+				{
+					fieldname: "delivery_source",
+					fieldtype: "Select",
+					label: __("Delivery Source"),
+					options: ["Warehouse", "Direct from Customs"],
+					default: "Warehouse",
+					reqd: 1,
+				},
+			],
+			(values) => proceed(values),
+			__("Create Sales Order"),
+			__("Create")
+		);
+	};
+
+	if (!frm.doc.name || frm.doc.__islocal || frm.is_dirty()) {
+		frm.save().then(() => prompt_and_create());
+		return;
+	}
+
+	prompt_and_create();
 }

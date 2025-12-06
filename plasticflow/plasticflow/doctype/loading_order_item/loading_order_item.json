@@ -1,6 +1,7 @@
 {
  "actions": [],
- "creation": "2024-01-01 00:00:00",
+ "allow_rename": 1,
+ "creation": "2025-12-01 00:00:00.000000",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -9,8 +10,7 @@
   "product_name",
   "quantity",
   "uom",
-  "stock_entry_item",
-  "warehouse",
+  "import_shipment_item",
   "remarks"
  ],
  "fields": [
@@ -19,22 +19,21 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Product",
-   "options": "Product",
-   "reqd": 1
+   "options": "Product"
   },
   {
    "fieldname": "product_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Product Name",
-   "read_only": 1
+   "read_only": 1,
+   "in_list_view": 1
   },
   {
    "fieldname": "quantity",
    "fieldtype": "Float",
-   "in_list_view": 1,
    "label": "Quantity",
-   "reqd": 1
+   "reqd": 1,
+   "in_list_view": 1
   },
   {
    "fieldname": "uom",
@@ -43,16 +42,11 @@
    "options": "Unit of Measurement"
   },
   {
-   "fieldname": "stock_entry_item",
+   "fieldname": "import_shipment_item",
    "fieldtype": "Link",
-   "label": "Stock Entry Items",
-   "options": "Stock Entry Items"
-  },
-  {
-   "fieldname": "warehouse",
-   "fieldtype": "Link",
-   "label": "Warehouse",
-   "options": "Warehouse"
+   "label": "Import Shipment Item",
+   "options": "Import Shipment Item",
+   "read_only": 1
   },
   {
    "fieldname": "remarks",
@@ -62,13 +56,12 @@
  ],
  "istable": 1,
  "links": [],
- "modified": "2025-10-28 14:28:29.460609",
+ "modified": "2025-12-01 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
- "name": "Gate Pass Item",
+ "name": "Loading Order Item",
  "owner": "Administrator",
  "permissions": [],
- "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

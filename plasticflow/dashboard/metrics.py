@@ -4,6 +4,7 @@ import frappe
 from frappe.utils import flt
 
 
+@frappe.whitelist()
 def get_average_clearance_days(filters: dict[str, str] | None = None) -> dict[str, object]:
 	"""Return the average number of days between arrival and clearance for completed shipments."""
 
