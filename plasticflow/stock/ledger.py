@@ -281,6 +281,7 @@ def clear_shipment_balances(shipment_doc):
 
 def _set_warehouse_balances(stock_entry_doc):
 	for item in stock_entry_doc.items:
+		available_qty = _available_from_item(item)
 		local_rate = getattr(item, "landed_cost_rate_local", None)
 		local_amount = getattr(item, "landed_cost_amount_local", None)
 		if local_rate is None:
@@ -291,7 +292,7 @@ def _set_warehouse_balances(stock_entry_doc):
 			item.product,
 			"Warehouse",
 			stock_entry_doc.name,
-			available=item.available_qty or item.received_qty or 0,
+			available=available_qty,
 			warehouse=stock_entry_doc.warehouse,
 			stock_entry=stock_entry_doc.name,
 			import_shipment=stock_entry_doc.import_shipment,
@@ -303,6 +304,7 @@ def _set_warehouse_balances(stock_entry_doc):
 
 def update_warehouse_stock(stock_entry_doc):
 	for item in stock_entry_doc.items:
+		available_qty = _available_from_item(item)
 		local_rate = getattr(item, "landed_cost_rate_local", None)
 		local_amount = getattr(item, "landed_cost_amount_local", None)
 		if local_rate is None:
@@ -313,7 +315,7 @@ def update_warehouse_stock(stock_entry_doc):
 			item.product,
 			"Warehouse",
 			stock_entry_doc.name,
-			available=item.available_qty or item.received_qty or 0,
+			available=available_qty,
 			reserved=item.reserved_qty or 0,
 			issued=item.issued_qty or 0,
 			warehouse=stock_entry_doc.warehouse,
@@ -330,6 +332,7 @@ def transfer_shipment_to_warehouse(shipment_doc, stock_entry_doc):
 	transferred_totals = _get_transferred_totals_by_shipment_item(shipment_doc.name)
 
 	for item in stock_entry_doc.items:
+		available_qty = _available_from_item(item)
 		local_rate = getattr(item, "landed_cost_rate_local", None)
 		local_amount = getattr(item, "landed_cost_amount_local", None)
 		if local_rate is None:
@@ -367,7 +370,7 @@ def transfer_shipment_to_warehouse(shipment_doc, stock_entry_doc):
 			item.product,
 			"Warehouse",
 			stock_entry_doc.name,
-			available=item.available_qty or item.received_qty or 0,
+			available=available_qty,
 			reserved=item.reserved_qty or 0,
 			issued=item.issued_qty or 0,
 			warehouse=stock_entry_doc.warehouse,
@@ -382,6 +385,7 @@ def transfer_shipment_to_warehouse(shipment_doc, stock_entry_doc):
 def _sync_entry_customs_balances(stock_entry_doc):
 	customs_reference = stock_entry_doc.import_shipment or stock_entry_doc.name
 	for item in stock_entry_doc.items:
+		available_qty = _available_from_item(item)
 		local_rate = getattr(item, "landed_cost_rate_local", None)
 		local_amount = getattr(item, "landed_cost_amount_local", None)
 		if local_rate is None:
@@ -392,7 +396,7 @@ def _sync_entry_customs_balances(stock_entry_doc):
 			item.product,
 			"Customs",
 			customs_reference,
-			available=item.available_qty or item.received_qty or 0,
+			available=available_qty,
 			reserved=0,
 			issued=0,
 			warehouse=None,
@@ -402,6 +406,15 @@ def _sync_entry_customs_balances(stock_entry_doc):
 			landed_cost_amount=local_amount,
 			remarks="Customs stock awaiting transfer",
 		)
+
+
+def _available_from_item(item) -> float:
+	"""Compute current available qty from a stock entry item."""
+	received = flt(getattr(item, "received_qty", 0) or getattr(item, "available_qty", 0))
+	reserved = flt(getattr(item, "reserved_qty", 0))
+	issued = flt(getattr(item, "issued_qty", 0))
+	available = received - reserved - issued
+	return max(available, 0)
 
 
 def update_stock_entry_balances(stock_entry_doc):

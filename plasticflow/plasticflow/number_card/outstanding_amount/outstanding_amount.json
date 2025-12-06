@@ -5,7 +5,7 @@
  "doctype": "Number Card",
  "document_type": "Plasticflow Invoice",
  "dynamic_filters_json": "[]",
- "filters_json": "[[\"Plasticflow Invoice\",\"docstatus\",\"=\",\"1\"],[\"Plasticflow Invoice\",\"outstanding_amount\",\">\",0],[\"Plasticflow Invoice\",\"invoice_date\",\"Timespan\",\"last 30 days\"]]",
+ "filters_json": "[[\"Plasticflow Invoice\",\"docstatus\",\"=\",\"1\"],[\"Plasticflow Invoice\",\"outstanding_amount\",\">\",0]]",
  "function": "Sum",
  "idx": 0,
  "is_public": 0,

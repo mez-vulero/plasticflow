@@ -4,7 +4,7 @@
  "doctype": "Number Card",
  "document_type": "Sales Order",
  "dynamic_filters_json": "[]",
- "filters_json": "[[\"Sales Order\",\"docstatus\",\"=\",1],[\"Sales Order\",\"status\",\"=\",\"Payment Pending\"]]",
+ "filters_json": "[[\"Sales Order\",\"docstatus\",\"=\",1],[\"Sales Order\",\"status\",\"in\",[\"Payment Pending\",\"Credit Sales\"]],[\"Sales Order\",\"outstanding_amount\",\">\",0]]",
  "function": "Count",
  "idx": 0,
  "is_public": 0,
