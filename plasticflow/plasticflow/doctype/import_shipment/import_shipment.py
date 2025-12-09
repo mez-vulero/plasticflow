@@ -66,6 +66,7 @@ class ImportShipment(Document):
 		self.flags.ignore_validate_update_after_submit = True
 		self._cancel_stock_entry()
 		stock_ledger.clear_shipment_balances(self)
+		self._sync_purchase_order_receipts(exclude_self=True)
 
 	def _populate_from_purchase_order(self):
 		po_name = self.purchase_order or self.import_reference
@@ -311,6 +312,10 @@ class ImportShipment(Document):
 		if not self.purchase_order:
 			return
 
+		# Keep Purchase Order received_qty in sync with submitted import shipments so stale values
+		# (e.g., cancelled or amended shipments) don't block new partial shipments.
+		po_shipment_qty = self._sync_purchase_order_receipts(exclude_self=True)
+
 		po_items = frappe.db.get_all(
 			"Purchase Order Item",
 			filters={"parent": self.purchase_order},
@@ -327,18 +332,9 @@ class ImportShipment(Document):
 
 			po_row = po_map[row.purchase_order_item]
 			ordered = flt(po_row.quantity or 0)
-			received = flt(po_row.received_qty or 0)
+			allocated_qty = po_shipment_qty.get(row.purchase_order_item, 0.0)
 
-			allocated_filters = {"purchase_order_item": row.purchase_order_item, "docstatus": 1}
-			if self.name:
-				allocated_filters["parent"] = ["!=", self.name]
-
-			allocated = frappe.db.get_all(
-				"Import Shipment Item", filters=allocated_filters, fields=["sum(quantity) as qty"]
-			)
-			allocated_qty = flt(allocated[0].qty) if allocated else 0.0
-
-			available = max(ordered - max(received, allocated_qty), 0)
+			available = max(ordered - allocated_qty, 0)
 			requested = flt(row.quantity or 0)
 
 			if requested - available > QTY_TOLERANCE:
@@ -346,17 +342,73 @@ class ImportShipment(Document):
 				frappe.throw(
 					_(
 						"Quantity {0} for product {1} exceeds remaining {2} on Purchase Order {3} "
-						"(ordered {4}, received {5}, already in other shipments {6})."
+						"(ordered {4}, already in other submitted shipments {5})."
 					).format(
 						frappe.format(requested, {"fieldtype": "Float"}),
 						product_label,
 						frappe.format(available if available > 0 else 0, {"fieldtype": "Float"}),
 						self.purchase_order,
 						frappe.format(ordered, {"fieldtype": "Float"}),
-						frappe.format(received, {"fieldtype": "Float"}),
 						frappe.format(allocated_qty, {"fieldtype": "Float"}),
 					)
 				)
+
+	def _sync_purchase_order_receipts(self, *, exclude_self: bool = False) -> dict[str, float]:
+		"""Align Purchase Order received_qty with submitted import shipments.
+
+		Returns a map of purchase_order_item -> total submitted shipment qty.
+		"""
+		if not self.purchase_order:
+			return {}
+
+		params = [self.purchase_order]
+		exclude_clause = ""
+		if exclude_self and self.name:
+			exclude_clause = "and ish.name != %s"
+			params.append(self.name)
+
+		rows = frappe.db.sql(
+			f"""
+			select
+				isi.purchase_order_item as po_item,
+				coalesce(sum(isi.quantity), 0) as qty
+			from `tabImport Shipment Item` isi
+			inner join `tabImport Shipment` ish on ish.name = isi.parent
+			where ish.purchase_order = %s
+				and ish.docstatus = 1
+				{exclude_clause}
+			group by isi.purchase_order_item
+			""",
+			tuple(params),
+			as_dict=True,
+		)
+		qty_map = {row.po_item: flt(row.qty) for row in rows if row.po_item}
+
+		po_items = frappe.db.get_all(
+			"Purchase Order Item",
+			filters={"parent": self.purchase_order},
+			fields=["name", "quantity", "received_qty"],
+		)
+
+		updated = False
+		for item in po_items:
+			target_qty = min(qty_map.get(item.name, 0.0), flt(item.quantity or 0))
+			if abs(flt(item.received_qty or 0) - target_qty) > QTY_TOLERANCE:
+				frappe.db.set_value(
+					"Purchase Order Item",
+					item.name,
+					"received_qty",
+					target_qty,
+					update_modified=False,
+				)
+				updated = True
+
+		if updated:
+			po_doc = frappe.get_doc("Purchase Order", self.purchase_order)
+			po_doc.reload()
+			po_doc.update_receipt_status()
+
+		return qty_map
 
 
 def get_dashboard_data():
