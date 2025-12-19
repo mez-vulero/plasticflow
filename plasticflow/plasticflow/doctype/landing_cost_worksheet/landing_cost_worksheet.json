@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "format:LCW-{YYYY}-{#####}",
+ "autoname": "naming_series:",
  "creation": "2025-01-01 00:00:00",
  "default_view": "Form",
  "doctype": "DocType",
@@ -8,6 +8,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "naming_series",
   "import_shipment",
   "purchase_order",
   "section_break_shipment_overview",
@@ -178,12 +179,6 @@
    "options": "Landing Cost Component"
   },
   {
-   "collapsible": 1,
-   "fieldname": "section_break_taxes",
-   "fieldtype": "Section Break",
-   "label": "Taxes"
-  },
-  {
    "fieldname": "taxes",
    "fieldtype": "Table",
    "label": "Taxes",
@@ -275,7 +270,7 @@
    "label": "Tax Cost Total",
    "options": "currency",
    "read_only": 1
- },
+  },
   {
    "fieldname": "tax_cost_total_import",
    "fieldtype": "Currency",
@@ -290,19 +285,19 @@
    "label": "Per Product Profitability"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "product_summaries",
    "fieldtype": "Table",
    "label": "Product Cost Summary",
-   "options": "Landing Cost Product Summary",
-   "allow_on_submit": 1
+   "options": "Landing Cost Product Summary"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "estimated_total_net_profit",
    "fieldtype": "Currency",
    "label": "Estimated Total Net Profit",
    "options": "currency",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
    "collapsible": 1,
@@ -350,16 +345,23 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "LCW-.YYYY.-.####"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-20 22:25:19.890676",
+ "modified": "2025-12-19 11:15:40.824756",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Landing Cost Worksheet",
- "naming_rule": "Expression",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {

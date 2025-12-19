@@ -59,7 +59,7 @@ class SalesOrder(Document):
 		self.update_invoicing_progress()
 
 	def on_cancel(self):
-		reservations = self._collect_batch_reservations()
+		reservations = self._collect_batch_reservations(for_release=True)
 		self._release_reservations(reservations)
 		self.db_set(
 			{
@@ -307,7 +307,7 @@ class SalesOrder(Document):
 		# Intentionally ignore to keep status-driven flow
 		pass
 
-	def _collect_batch_reservations(self):
+	def _collect_batch_reservations(self, *, for_release: bool = False):
 		reservations: dict[str, dict[str, object]] = {}
 		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
 		target_warehouse = self._get_target_warehouse()
@@ -318,18 +318,22 @@ class SalesOrder(Document):
 				continue
 
 			if item.batch_item:
-				self._reserve_specific_batch(reservations, item, required_qty, location_type, target_warehouse)
+				if for_release:
+					self._release_specific_batch(reservations, item, required_qty, location_type, target_warehouse)
+				else:
+					self._reserve_specific_batch(reservations, item, required_qty, location_type, target_warehouse)
 				continue
 
 			for batch in self._iter_fifo_batches(
 				item.product,
 				location_type=location_type,
 				warehouse=target_warehouse,
+				for_release=for_release,
 			):
-				available = flt(batch.available_qty or 0)
-				if available <= 0 or required_qty <= 0:
+				batch_qty = flt(batch.reserved_qty if for_release else batch.available_qty or 0)
+				if batch_qty <= 0 or required_qty <= 0:
 					continue
-				allocate = min(required_qty, available)
+				allocate = min(required_qty, batch_qty)
 				self._add_reservation(
 					reservations,
 					batch.batch_name,
@@ -342,6 +346,12 @@ class SalesOrder(Document):
 					break
 
 			if required_qty > QTY_TOLERANCE:
+				if for_release:
+					frappe.throw(
+						_("Insufficient reserved stock to release for {0}. Short by {1} units.").format(
+							item.product, f"{required_qty:.3f}"
+						)
+					)
 				frappe.throw(
 					_("Insufficient FIFO stock for {0}. Short by {1} units.").format(
 						item.product, f"{required_qty:.3f}"
@@ -610,7 +620,51 @@ class SalesOrder(Document):
 			from_customs=location_type == "Customs",
 		)
 
-	def _iter_fifo_batches(self, product, *, location_type, warehouse):
+	def _release_specific_batch(self, reservations, item, required_qty, location_type, target_warehouse):
+		row = frappe.db.get_value(
+			"Stock Entry Items",
+			item.batch_item,
+			[
+				"name",
+				"parent",
+				"product",
+				"reserved_qty",
+			],
+			as_dict=True,
+		)
+		if not row:
+			frappe.throw(_("Selected batch item {0} not found.").format(item.batch_item))
+		if row.product != item.product:
+			frappe.throw(_("Batch item {0} does not match product {1}.").format(item.batch_item, item.product))
+
+		parent = frappe.db.get_value(
+			"Stock Entries",
+			row.parent,
+			["status", "warehouse"],
+			as_dict=True,
+		)
+		if not parent:
+			frappe.throw(_("Stock Entry {0} linked to batch item {1} not found.").format(row.parent, row.name))
+
+		reserved = flt(row.reserved_qty or 0)
+		if reserved + QTY_TOLERANCE < required_qty:
+			frappe.throw(
+				_("Batch item {0} does not have enough reserved stock to release. Required {1}, reserved {2}.").format(
+					row.name,
+					f"{required_qty:.3f}",
+					f"{max(reserved, 0):.3f}",
+				)
+			)
+
+		self._add_reservation(
+			reservations,
+			row.parent,
+			row.name,
+			required_qty,
+			from_customs=location_type == "Customs",
+		)
+
+	def _iter_fifo_batches(self, product, *, location_type, warehouse, for_release: bool = False):
 		child_table = "`tabStock Entry Items`"
 		parent_table = "`tabStock Entries`"
 
@@ -636,9 +690,12 @@ class SalesOrder(Document):
 		conditions.append("se.import_shipment = %s")
 		values.append(self.import_shipment)
 
-		conditions.append(
-			"(coalesce(sei.received_qty,0) - coalesce(sei.reserved_qty,0) - coalesce(sei.issued_qty,0)) > 0"
-		)
+		if for_release:
+			conditions.append("coalesce(sei.reserved_qty,0) > 0")
+		else:
+			conditions.append(
+				"(coalesce(sei.received_qty,0) - coalesce(sei.reserved_qty,0) - coalesce(sei.issued_qty,0)) > 0"
+			)
 
 		query = f"""
 			select
@@ -648,6 +705,7 @@ class SalesOrder(Document):
 				se.warehouse as warehouse,
 				coalesce(se.arrival_date, se.creation) as arrival_marker,
 				se.creation as creation,
+				coalesce(sei.reserved_qty,0) as reserved_qty,
 				(coalesce(sei.received_qty,0) - coalesce(sei.reserved_qty,0) - coalesce(sei.issued_qty,0)) as available_qty
 			from {child_table} sei
 			inner join {parent_table} se on se.name = sei.parent

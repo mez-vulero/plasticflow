@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_import": 1,
- "autoname": "format:SHIP-{YYYY}-{#####}",
+ "autoname": "naming_series:",
  "creation": "2025-01-01 00:00:00",
  "default_view": "List",
  "doctype": "DocType",
@@ -9,9 +9,11 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "naming_series",
   "import_reference",
   "shipment_date",
   "expected_arrival",
+  "document_reference_number",
   "section_break_customs",
   "arrival_date",
   "bill_of_lading",
@@ -44,35 +46,35 @@
   "section_break_documents",
   "customs_documents",
   "section_break_items",
-  "items"
+  "items",
+  "amended_from"
  ],
  "fields": [
   {
    "fieldname": "import_reference",
    "fieldtype": "Link",
    "in_list_view": 1,
+   "in_preview": 1,
    "label": "Reference",
    "options": "Purchase Order",
    "reqd": 1,
-   "search_index": 1,
-   "in_preview": 1,
-   "set_null_on_delete": 1
+   "search_index": 1
   },
   {
    "default": "Today",
    "fieldname": "shipment_date",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Shipment Date",
    "in_preview": 1,
+   "label": "Shipment Date",
    "reqd": 1
   },
- {
-  "fieldname": "expected_arrival",
-  "fieldtype": "Date",
-  "label": "Expected Arrival",
-  "in_preview": 1
- },
+  {
+   "fieldname": "expected_arrival",
+   "fieldtype": "Date",
+   "in_preview": 1,
+   "label": "Expected Arrival"
+  },
   {
    "fieldname": "section_break_customs",
    "fieldtype": "Section Break",
@@ -85,35 +87,34 @@
    "label": "Arrival Date"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "bill_of_lading",
    "fieldtype": "Data",
-   "label": "Bill of Lading",
-   "allow_on_submit": 1
+   "label": "Bill of Lading"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "destination_warehouse",
    "fieldtype": "Link",
    "label": "Destination Warehouse",
-   "options": "Warehouse",
-   "set_null_on_delete": 1,
-   "allow_on_submit": 1
+   "options": "Warehouse"
   },
   {
+   "allow_on_submit": 1,
    "default": "In Transit",
    "fieldname": "clearance_status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Clearance Status",
    "options": "\nIn Transit\nReceived\nUnder Clearance\nCleared\nAt Warehouse\nOn Hold",
-   "reqd": 1,
-   "allow_on_submit": 1
+   "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "depends_on": "eval:[\"Cleared\", \"At Warehouse\"].includes(doc.clearance_status)",
    "fieldname": "cleared_on",
    "fieldtype": "Date",
-   "label": "Cleared On",
-   "allow_on_submit": 1
+   "label": "Cleared On"
   },
   {
    "fieldname": "total_declared_value",
@@ -126,32 +127,30 @@
    "fieldtype": "Link",
    "label": "Generated Stock Entries",
    "options": "Stock Entries",
-   "read_only": 1,
-   "set_null_on_delete": 1
+   "read_only": 1
   },
- {
-  "collapsible": 1,
-  "fieldname": "section_break_commercial",
-  "fieldtype": "Section Break",
-  "label": "Commercial Details"
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_commercial",
+   "fieldtype": "Section Break",
+   "label": "Commercial Details"
   },
   {
    "fieldname": "supplier",
    "fieldtype": "Link",
    "in_list_view": 1,
+   "in_preview": 1,
    "label": "Supplier",
    "options": "Supplier",
-   "reqd": 1,
-   "in_preview": 1
+   "reqd": 1
   },
   {
    "fieldname": "purchase_order",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Purchase Order",
-   "options": "Purchase Order",
    "in_preview": 1,
-   "set_null_on_delete": 1
+   "label": "Purchase Order",
+   "options": "Purchase Order"
   },
   {
    "fieldname": "lc_no",
@@ -173,15 +172,13 @@
    "fieldname": "port_of_loading",
    "fieldtype": "Link",
    "label": "Port of Loading",
-   "options": "Ports",
-   "set_null_on_delete": 1
+   "options": "Ports"
   },
   {
    "fieldname": "port_of_discharge",
    "fieldtype": "Link",
    "label": "Port of Discharge",
-   "options": "Ports",
-   "set_null_on_delete": 1
+   "options": "Ports"
   },
   {
    "default": "USD",
@@ -201,81 +198,81 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_shipment_amount",
    "fieldtype": "Currency",
+   "in_preview": 1,
    "label": "Base Shipment Amount",
    "options": "currency",
-   "read_only": 1,
-   "in_preview": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_quantity",
    "fieldtype": "Float",
-   "label": "Total Quantity",
-   "read_only": 1,
    "in_preview": 1,
-   "allow_on_submit": 1
+   "label": "Total Quantity",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_landed_cost",
    "fieldtype": "Currency",
    "label": "Total Landed Cost (Import Currency)",
    "options": "currency",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_landed_cost_local",
    "fieldtype": "Currency",
    "label": "Total Landed Cost (Local Currency)",
    "options": "local_currency",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "per_unit_landed_cost",
    "fieldtype": "Currency",
    "label": "Avg Landed Cost / Unit (Import Currency)",
    "options": "currency",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "per_unit_landed_cost_local",
    "fieldtype": "Currency",
    "label": "Avg Landed Cost / Unit (Local Currency)",
    "options": "local_currency",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "Draft",
    "fieldname": "landing_cost_status",
    "fieldtype": "Select",
    "label": "Landing Cost Status",
    "options": "\nDraft\nIn Review\nLocked",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "landing_cost_note",
    "fieldtype": "Small Text",
-   "label": "Landing Cost Notes",
-   "allow_on_submit": 1
-},
-  {
-   "fieldname": "description",
-   "fieldtype": "Data",
-   "label": "Description",
-   "in_preview": 1,
-   "allow_on_submit": 1
+   "label": "Landing Cost Notes"
   },
   {
+   "allow_on_submit": 1,
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "in_preview": 1,
+   "label": "Description"
+  },
+  {
+   "allow_on_submit": 1,
    "fieldname": "remarks",
    "fieldtype": "Small Text",
-   "label": "Remarks",
-   "allow_on_submit": 1
+   "label": "Remarks"
   },
   {
    "collapsible": 1,
@@ -289,11 +286,11 @@
    "label": "Customs Documents",
    "options": "Customs Documents"
   },
- {
-  "collapsible": 1,
-  "fieldname": "section_break_items",
-  "fieldtype": "Section Break",
-  "label": "Shipment Items"
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_items",
+   "fieldtype": "Section Break",
+   "label": "Shipment Items"
   },
   {
    "fieldname": "items",
@@ -301,16 +298,38 @@
    "label": "Items",
    "options": "Import Shipment Item",
    "reqd": 1
+  },
+  {
+   "fieldname": "document_reference_number",
+   "fieldtype": "Data",
+   "label": "Document Reference Number"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Import Shipment",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "SHIP-.YYYY.-.####"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-01 00:00:00",
+ "modified": "2025-12-19 11:10:13.743693",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Import Shipment",
- "naming_rule": "Expression",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {

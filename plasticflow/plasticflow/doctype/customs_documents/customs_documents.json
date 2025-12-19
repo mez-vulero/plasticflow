@@ -1,7 +1,6 @@
 {
  "actions": [],
- "allow_import": 0,
- "creation": "2024-01-01 00:00:00.000000",
+ "creation": "2024-01-01 00:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -17,7 +16,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Document Type",
-   "options": "\nCommercial Invoice\nPermit\nECZN Certificate\nOther",
+   "options": "\nCommercial Invoice\nPermit\nECTN Certificate\nCertificate of Origin\nPacking List\nOther",
    "reqd": 1
   },
   {
@@ -41,15 +40,15 @@
    "read_only": 1
   }
  ],
- "index_web_pages_for_search": 0,
  "istable": 1,
  "links": [],
- "modified": "2024-01-01 00:00:00.000000",
+ "modified": "2025-12-19 11:11:33.213145",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Customs Documents",
  "owner": "Administrator",
  "permissions": [],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

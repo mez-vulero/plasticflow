@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_import": 1,
- "autoname": "format:PO-{YYYY}-{#####}",
+ "autoname": "naming_series:",
  "creation": "2025-01-01 00:00:00",
  "default_view": "Form",
  "doctype": "DocType",
@@ -9,6 +9,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "naming_series",
   "po_date",
   "supplier",
   "purchase_currency",
@@ -135,6 +136,13 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "PO-.YYYY.-.####"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -146,11 +154,11 @@
    "link_fieldname": "import_reference"
   }
  ],
- "modified": "2025-11-30 16:21:45.866578",
+ "modified": "2025-12-19 11:13:41.492304",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Purchase Order",
- "naming_rule": "Expression",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {

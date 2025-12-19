@@ -24,9 +24,9 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Cost Type",
-   "options": "\nFreight\nInsurance\nPort Charges\nHandling\nTransport\nOther",
+   "options": "\nFreight\nInsurance\nPort Charges\nHandling\nCustom Clearance\nStorage\nDemurrage\nBank Charge\nTransport\nOther",
    "reqd": 1
- },
+  },
   {
    "default": "Foreign Cost",
    "fieldname": "cost_bucket",
@@ -47,11 +47,11 @@
    "label": "Apply To Shipment Item",
    "options": "Import Shipment Item"
   },
- {
-  "default": "Total Amount",
-  "fieldname": "cost_scope",
-  "fieldtype": "Select",
-  "label": "Cost Scope",
+  {
+   "default": "Total Amount",
+   "fieldname": "cost_scope",
+   "fieldtype": "Select",
+   "label": "Cost Scope",
    "options": "\nTotal Amount\nPer Ton\nPer Kg"
   },
   {
@@ -89,12 +89,12 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Notes"
- }
+  }
  ],
  "grid_page_length": 30,
  "istable": 1,
  "links": [],
- "modified": "2025-01-01 00:00:00",
+ "modified": "2025-12-19 11:12:36.216185",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Landing Cost Component",
