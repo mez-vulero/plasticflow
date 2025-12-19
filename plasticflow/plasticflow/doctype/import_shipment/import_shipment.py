@@ -17,7 +17,8 @@ class ImportShipment(Document):
 		self._set_item_defaults()
 		self._calculate_totals()
 		self._set_clearance_defaults()
-		self._validate_purchase_order_quantities()
+		if not getattr(self.flags, "skip_purchase_order_validation", False):
+			self._validate_purchase_order_quantities()
 
 	def before_save(self):
 		# Allow recalculations on submitted docs

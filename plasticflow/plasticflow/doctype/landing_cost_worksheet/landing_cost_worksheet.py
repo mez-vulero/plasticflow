@@ -417,6 +417,7 @@ class LandingCostWorksheet(Document):
 			return
 
 		shipment.flags.ignore_validate_update_after_submit = True
+		shipment.flags.skip_purchase_order_validation = True
 
 		for item in shipment.items:
 			item.flags.ignore_validate_update_after_submit = True
