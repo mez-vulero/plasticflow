@@ -74,7 +74,8 @@
    "fieldtype": "Link",
    "label": "Gate Pass Request",
    "options": "Gate Pass Request",
-   "read_only": 1
+   "read_only": 1,
+   "set_null_on_delete": 1
   },
   {
    "fieldname": "section_break_items",
