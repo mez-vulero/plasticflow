@@ -1,13 +1,13 @@
 {
  "actions": [],
  "allow_import": 1,
- "autoname": "naming_series:",
+ "allow_rename": 1,
+ "autoname": "field:suppliers_name",
  "creation": "2024-01-01 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "naming_series",
-  "supplier_name",
+  "suppliers_name",
   "country_of_origin",
   "column_break_1",
   "contact_person",
@@ -20,13 +20,6 @@
   "notes"
  ],
  "fields": [
-  {
-   "fieldname": "supplier_name",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Supplier Name",
-   "reqd": 1
-  },
   {
    "fieldname": "country_of_origin",
    "fieldtype": "Data",
@@ -78,21 +71,23 @@
    "label": "Notes"
   },
   {
-   "fieldname": "naming_series",
-   "fieldtype": "Select",
+   "fieldname": "suppliers_name",
+   "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Series",
-   "options": "SUP-.YY.-.###",
-   "reqd": 1
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Supplier Name",
+   "reqd": 1,
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-11-20 22:06:18.266954",
+ "modified": "2025-12-21 17:01:58.793125",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Supplier",
- "naming_rule": "By \"Naming Series\" field",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
@@ -133,6 +128,6 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
- "title_field": "supplier_name",
+ "title_field": "suppliers_name",
  "track_changes": 1
 }

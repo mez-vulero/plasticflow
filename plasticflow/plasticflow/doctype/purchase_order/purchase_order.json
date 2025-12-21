@@ -39,7 +39,6 @@
   {
    "fieldname": "supplier",
    "fieldtype": "Link",
-   "in_list_view": 1,
    "label": "Supplier",
    "options": "Supplier",
    "reqd": 1
@@ -105,12 +104,14 @@
   {
    "fieldname": "total_quantity",
    "fieldtype": "Float",
+   "in_list_view": 1,
    "label": "Total Quantity",
    "read_only": 1
   },
   {
    "fieldname": "total_amount",
    "fieldtype": "Currency",
+   "in_list_view": 1,
    "label": "Total Amount (PO Currency)",
    "options": "purchase_currency",
    "read_only": 1
@@ -147,14 +148,8 @@
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
- "links": [
-  {
-   "group": "Shipment",
-   "link_doctype": "Import Shipment",
-   "link_fieldname": "import_reference"
-  }
- ],
- "modified": "2025-12-19 11:13:41.492304",
+ "links": [],
+ "modified": "2025-12-21 17:05:33.691697",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Purchase Order",
