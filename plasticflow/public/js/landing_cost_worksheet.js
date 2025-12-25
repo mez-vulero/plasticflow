@@ -17,6 +17,7 @@ frappe.ui.form.on("Landing Cost Component", {
 	amount: debounced_preview_totals,
 	exchange_rate: debounced_preview_totals,
 	currency: debounced_preview_totals,
+	is_taxable: debounced_preview_totals,
 });
 
 frappe.ui.form.on("Landing Cost Tax", {

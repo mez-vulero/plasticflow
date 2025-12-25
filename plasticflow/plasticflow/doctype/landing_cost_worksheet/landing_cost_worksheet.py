@@ -578,6 +578,8 @@ class LandingCostWorksheet(Document):
 			if not local_val:
 				local_val = self._convert_to_local(flt(item.base_amount or 0))
 			item_base_local[item.name] = local_val
+		taxable_base_local = {name: item_base_local.get(name, 0) for name in item_base_local}
+		taxable_base_import = {name: item_base_import.get(name, 0) for name in item_base_import}
 
 		breakdown = {
 			"items": {item.name: self._zero_breakdown_row() for item in shipment.items},
@@ -617,11 +619,14 @@ class LandingCostWorksheet(Document):
 					breakdown["totals"]["local"][bucket] += amounts["local"]
 					breakdown["totals"]["import"][bucket] += amounts["import"]
 					subtotal_local[item_name] = subtotal_local.get(item_name, 0) + amounts["local"]
+					if self._is_taxable_component(row):
+						taxable_base_local[item_name] = taxable_base_local.get(item_name, 0) + amounts["local"]
+						taxable_base_import[item_name] = taxable_base_import.get(item_name, 0) + amounts["import"]
 
 		for row in tax_rows:
 			self._normalise_component_row(row)
 			allocations = self._distribute_component_amount(
-				row, shipment, item_quantities, item_base_import, item_base_local, subtotal_local
+				row, shipment, item_quantities, taxable_base_import, taxable_base_local, taxable_base_local
 			)
 			for item_name, amounts in allocations.items():
 				entry = breakdown["items"].setdefault(item_name, self._zero_breakdown_row())
@@ -736,6 +741,12 @@ class LandingCostWorksheet(Document):
 		if "tax" in value:
 			return "tax"
 		return "foreign"
+
+	def _is_taxable_component(self, row) -> bool:
+		value = getattr(row, "is_taxable", None)
+		if value in (None, ""):
+			return True
+		return bool(int(value))
 
 	def _normalise_component_row(self, row):
 		bucket = self._normalise_cost_bucket(getattr(row, "cost_bucket", None))

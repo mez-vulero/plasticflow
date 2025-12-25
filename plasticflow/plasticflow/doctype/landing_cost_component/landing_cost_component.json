@@ -11,6 +11,7 @@
   "description",
   "apply_to_item",
   "cost_scope",
+  "is_taxable",
   "currency",
   "exchange_rate",
   "amount",
@@ -53,6 +54,13 @@
    "fieldtype": "Select",
    "label": "Cost Scope",
    "options": "\nTotal Amount\nPer Ton\nPer Kg"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_taxable",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Taxable"
   },
   {
    "fieldname": "currency",
