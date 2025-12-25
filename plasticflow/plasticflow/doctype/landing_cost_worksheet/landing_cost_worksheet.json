@@ -10,6 +10,7 @@
  "field_order": [
   "naming_series",
   "import_shipment",
+  "column_break_pwny",
   "purchase_order",
   "section_break_shipment_overview",
   "supplier",
@@ -26,8 +27,11 @@
   "default_selling_price_per_kg",
   "profit_tax_percent",
   "allocation_method",
+  "costs_tab",
   "section_break_eicd",
   "cost_components",
+  "local_cost_total",
+  "foreign_cost_total",
   "taxes",
   "section_break_costs",
   "total_base_amount",
@@ -35,16 +39,15 @@
   "tax_cost_total",
   "total_landed_cost",
   "avg_landed_cost",
-  "local_cost_total",
   "column_break_totals",
   "total_base_amount_import",
   "total_additional_cost_import",
   "tax_cost_total_import",
   "total_landed_cost_import",
   "avg_landed_cost_import",
-  "foreign_cost_total",
-  "total_quantity",
+  "summary_tab",
   "section_break_profitability",
+  "total_quantity",
   "product_summaries",
   "estimated_total_net_profit",
   "section_break_allocations",
@@ -71,7 +74,6 @@
    "read_only": 1
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_shipment_overview",
    "fieldtype": "Section Break",
    "label": "Shipment Overview"
@@ -167,7 +169,6 @@
    "options": "\nBy Value\nBy Quantity"
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_costs",
    "fieldtype": "Section Break",
    "label": "Totals"
@@ -279,7 +280,6 @@
    "read_only": 1
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_profitability",
    "fieldtype": "Section Break",
    "label": "Per Product Profitability"
@@ -300,7 +300,6 @@
    "read_only": 1
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_allocations",
    "fieldtype": "Section Break",
    "label": "Allocation Summary"
@@ -352,12 +351,26 @@
    "hidden": 1,
    "label": "Series",
    "options": "LCW-.YYYY.-.####"
+  },
+  {
+   "fieldname": "column_break_pwny",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "costs_tab",
+   "fieldtype": "Tab Break",
+   "label": "Costs"
+  },
+  {
+   "fieldname": "summary_tab",
+   "fieldtype": "Tab Break",
+   "label": "Summary"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-19 11:15:40.824756",
+ "modified": "2025-12-25 07:36:24.902386",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Landing Cost Worksheet",

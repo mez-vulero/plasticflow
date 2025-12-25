@@ -9,6 +9,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "basic_details_tab",
   "naming_series",
   "import_reference",
   "shipment_date",
@@ -16,14 +17,18 @@
   "document_reference_number",
   "expected_arrival",
   "description",
+  "section_break_items",
+  "items",
+  "import_details_tab",
   "section_break_customs",
-  "arrival_date",
-  "bill_of_lading",
-  "destination_warehouse",
   "clearance_status",
+  "destination_warehouse",
+  "bill_of_lading",
+  "stock_entry",
+  "column_break_nkmk",
+  "arrival_date",
   "cleared_on",
   "total_declared_value",
-  "stock_entry",
   "section_break_commercial",
   "supplier",
   "purchase_order",
@@ -34,6 +39,7 @@
   "port_of_discharge",
   "currency",
   "local_currency",
+  "amended_from",
   "column_break_finance",
   "total_shipment_amount",
   "total_quantity",
@@ -44,11 +50,9 @@
   "landing_cost_status",
   "landing_cost_note",
   "remarks",
+  "documents_tab",
   "section_break_documents",
-  "customs_documents",
-  "section_break_items",
-  "items",
-  "amended_from"
+  "customs_documents"
  ],
  "fields": [
   {
@@ -131,7 +135,6 @@
    "read_only": 1
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_commercial",
    "fieldtype": "Section Break",
    "label": "Commercial Details"
@@ -291,7 +294,6 @@
    "options": "Customs Documents"
   },
   {
-   "collapsible": 1,
    "fieldname": "section_break_items",
    "fieldtype": "Section Break",
    "label": "Shipment Items"
@@ -330,12 +332,31 @@
   {
    "fieldname": "column_break_alrn",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "basic_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Basic Details"
+  },
+  {
+   "fieldname": "import_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Import Details"
+  },
+  {
+   "fieldname": "column_break_nkmk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "documents_tab",
+   "fieldtype": "Tab Break",
+   "label": "Documents"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-21 17:13:31.069118",
+ "modified": "2025-12-25 07:29:02.902677",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Import Shipment",
