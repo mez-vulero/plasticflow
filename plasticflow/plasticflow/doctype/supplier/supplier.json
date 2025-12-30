@@ -22,8 +22,9 @@
  "fields": [
   {
    "fieldname": "country_of_origin",
-   "fieldtype": "Data",
-   "label": "Country of Origin"
+   "fieldtype": "Link",
+   "label": "Country of Origin",
+   "options": "Country"
   },
   {
    "fieldname": "column_break_1",
@@ -83,7 +84,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-21 17:01:58.793125",
+ "modified": "2025-12-25 11:47:21.793171",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Supplier",
