@@ -27,7 +27,7 @@ frappe.ui.form.on("Sales Order", {
 					freeze_message: __("Preparing Invoice..."),
 					callback: ({ message }) => {
 						if (message && message.name) {
-							frappe.set_route("Form", "Plasticflow Invoice", message.name);
+							frappe.set_route("Form", "Invoice", message.name);
 						}
 					},
 				});

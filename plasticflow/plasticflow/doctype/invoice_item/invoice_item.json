@@ -67,7 +67,7 @@
  "modified": "2025-10-28 14:29:31.665470",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
- "name": "Plasticflow Invoice Item",
+ "name": "Invoice Item",
  "owner": "Administrator",
  "permissions": [],
  "row_format": "Dynamic",

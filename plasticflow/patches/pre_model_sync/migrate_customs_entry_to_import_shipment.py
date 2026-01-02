@@ -99,11 +99,12 @@ def execute():
 			frappe.db.sql_ddl("alter table `tabStock Entry Items` drop column `customs_entry_item`")
 		except Exception:
 			pass
-	if frappe.db.table_exists("tabPlasticflow Stock Ledger Entry"):
-		try:
-			frappe.db.sql_ddl("alter table `tabPlasticflow Stock Ledger Entry` drop column `customs_entry`")
-		except Exception:
-			pass
+	for table in ("tabPlasticflow Stock Ledger Entry", "tabStock Ledger Entry"):
+		if frappe.db.table_exists(table):
+			try:
+				frappe.db.sql_ddl(f"alter table `{table}` drop column `customs_entry`")
+			except Exception:
+				pass
 
 	if frappe.db.exists("DocType", "Customs Entry"):
 		frappe.delete_doc("DocType", "Customs Entry", ignore_permissions=True, force=1)

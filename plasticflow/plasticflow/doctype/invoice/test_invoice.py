@@ -13,9 +13,9 @@ IGNORE_TEST_RECORD_DEPENDENCIES = []  # eg. ["User"]
 
 
 
-class IntegrationTestPlasticflowInvoice(IntegrationTestCase):
+class IntegrationTestInvoice(IntegrationTestCase):
 	"""
-	Integration tests for PlasticflowInvoice.
+	Integration tests for Invoice.
 	Use this class for testing interactions between multiple components.
 	"""
 

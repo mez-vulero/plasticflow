@@ -25,7 +25,7 @@ def execute(filters=None):
 		select date(last_movement) as movement_date,
 		       sum(reserved_qty) as reserved_qty,
 		       sum(issued_qty) as issued_qty
-		from `tabPlasticflow Stock Ledger Entry`
+		from `tabStock Ledger Entry`
 		{where_clause}
 		group by date(last_movement)
 		order by movement_date

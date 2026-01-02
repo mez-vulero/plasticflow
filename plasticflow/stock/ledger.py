@@ -1,7 +1,7 @@
 import frappe
 from frappe.utils import flt, now_datetime
 
-LEDGER_DOCTYPE = "Plasticflow Stock Ledger Entry"
+LEDGER_DOCTYPE = "Stock Ledger Entry"
 
 
 def _get_filters(

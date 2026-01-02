@@ -407,8 +407,8 @@ class SalesOrder(Document):
 	def _clear_links(self):
 		updates = {}
 		if self.invoice:
-			if frappe.db.exists("Plasticflow Invoice", self.invoice):
-				frappe.db.set_value("Plasticflow Invoice", self.invoice, {"sales_order": None}, update_modified=False)
+			if frappe.db.exists("Invoice", self.invoice):
+				frappe.db.set_value("Invoice", self.invoice, {"sales_order": None}, update_modified=False)
 			updates["invoice"] = None
 			self.invoice = None
 		if self.gate_pass:
@@ -547,7 +547,7 @@ class SalesOrder(Document):
 		}
 		if warehouse:
 			filters["warehouse"] = warehouse
-		return flt(frappe.db.get_value("Plasticflow Stock Ledger Entry", filters, "reserved_qty") or 0)
+		return flt(frappe.db.get_value("Stock Ledger Entry", filters, "reserved_qty") or 0)
 
 	@staticmethod
 	def _get_current_issued(product, location_type, reference, warehouse):
@@ -558,7 +558,7 @@ class SalesOrder(Document):
 		}
 		if warehouse:
 			filters["warehouse"] = warehouse
-		return flt(frappe.db.get_value("Plasticflow Stock Ledger Entry", filters, "issued_qty") or 0)
+		return flt(frappe.db.get_value("Stock Ledger Entry", filters, "issued_qty") or 0)
 
 	def _add_reservation(self, reservations, batch_name, child_name, qty, *, from_customs):
 		if qty <= 0:
@@ -764,7 +764,7 @@ class SalesOrder(Document):
 		result = frappe.db.sql(
 			f"""
 			select coalesce(sum(total_amount), 0)
-			from `tabPlasticflow Invoice`
+			from `tabInvoice`
 			where sales_order = %s
 			and docstatus = 1
 			{exclude_clause}
@@ -779,7 +779,7 @@ class SalesOrder(Document):
 		row = frappe.db.sql(
 			"""
 			select name
-			from `tabPlasticflow Invoice`
+			from `tabInvoice`
 			where sales_order = %s and docstatus = 1
 			order by modified desc
 			limit 1
@@ -793,7 +793,7 @@ class SalesOrder(Document):
 		total_paid = self._sum_payment_slips(verified_only=self.sales_type == "Cash")
 		if exclude_invoice:
 			# If excluding an invoice, avoid counting its total in net paid comparison
-			net_receivable = max(net_receivable - flt(frappe.db.get_value("Plasticflow Invoice", exclude_invoice, "total_amount") or 0), 0)
+			net_receivable = max(net_receivable - flt(frappe.db.get_value("Invoice", exclude_invoice, "total_amount") or 0), 0)
 		return max(net_receivable - total_paid, 0)
 
 	def update_invoicing_progress(self):
@@ -899,7 +899,7 @@ class SalesOrder(Document):
 		return invoice
 
 	def _build_invoice_doc(self, amount):
-		invoice = frappe.new_doc("Plasticflow Invoice")
+		invoice = frappe.new_doc("Invoice")
 		invoice.sales_order = self.name
 		invoice.customer = self.customer
 		invoice.currency = self.currency

@@ -7,7 +7,7 @@ flowchart LR
 
   PayPending --> PaySlip["Payment Slips Uploaded and Verified"]
   PaySlip --> PayVerified["Payment Verified"]
-  PayVerified --> Invoice["Plasticflow Invoice"]
+  PayVerified --> Invoice["Invoice"]
   CreditSO --> Invoice
 
   Invoice --> GatePass["Gate Pass Generated"]

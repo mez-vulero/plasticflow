@@ -86,13 +86,13 @@
   },
   {
    "label": "Stock Ledger",
-   "link_to": "Plasticflow Stock Ledger Entry",
+   "link_to": "Stock Ledger Entry",
    "type": "DocType"
   },
   {
    "label": "Stock Value Report",
    "link_to": "Plasticflow Stock Value",
-   "report_ref_doctype": "Plasticflow Stock Ledger Entry",
+   "report_ref_doctype": "Stock Ledger Entry",
    "type": "Report"
   }
  ],

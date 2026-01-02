@@ -12,7 +12,7 @@
  "name": "Plasticflow Sales Vs Inventory",
  "owner": "Administrator",
  "prepared_report": 0,
- "ref_doctype": "Plasticflow Invoice",
+ "ref_doctype": "Invoice",
  "report_name": "Plasticflow Sales Vs Inventory",
  "report_type": "Script Report",
  "roles": [

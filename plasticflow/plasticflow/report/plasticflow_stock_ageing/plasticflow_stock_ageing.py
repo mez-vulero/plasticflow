@@ -43,7 +43,7 @@ def execute(filters=None):
 		       available_qty,
 		       coalesce(landed_cost_rate, 0) as landed_cost_rate,
 		       last_movement
-		from `tabPlasticflow Stock Ledger Entry`
+		from `tabStock Ledger Entry`
 		{where_clause}
 		""",
 		params,

@@ -112,7 +112,7 @@
    "is_query_report": 0,
    "label": "Invoices",
    "link_count": 0,
-   "link_to": "Plasticflow Invoice",
+   "link_to": "Invoice",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -163,9 +163,9 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Plasticflow Stock Ledger Entry",
+   "label": "Stock Ledger Entry",
    "link_count": 0,
-   "link_to": "Plasticflow Stock Ledger Entry",
+   "link_to": "Stock Ledger Entry",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -292,7 +292,7 @@
   {
    "doc_view": "List",
    "label": "Invoices",
-   "link_to": "Plasticflow Invoice",
+   "link_to": "Invoice",
    "type": "DocType"
   },
   {
@@ -304,7 +304,7 @@
   {
    "doc_view": "List",
    "label": "Stock Ledger",
-   "link_to": "Plasticflow Stock Ledger Entry",
+   "link_to": "Stock Ledger Entry",
    "type": "DocType"
   }
  ],

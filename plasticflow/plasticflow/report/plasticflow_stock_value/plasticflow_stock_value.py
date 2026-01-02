@@ -39,7 +39,7 @@ def execute(filters=None):
 			sum(case when location_type = 'Warehouse' then available_qty * coalesce(landed_cost_rate, 0) else 0 end) as warehouse_value,
 			sum(available_qty * coalesce(landed_cost_rate, 0)) as total_value,
 			max(last_movement) as last_movement
-		from `tabPlasticflow Stock Ledger Entry`
+		from `tabStock Ledger Entry`
 		where {where_clause}
 		group by product
 		order by product

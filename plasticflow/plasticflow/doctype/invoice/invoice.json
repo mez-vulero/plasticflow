@@ -105,7 +105,7 @@
   {
    "fieldname": "items",
    "fieldtype": "Table",
-   "options": "Plasticflow Invoice Item",
+   "options": "Invoice Item",
    "reqd": 1
   },
   {
@@ -127,7 +127,7 @@
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "Plasticflow Invoice",
+   "options": "Invoice",
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
@@ -146,7 +146,7 @@
  "modified": "2025-10-29 10:31:09.099432",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
- "name": "Plasticflow Invoice",
+ "name": "Invoice",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

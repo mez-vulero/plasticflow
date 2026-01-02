@@ -10,7 +10,7 @@ def execute(filters=None):
 	rows = frappe.db.sql(
 		"""
 		select product, sum(available_qty) as available_qty
-		from `tabPlasticflow Stock Ledger Entry`
+		from `tabStock Ledger Entry`
 		where product is not null
 		group by product
 		order by available_qty desc

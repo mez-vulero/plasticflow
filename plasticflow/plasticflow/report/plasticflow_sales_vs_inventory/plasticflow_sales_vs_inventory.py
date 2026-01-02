@@ -14,7 +14,7 @@ def execute(filters=None):
 	invoice_rows = frappe.db.sql(
 		"""
 		select invoice_date, sum(total_amount) as total_amount
-		from `tabPlasticflow Invoice`
+		from `tabInvoice`
 		where docstatus = 1
 			and invoice_date between %(start_date)s and %(end_date)s
 		group by invoice_date
@@ -28,7 +28,7 @@ def execute(filters=None):
 		"""
 		select date(coalesce(last_movement, creation)) as movement_date,
 		       sum(available_qty) as available_qty
-		from `tabPlasticflow Stock Ledger Entry`
+		from `tabStock Ledger Entry`
 		where coalesce(last_movement, creation) between %(start_date)s and %(end_date)s
 		group by date(coalesce(last_movement, creation))
 		order by movement_date
@@ -39,7 +39,7 @@ def execute(filters=None):
 	stock_map = {getdate(row.movement_date): float(row.available_qty or 0) for row in stock_rows}
 
 	current_total_stock = frappe.db.sql(
-		"select sum(available_qty) from `tabPlasticflow Stock Ledger Entry`"
+		"select sum(available_qty) from `tabStock Ledger Entry`"
 	)[0][0] or 0
 
 	data = []

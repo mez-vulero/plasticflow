@@ -69,7 +69,7 @@
    "fieldname": "invoice",
    "fieldtype": "Link",
    "label": "Invoice",
-   "options": "Plasticflow Invoice",
+   "options": "Invoice",
    "read_only": 1
   }
  ],

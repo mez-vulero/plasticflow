@@ -15,7 +15,7 @@ flowchart TD
     SEW["Stock Entry @ Warehouse<br/>Status: Available/Reserved/Partially Issued/Depleted"]
   end
 
-  subgraph Ledger["Stock Ledger (Plasticflow Stock Ledger Entry)"]
+  subgraph Ledger["Stock Ledger (Stock Ledger Entry)"]
     LEDC["Customs balances<br/>Per shipment: available/reserved/issued"]
     LEDW["Warehouse balances<br/>Per batch & warehouse: available/reserved/issued"]
   end
@@ -24,7 +24,7 @@ flowchart TD
     SO["Sales Order (Cash or Credit)<br/>Delivery: Warehouse or Direct from Customs"]
     Reserve["On submit: reserve batches (FIFO or chosen batch)<br/>Requires Import Shipment"]
     PS["Payment Slips<br/>Cash: only Verified counts; Credit: track outstanding"]
-    INV["Plasticflow Invoice<br/>Generated from SO (remaining gross)"]
+    INV["Invoice<br/>Generated from SO (remaining gross)"]
     Settle["Status updates<br/>Payment Pending/Payment Verified/Settled/Credit Sales<br/>Outstanding = Net receivable − verified payments"]
     Ready["Outstanding ≈ 0 → ready for dispatch<br/>Reservations finalized"]
   end

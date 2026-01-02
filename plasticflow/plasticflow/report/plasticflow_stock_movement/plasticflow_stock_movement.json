@@ -12,7 +12,7 @@
  "name": "Plasticflow Stock Movement",
  "owner": "Administrator",
  "prepared_report": 0,
- "ref_doctype": "Plasticflow Stock Ledger Entry",
+ "ref_doctype": "Stock Ledger Entry",
  "report_name": "Plasticflow Stock Movement",
  "report_type": "Script Report",
  "roles": [

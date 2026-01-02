@@ -19,7 +19,7 @@ def execute(filters=None):
 	rows = frappe.db.sql(
 		f"""
 		select product, location_type, sum(available_qty) as available_qty
-		from `tabPlasticflow Stock Ledger Entry`
+		from `tabStock Ledger Entry`
 		{where_clause}
 		group by product, location_type
 		""",

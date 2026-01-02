@@ -6,7 +6,7 @@ def execute():
 		return
 
 	report = frappe.get_doc("Report", "Plasticflow Collections Timeline")
-	if report.ref_doctype != "Plasticflow Invoice":
-		report.ref_doctype = "Plasticflow Invoice"
+	if report.ref_doctype != "Invoice":
+		report.ref_doctype = "Invoice"
 		# ensure permissions align with parent doctype for charts/workspaces
 		report.save(ignore_permissions=True)

@@ -76,7 +76,7 @@ def execute(filters=None):
 
 def _collect_kpis():
 	stock_totals = frappe.db.get_all(
-		"Plasticflow Stock Ledger Entry",
+		"Stock Ledger Entry",
 		fields=[
 			"coalesce(sum(available_qty),0) as available",
 			"coalesce(sum(reserved_qty),0) as reserved",
@@ -86,7 +86,7 @@ def _collect_kpis():
 	reserved_stock = stock_totals[0].reserved if stock_totals else 0
 
 	outstanding_row = frappe.db.get_all(
-		"Plasticflow Invoice",
+		"Invoice",
 		filters={"docstatus": 1},
 		fields=["coalesce(sum(outstanding_amount),0) as outstanding"],
 	)

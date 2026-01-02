@@ -6,7 +6,7 @@ from frappe.utils import flt, nowdate
 PAYMENT_TOLERANCE = 0.01
 
 
-class PlasticflowInvoice(Document):
+class Invoice(Document):
 	"""Finance invoice generated after payment verification."""
 
 	def validate(self):
@@ -23,7 +23,7 @@ class PlasticflowInvoice(Document):
 
 	def on_cancel(self):
 		self._sync_sales_order_progress()
-		frappe.db.set_value("Plasticflow Invoice", self.name, "sales_order", None, update_modified=False)
+		frappe.db.set_value("Invoice", self.name, "sales_order", None, update_modified=False)
 		self.sales_order = None
 
 	def _set_item_defaults(self):

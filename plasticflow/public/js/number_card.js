@@ -5,7 +5,7 @@ plasticflow.number_card.extend_currency_options = function (frm) {
 		return;
 	}
 
-	if (frm.doc.document_type !== "Plasticflow Invoice") {
+	if (frm.doc.document_type !== "Invoice") {
 		return;
 	}
 

@@ -46,6 +46,7 @@ def execute():
     fieldnames = {
         "Customs Entry-plasticflow_stock_entry": "stock_entry",
         "Plasticflow Stock Ledger Entry-plasticflow_stock_entry": "stock_entry",
+        "Stock Ledger Entry-plasticflow_stock_entry": "stock_entry",
     }
     for old_name, new_name in fieldnames.items():
         if frappe.db.exists("DocField", old_name):
@@ -56,7 +57,8 @@ def execute():
         frappe.db.sql_ddl(
             "alter table `tabCustoms Entry` rename column `plasticflow_stock_entry` to `stock_entry`"
         )
-    if frappe.db.has_column("Plasticflow Stock Ledger Entry", "plasticflow_stock_entry"):
-        frappe.db.sql_ddl(
-            "alter table `tabPlasticflow Stock Ledger Entry` rename column `plasticflow_stock_entry` to `stock_entry`"
-        )
+    for doctype in ("Plasticflow Stock Ledger Entry", "Stock Ledger Entry"):
+        if frappe.db.has_column(doctype, "plasticflow_stock_entry"):
+            frappe.db.sql_ddl(
+                f"alter table `tab{doctype}` rename column `plasticflow_stock_entry` to `stock_entry`"
+            )

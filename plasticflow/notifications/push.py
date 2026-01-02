@@ -9,7 +9,7 @@ from py_vapid.utils import b64urlencode
 from pywebpush import WebPushException, webpush
 from cryptography.hazmat.primitives import serialization
 
-SUBSCRIPTION_DOCTYPE = "Plasticflow Push Subscription"
+SUBSCRIPTION_DOCTYPE = "Push Subscription"
 
 
 def _get_vapid_claims() -> dict[str, str]:
