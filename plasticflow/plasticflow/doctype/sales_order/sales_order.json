@@ -14,6 +14,7 @@
   "delivery_source",
   "import_shipment",
   "sales_type",
+  "vat_inclusive",
   "withholding_rate",
   "column_break_meta",
   "status",
@@ -84,6 +85,12 @@
    "label": "Sales Type",
    "options": "\nCash\nCredit",
    "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "vat_inclusive",
+   "fieldtype": "Check",
+   "label": "VAT Inclusive"
   },
   {
    "default": "2",

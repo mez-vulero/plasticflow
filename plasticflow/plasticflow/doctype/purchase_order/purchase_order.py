@@ -181,7 +181,10 @@ def get_remaining_shipment_quantity(purchase_order: str) -> dict:
 		)
 		allocated_qty = flt(allocated[0].qty) if allocated else 0.0
 
-		pending = flt(item.quantity or 0) - flt(item.received_qty or 0) - allocated_qty
+		ordered_qty = flt(item.quantity or 0)
+		received_qty = flt(item.received_qty or 0)
+		# Avoid double-subtracting received vs. allocated quantities.
+		pending = ordered_qty - max(received_qty, allocated_qty)
 		if pending > QTY_TOLERANCE:
 			total_remaining += pending
 

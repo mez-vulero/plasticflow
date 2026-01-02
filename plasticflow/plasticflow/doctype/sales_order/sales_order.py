@@ -115,6 +115,7 @@ class SalesOrder(Document):
 		parent_withholding = flt(self.withholding_rate or WITHHOLDING_RATE_DEFAULT)
 		parent_commission = flt(self.broker_commission_rate or 0)
 		detected_shipments: set[str] = set()
+		vat_inclusive = bool(self.vat_inclusive)
 
 		for item in self.items:
 			if item.product and not item.product_name:
@@ -131,14 +132,20 @@ class SalesOrder(Document):
 			quantity, rate = self._normalize_sales_units(item, quantity, rate)
 			item.quantity = quantity
 			item.rate = rate
-			item.amount = quantity * rate
 
+			if vat_inclusive:
+				gross_amount = quantity * rate
+				base_amount = gross_amount / (1 + VAT_RATE) if VAT_RATE else gross_amount
+				vat_total = gross_amount - base_amount
+			else:
+				base_amount = quantity * rate
+				vat_total = base_amount * VAT_RATE
+				gross_amount = base_amount + vat_total
+
+			item.amount = flt(base_amount, item.precision("amount") or None)
 			# VAT amount per line (field now represents total VAT for the row)
-			vat_total = flt(item.amount * VAT_RATE, item.precision("price_with_vat") or None)
-			item.price_with_vat = vat_total
-			gross_amount = item.amount + vat_total
-			item.gross_amount = gross_amount
-			base_amount = item.amount
+			item.price_with_vat = flt(vat_total, item.precision("price_with_vat") or None)
+			item.gross_amount = flt(gross_amount, item.precision("gross_amount") or None)
 
 			item.withholding_rate = parent_withholding
 			withholding_rate = parent_withholding
@@ -970,8 +977,7 @@ class SalesOrder(Document):
 			if qty <= 0:
 				continue
 			base_rate = flt(item.rate or 0)
-			inclusive_rate = base_rate * (1 + VAT_RATE)
-			rate = inclusive_rate
+			rate = base_rate if self.vat_inclusive else base_rate * (1 + VAT_RATE)
 			invoice_item = invoice.append(
 				"items",
 				{
