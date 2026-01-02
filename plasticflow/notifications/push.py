@@ -105,7 +105,7 @@ def register_subscription(subscription: str | dict, device: str | None = None, b
 	insert_values = {**meta, **values}
 	columns = ", ".join(f"`{col}`" for col in insert_values)
 	placeholders = ", ".join(["%s"] * len(insert_values))
-	table = frappe.db.get_table_name(doctype)
+	table = f"tab{doctype}"
 
 	frappe.db.sql(
 		f"insert into `{table}` ({columns}) values ({placeholders})",
