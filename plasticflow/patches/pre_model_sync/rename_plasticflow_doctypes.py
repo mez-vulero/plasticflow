@@ -68,6 +68,10 @@ def execute():
 		if frappe.db.exists("DocType", old) and not frappe.db.exists("DocType", new):
 			frappe.rename_doc("DocType", old, new, force=True)
 
+	for doctype in set(RENAME_MAP.values()) | set(RENAME_MAP.keys()):
+		if frappe.db.exists("DocType", doctype):
+			frappe.db.set_value("DocType", doctype, "module", "PlasticFlow", update_modified=False)
+
 	for old, new in RENAME_MAP.items():
 		for doctype, column in OPTION_TARGETS:
 			_update_equal(doctype, column, old, new)

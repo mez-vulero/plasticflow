@@ -9,7 +9,21 @@ from py_vapid.utils import b64urlencode
 from pywebpush import WebPushException, webpush
 from cryptography.hazmat.primitives import serialization
 
-SUBSCRIPTION_DOCTYPE = "Push Subscription"
+DEFAULT_SUBSCRIPTION_DOCTYPE = "Push Subscription"
+LEGACY_SUBSCRIPTION_DOCTYPE = "Plasticflow Push Subscription"
+
+
+def _resolve_subscription_doctype() -> str:
+	if getattr(frappe.local, "plasticflow_subscription_doctype", None):
+		return frappe.local.plasticflow_subscription_doctype
+	for doctype in (DEFAULT_SUBSCRIPTION_DOCTYPE, LEGACY_SUBSCRIPTION_DOCTYPE):
+		if frappe.db.exists("DocType", doctype):
+			frappe.local.plasticflow_subscription_doctype = doctype
+			return doctype
+	frappe.throw(
+		_("Push Subscription DocType is missing. Please run `bench migrate`."),
+		title=_("Missing DocType"),
+	)
 
 
 def _get_vapid_claims() -> dict[str, str]:
@@ -57,30 +71,48 @@ def register_subscription(subscription: str | dict, device: str | None = None, b
 	if not endpoint or not p256dh or not auth:
 		frappe.throw(_("Invalid push subscription payload received."))
 
-	existing_name = frappe.db.get_value(SUBSCRIPTION_DOCTYPE, {"endpoint": endpoint})
+	doctype = _resolve_subscription_doctype()
+	existing_name = frappe.db.get_value(doctype, {"endpoint": endpoint})
 
-	doc = (
-		frappe.get_doc(SUBSCRIPTION_DOCTYPE, existing_name)
-		if existing_name
-		else frappe.new_doc(SUBSCRIPTION_DOCTYPE)
+	values = {
+		"user": frappe.session.user,
+		"endpoint": endpoint,
+		"p256dh": p256dh,
+		"auth": auth,
+		"device": device,
+		"browser": browser,
+		"is_active": 1,
+		"last_failure": None,
+		"failure_reason": None,
+	}
+
+	if existing_name:
+		frappe.db.set_value(doctype, existing_name, values, update_modified=True)
+		return {"subscription": existing_name}
+
+	name = frappe.generate_hash(length=10)
+	now = now_datetime()
+	meta = {
+		"name": name,
+		"owner": frappe.session.user,
+		"creation": now,
+		"modified": now,
+		"modified_by": frappe.session.user,
+		"docstatus": 0,
+		"idx": 0,
+	}
+
+	insert_values = {**meta, **values}
+	columns = ", ".join(f"`{col}`" for col in insert_values)
+	placeholders = ", ".join(["%s"] * len(insert_values))
+	table = frappe.db.get_table_name(doctype)
+
+	frappe.db.sql(
+		f"insert into `{table}` ({columns}) values ({placeholders})",
+		list(insert_values.values()),
 	)
 
-	doc.user = frappe.session.user
-	doc.endpoint = endpoint
-	doc.p256dh = p256dh
-	doc.auth = auth
-	doc.device = device
-	doc.browser = browser
-	doc.is_active = 1
-	doc.last_failure = None
-	doc.failure_reason = None
-
-	if doc.is_new():
-		doc.insert(ignore_permissions=True)
-	else:
-		doc.save(ignore_permissions=True)
-
-	return {"subscription": doc.name}
+	return {"subscription": name}
 
 
 def send_notification_to_user(
@@ -91,8 +123,9 @@ def send_notification_to_user(
 	reference_name: str | None = None,
 ) -> None:
 	"""Send a push notification to all active subscriptions for the user."""
+	doctype = _resolve_subscription_doctype()
 	subscriptions = frappe.get_all(
-		SUBSCRIPTION_DOCTYPE,
+		doctype,
 		filters={"user": user, "is_active": 1},
 		fields=["name", "endpoint", "p256dh", "auth"],
 	)
@@ -137,8 +170,9 @@ def send_notification_to_user(
 
 
 def _mark_delivery_success(docname: str) -> None:
+	doctype = _resolve_subscription_doctype()
 	frappe.db.set_value(
-		SUBSCRIPTION_DOCTYPE,
+		doctype,
 		docname,
 		{
 			"last_success": now_datetime(),
@@ -155,8 +189,9 @@ def _handle_delivery_failure(docname: str, exc: Exception) -> None:
 	status = getattr(getattr(exc, "response", None), "status_code", None)
 	disable = status in {404, 410}  # Subscription expired or gone
 
+	doctype = _resolve_subscription_doctype()
 	frappe.db.set_value(
-		SUBSCRIPTION_DOCTYPE,
+		doctype,
 		docname,
 		{
 			"last_failure": now_datetime(),
