@@ -27,8 +27,7 @@
    "fieldname": "date_uploaded",
    "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Date uploaded",
-   "read_only": 1
+   "label": "Date uploaded"
   },
   {
    "fieldname": "amount_paid",
@@ -51,13 +50,13 @@
    "options": "Banks"
   },
   {
+   "allow_on_submit": 1,
    "default": "Pending",
    "fieldname": "slip_status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Pending\nVerified",
-   "allow_on_submit": 1
+   "options": "Pending\nVerified"
   },
   {
    "fieldname": "payment_mode",
@@ -77,7 +76,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-10-28 18:47:07.953983",
+ "modified": "2026-01-02 10:43:06.064963",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Payment Slips",

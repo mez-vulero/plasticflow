@@ -89,7 +89,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-10-28 18:44:05.055670",
+ "modified": "2026-01-02 10:48:42.120738",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Customer",
@@ -140,8 +140,10 @@
   }
  ],
  "row_format": "Dynamic",
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
+ "title_field": "customer_name",
  "track_changes": 1
 }
