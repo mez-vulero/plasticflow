@@ -4,6 +4,7 @@ from frappe.model.document import Document
 from frappe.utils import flt, nowdate
 
 from plasticflow.stock import ledger as stock_ledger
+from plasticflow.stock import uom as stock_uom
 
 PAYMENT_TOLERANCE = 0.01
 QTY_TOLERANCE = 0.0001
@@ -68,6 +69,48 @@ class SalesOrder(Document):
 		)
 		self._clear_links()
 
+	def _get_product_uom(self, product: str | None) -> str | None:
+		if not product:
+			return None
+		cache = getattr(self, "_product_uom_cache", None)
+		if cache is None:
+			cache = {}
+			self._product_uom_cache = cache
+		if product not in cache:
+			cache[product] = frappe.db.get_value("Product", product, "uom")
+		return cache[product]
+
+	def _resolve_kg_uom(self) -> str | None:
+		if hasattr(self, "_kg_uom_cache"):
+			return self._kg_uom_cache
+		self._kg_uom_cache = stock_uom.resolve_kg_uom()
+		return self._kg_uom_cache
+
+	def _normalize_sales_units(self, item, quantity: float, rate: float) -> tuple[float, float]:
+		if not stock_uom.is_ton_uom(item.uom):
+			return quantity, rate
+
+		kg_uom = self._resolve_kg_uom()
+		if not kg_uom:
+			frappe.throw(
+				_("Please create a Unit of Measurement for Kilogram (e.g. 'Kilogram' or 'Kg') before sales entry.")
+			)
+
+		quantity = stock_uom.convert_quantity(quantity, item.uom, kg_uom)
+		rate = stock_uom.convert_rate(rate, item.uom, kg_uom)
+		item.uom = kg_uom
+		return quantity, rate
+
+	def _to_stock_qty(self, item, quantity: float) -> float:
+		stock_uom_name = self._get_product_uom(item.product) or item.uom
+		sales_uom_name = item.uom or stock_uom_name
+		return stock_uom.convert_quantity(quantity, sales_uom_name, stock_uom_name)
+
+	def _to_sales_rate(self, item, rate: float) -> float:
+		stock_uom_name = self._get_product_uom(item.product) or item.uom
+		sales_uom_name = item.uom or stock_uom_name
+		return stock_uom.convert_rate(rate, stock_uom_name, sales_uom_name)
+
 	def _set_item_defaults(self):
 		parent_withholding = flt(self.withholding_rate or WITHHOLDING_RATE_DEFAULT)
 		parent_commission = flt(self.broker_commission_rate or 0)
@@ -77,10 +120,17 @@ class SalesOrder(Document):
 			if item.product and not item.product_name:
 				item.product_name = frappe.db.get_value("Product", item.product, "product_name")
 			if item.product and not item.uom:
-				item.uom = frappe.db.get_value("Product", item.product, "uom")
+				product_uom = self._get_product_uom(item.product)
+				if stock_uom.is_ton_uom(product_uom):
+					item.uom = self._resolve_kg_uom() or product_uom
+				else:
+					item.uom = product_uom
 
 			quantity = flt(item.quantity or 0)
 			rate = flt(item.rate or 0)
+			quantity, rate = self._normalize_sales_units(item, quantity, rate)
+			item.quantity = quantity
+			item.rate = rate
 			item.amount = quantity * rate
 
 			# VAT amount per line (field now represents total VAT for the row)
@@ -170,6 +220,7 @@ class SalesOrder(Document):
 					)
 				landed_rate = rate_cache[cache_key]
 
+			landed_rate = self._to_sales_rate(item, landed_rate)
 			total_landed += quantity * landed_rate
 
 		self.landed_cost_total = total_landed
@@ -313,7 +364,7 @@ class SalesOrder(Document):
 		target_warehouse = self._get_target_warehouse()
 
 		for item in self.items:
-			required_qty = flt(item.quantity or 0)
+			required_qty = self._to_stock_qty(item, flt(item.quantity or 0))
 			if required_qty <= 0 or not item.product:
 				continue
 
@@ -364,7 +415,7 @@ class SalesOrder(Document):
 		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
 		requirements = {}
 		for item in self.items:
-			required = flt(item.quantity or 0)
+			required = self._to_stock_qty(item, flt(item.quantity or 0))
 			if required <= 0:
 				continue
 			key = (item.product, location_type)
@@ -377,7 +428,7 @@ class SalesOrder(Document):
 		if not self.import_shipment:
 			frappe.throw(_("Import Shipment is required to validate stock for this order."))
 		for item in self.items:
-			qty = flt(item.quantity or 0)
+			qty = self._to_stock_qty(item, flt(item.quantity or 0))
 			if qty <= 0 or not item.product:
 				continue
 			available_qty = stock_ledger.get_available_quantity_by_shipment(
@@ -444,7 +495,7 @@ class SalesOrder(Document):
 		warehouse = self._get_target_warehouse()
 		reference = self._ledger_reference(location_type, warehouse)
 		for item in self.items:
-			qty = flt(item.quantity or 0)
+			qty = self._to_stock_qty(item, flt(item.quantity or 0))
 			if qty <= 0 or not item.product:
 				continue
 			stock_ledger.apply_delta(
@@ -479,7 +530,7 @@ class SalesOrder(Document):
 		warehouse = self._get_target_warehouse()
 		reference = self._ledger_reference(location_type, warehouse)
 		for item in self.items:
-			qty = flt(item.quantity or 0)
+			qty = self._to_stock_qty(item, flt(item.quantity or 0))
 			if qty <= 0 or not item.product:
 				continue
 			stock_ledger.apply_delta(
@@ -498,7 +549,7 @@ class SalesOrder(Document):
 		warehouse = self._get_target_warehouse()
 		reference = self._ledger_reference(location_type, warehouse)
 		for item in self.items:
-			qty = flt(item.quantity or 0)
+			qty = self._to_stock_qty(item, flt(item.quantity or 0))
 			if qty <= 0 or not item.product:
 				continue
 			reserved_now = self._get_current_reserved(item.product, location_type, reference, warehouse)
@@ -521,7 +572,7 @@ class SalesOrder(Document):
 		warehouse = self._get_target_warehouse()
 		reference = self._ledger_reference(location_type, warehouse)
 		for item in self.items:
-			qty = flt(item.quantity or 0)
+			qty = self._to_stock_qty(item, flt(item.quantity or 0))
 			if qty <= 0 or not item.product:
 				continue
 			issued_now = self._get_current_issued(item.product, location_type, reference, warehouse)

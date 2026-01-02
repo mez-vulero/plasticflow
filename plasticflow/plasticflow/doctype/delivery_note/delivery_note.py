@@ -3,6 +3,7 @@ from frappe.model.document import Document
 from frappe.utils import flt, nowdate
 
 from plasticflow.stock import ledger as stock_ledger
+from plasticflow.stock import uom as stock_uom
 
 
 class DeliveryNote(Document):
@@ -41,10 +42,49 @@ class DeliveryNote(Document):
 				update_modified=False,
 			)
 
+	def _get_product_uom(self, product: str | None) -> str | None:
+		if not product:
+			return None
+		cache = getattr(self, "_product_uom_cache", None)
+		if cache is None:
+			cache = {}
+			self._product_uom_cache = cache
+		if product not in cache:
+			cache[product] = frappe.db.get_value("Product", product, "uom")
+		return cache[product]
+
+	def _get_sales_order_uom(self, product: str | None) -> str | None:
+		if not self.sales_order or not product:
+			return None
+		cache = getattr(self, "_so_uom_cache", None)
+		if cache is None:
+			cache = {}
+			self._so_uom_cache = cache
+		if product not in cache:
+			cache[product] = frappe.db.get_value(
+				"Sales Order Item",
+				{"parent": self.sales_order, "product": product},
+				"uom",
+			)
+		return cache[product]
+
+	def _resolve_sales_uom(self, item, fallback: str | None = None) -> str | None:
+		if item.uom:
+			return item.uom
+		so_uom = self._get_sales_order_uom(item.product)
+		return so_uom or fallback
+
+	def _to_stock_qty(self, item, quantity: float, stock_uom_name: str | None = None) -> float:
+		stock_uom_name = stock_uom_name or self._get_product_uom(item.product)
+		sales_uom_name = self._resolve_sales_uom(item, stock_uom_name)
+		return stock_uom.convert_quantity(quantity, sales_uom_name, stock_uom_name)
+
 	def _set_item_defaults(self):
 		for item in self.items:
 			if item.product and not item.product_name:
 				item.product_name = frappe.db.get_value("Product", item.product, "product_name")
+			if item.product and not item.uom:
+				item.uom = self._get_sales_order_uom(item.product)
 
 	def _issue_stock(self):
 		batch_map = {}
@@ -52,7 +92,7 @@ class DeliveryNote(Document):
 		for item in self.items:
 			if item.stock_entry_item:
 				child = frappe.get_doc("Stock Entry Items", item.stock_entry_item)
-				batch_map.setdefault(child.parent, []).append((child.name, item.quantity or 0))
+				batch_map.setdefault(child.parent, []).append((child.name, item))
 			else:
 				aggregated.append(item)
 
@@ -60,13 +100,16 @@ class DeliveryNote(Document):
 			batch = frappe.get_doc("Stock Entries", batch_name)
 			updated = False
 			from_customs = batch.status == "At Customs"
-			for child_name, qty in entries:
+			for child_name, item in entries:
 				child = next((row for row in batch.items if row.name == child_name), None)
 				if not child:
 					continue
-				child.reserved_qty = max((child.reserved_qty or 0) - qty, 0)
-				child.issued_qty = (child.issued_qty or 0) + qty
-				stock_ledger.issue_stock(child, qty, from_customs=from_customs)
+				quantity = flt(item.quantity or 0)
+				stock_uom_name = child.uom or self._get_product_uom(child.product)
+				qty_stock = self._to_stock_qty(item, quantity, stock_uom_name)
+				child.reserved_qty = max((child.reserved_qty or 0) - qty_stock, 0)
+				child.issued_qty = (child.issued_qty or 0) + qty_stock
+				stock_ledger.issue_stock(child, qty_stock, from_customs=from_customs)
 				updated = True
 			if updated:
 				batch.save(ignore_permissions=True)
@@ -76,14 +119,15 @@ class DeliveryNote(Document):
 			reference = self._ledger_reference(location_type, warehouse)
 			for item in aggregated:
 				qty = flt(item.quantity or 0)
-				if qty <= 0 or not item.product:
+				qty_stock = self._to_stock_qty(item, qty)
+				if qty_stock <= 0 or not item.product:
 					continue
 				stock_ledger.apply_delta(
 					item.product,
 					location_type,
 					reference,
-					reserved_delta=-qty,
-					issued_delta=qty,
+					reserved_delta=-qty_stock,
+					issued_delta=qty_stock,
 					warehouse=warehouse if location_type == "Warehouse" else None,
 					remarks=f"Issued via Delivery Note {self.name}",
 				)
@@ -94,7 +138,7 @@ class DeliveryNote(Document):
 		for item in self.items:
 			if item.stock_entry_item:
 				child = frappe.get_doc("Stock Entry Items", item.stock_entry_item)
-				batch_map.setdefault(child.parent, []).append((child.name, item.quantity or 0))
+				batch_map.setdefault(child.parent, []).append((child.name, item))
 			else:
 				aggregated.append(item)
 
@@ -102,13 +146,16 @@ class DeliveryNote(Document):
 			batch = frappe.get_doc("Stock Entries", batch_name)
 			updated = False
 			from_customs = batch.status == "At Customs"
-			for child_name, qty in entries:
+			for child_name, item in entries:
 				child = next((row for row in batch.items if row.name == child_name), None)
 				if not child:
 					continue
-				child.issued_qty = max((child.issued_qty or 0) - qty, 0)
-				child.reserved_qty = (child.reserved_qty or 0) + qty
-				stock_ledger.reverse_issue(child, qty, from_customs=from_customs)
+				quantity = flt(item.quantity or 0)
+				stock_uom_name = child.uom or self._get_product_uom(child.product)
+				qty_stock = self._to_stock_qty(item, quantity, stock_uom_name)
+				child.issued_qty = max((child.issued_qty or 0) - qty_stock, 0)
+				child.reserved_qty = (child.reserved_qty or 0) + qty_stock
+				stock_ledger.reverse_issue(child, qty_stock, from_customs=from_customs)
 				updated = True
 			if updated:
 				batch.save(ignore_permissions=True)
@@ -118,14 +165,15 @@ class DeliveryNote(Document):
 			reference = self._ledger_reference(location_type, warehouse)
 			for item in aggregated:
 				qty = flt(item.quantity or 0)
-				if qty <= 0 or not item.product:
+				qty_stock = self._to_stock_qty(item, qty)
+				if qty_stock <= 0 or not item.product:
 					continue
 				stock_ledger.apply_delta(
 					item.product,
 					location_type,
 					reference,
-					reserved_delta=qty,
-					issued_delta=-qty,
+					reserved_delta=qty_stock,
+					issued_delta=-qty_stock,
 					warehouse=warehouse if location_type == "Warehouse" else None,
 					remarks=f"Issue reversed for Delivery Note {self.name}",
 				)
