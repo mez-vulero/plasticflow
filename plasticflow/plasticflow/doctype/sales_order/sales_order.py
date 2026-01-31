@@ -112,10 +112,12 @@ class SalesOrder(Document):
 		return stock_uom.convert_rate(rate, stock_uom_name, sales_uom_name)
 
 	def _set_item_defaults(self):
-		parent_withholding = flt(self.withholding_rate or WITHHOLDING_RATE_DEFAULT)
+		apply_withholding = bool(self.apply_withholding)
+		parent_withholding = (
+			flt(self.withholding_rate or WITHHOLDING_RATE_DEFAULT) if apply_withholding else 0
+		)
 		parent_commission = flt(self.broker_commission_rate or 0)
 		detected_shipments: set[str] = set()
-		vat_inclusive = bool(self.vat_inclusive)
 
 		for item in self.items:
 			if item.product and not item.product_name:
@@ -133,14 +135,9 @@ class SalesOrder(Document):
 			item.quantity = quantity
 			item.rate = rate
 
-			if vat_inclusive:
-				gross_amount = quantity * rate
-				base_amount = gross_amount / (1 + VAT_RATE) if VAT_RATE else gross_amount
-				vat_total = gross_amount - base_amount
-			else:
-				base_amount = quantity * rate
-				vat_total = base_amount * VAT_RATE
-				gross_amount = base_amount + vat_total
+			gross_amount = quantity * rate
+			base_amount = gross_amount / (1 + VAT_RATE) if VAT_RATE else gross_amount
+			vat_total = gross_amount - base_amount
 
 			item.amount = flt(base_amount, item.precision("amount") or None)
 			# VAT amount per line (field now represents total VAT for the row)
@@ -977,7 +974,7 @@ class SalesOrder(Document):
 			if qty <= 0:
 				continue
 			base_rate = flt(item.rate or 0)
-			rate = base_rate if self.vat_inclusive else base_rate * (1 + VAT_RATE)
+			rate = base_rate
 			invoice_item = invoice.append(
 				"items",
 				{

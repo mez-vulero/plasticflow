@@ -8,6 +8,7 @@
  "field_order": [
   "naming_series",
   "customer_name",
+  "tin",
   "customer_group",
   "column_break_1",
   "contact_person",
@@ -26,6 +27,13 @@
    "in_list_view": 1,
    "label": "Customer Name",
    "reqd": 1
+  },
+  {
+   "fieldname": "tin",
+   "fieldtype": "Data",
+   "label": "TIN",
+   "length": 10,
+   "description": "10-digit taxpayer identification number"
   },
   {
    "fieldname": "customer_group",

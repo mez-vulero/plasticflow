@@ -474,7 +474,8 @@ def create_sales_order_from_shipment(import_shipment: str, customer: str, sales_
 	so.delivery_source = delivery_source or "Warehouse"
 	so.sales_type = sales_type or "Cash"
 	so.currency = frappe.db.get_default("currency") or "ETB"
-	so.withholding_rate = 2
+	so.apply_withholding = 1
+	so.withholding_rate = 3
 	so.order_date = nowdate()
 
 	for item in shipment.items:

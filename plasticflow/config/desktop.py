@@ -23,6 +23,7 @@ def get_data():
 				{"type": "doctype", "name": "Customer"},
 				{"type": "doctype", "name": "Banks"},
 				{"type": "doctype", "name": "Broker"},
+				{"type": "doctype", "name": "Proforma Invoice"},
 				{"type": "doctype", "name": "Sales Order"},
 				{"type": "doctype", "name": "Invoice"},
 				{"type": "doctype", "name": "Gate Pass Request"},

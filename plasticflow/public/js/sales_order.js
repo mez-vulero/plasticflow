@@ -35,7 +35,7 @@ frappe.ui.form.on("Sales Order", {
 
 		}
 	},
-	vat_inclusive(frm) {
+	apply_withholding(frm) {
 		recompute_all_rows(frm);
 	},
 });
@@ -51,23 +51,16 @@ function recompute_child(frm, cdt, cdn) {
 	const row = frappe.get_doc(cdt, cdn);
 	const qty = flt(row.quantity || 0);
 	const rate = flt(row.rate || 0);
-	const parent_withholding = flt(frm.doc.withholding_rate || 0);
+	const parent_withholding = frm.doc.apply_withholding ? flt(frm.doc.withholding_rate || 0) : 0;
 	const parent_commission = flt(frm.doc.broker_commission_rate || 0);
-	const vat_inclusive = Boolean(frm.doc.vat_inclusive);
 
 	let base_amount;
 	let vat_total;
 	let gross_amount;
 
-	if (vat_inclusive) {
-		gross_amount = qty * rate;
-		base_amount = gross_amount / (1 + VAT_RATE);
-		vat_total = gross_amount - base_amount;
-	} else {
-		base_amount = qty * rate;
-		vat_total = base_amount * VAT_RATE;
-		gross_amount = base_amount + vat_total;
-	}
+	gross_amount = qty * rate;
+	base_amount = gross_amount / (1 + VAT_RATE);
+	vat_total = gross_amount - base_amount;
 
 	row.amount = base_amount;
 	row.price_with_vat = vat_total;

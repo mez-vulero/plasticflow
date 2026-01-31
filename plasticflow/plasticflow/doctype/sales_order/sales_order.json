@@ -14,7 +14,7 @@
   "delivery_source",
   "import_shipment",
   "sales_type",
-  "vat_inclusive",
+  "apply_withholding",
   "withholding_rate",
   "column_break_meta",
   "status",
@@ -38,6 +38,7 @@
   "margin_percent",
   "profit_before_tax",
   "section_break_links",
+  "proforma_invoice",
   "payment_slips",
   "invoice",
   "gate_pass",
@@ -87,17 +88,18 @@
    "reqd": 1
   },
   {
-   "default": "0",
-   "fieldname": "vat_inclusive",
+   "default": "1",
+   "fieldname": "apply_withholding",
    "fieldtype": "Check",
-   "label": "VAT Inclusive"
+   "label": "Apply Withholding"
   },
   {
-   "default": "2",
+   "default": "3",
+   "depends_on": "eval:doc.apply_withholding",
    "fieldname": "withholding_rate",
    "fieldtype": "Percent",
    "label": "Withholding %",
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.apply_withholding"
   },
   {
    "fieldname": "column_break_meta",
@@ -231,6 +233,15 @@
    "fieldname": "section_break_links",
    "fieldtype": "Section Break",
    "label": "Linked Documents"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "proforma_invoice",
+   "fieldtype": "Link",
+   "label": "Proforma Invoice",
+   "options": "Proforma Invoice",
+   "read_only": 1,
+   "set_null_on_delete": 1
   },
   {
    "allow_on_submit": 1,
