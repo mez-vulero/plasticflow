@@ -23,6 +23,7 @@
    "label": "Transfer Slip"
   },
   {
+   "allow_on_submit": 1,
    "default": "Today",
    "fieldname": "date_uploaded",
    "fieldtype": "Date",
@@ -37,6 +38,7 @@
    "options": "currency"
   },
   {
+   "allow_on_submit": 1,
    "default": "Today",
    "fieldname": "deposit_date",
    "fieldtype": "Date",
@@ -76,7 +78,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-01-02 10:43:06.064963",
+ "modified": "2026-01-02 11:02:38.386128",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Payment Slips",

@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_import": 1,
+ "allow_rename": 1,
  "autoname": "naming_series:",
  "creation": "2025-01-01 00:00:00",
  "default_view": "Form",
@@ -75,13 +76,13 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "default": "Draft",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Draft\nSubmitted\nPartially Received\nClosed\nCancelled",
-   "read_only": 1
+   "options": "Draft\nSubmitted\nPartially Received\nClosed\nCancelled"
   },
   {
    "fieldname": "purchase_exchange_rate",
@@ -96,6 +97,7 @@
    "label": "Purchase Items"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
@@ -103,26 +105,26 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_quantity",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Total Quantity",
-   "read_only": 1
+   "label": "Total Quantity"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_amount",
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Total Amount (PO Currency)",
-   "options": "purchase_currency",
-   "read_only": 1
+   "options": "purchase_currency"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_amount_local",
    "fieldtype": "Currency",
    "label": "Total Amount (Local Currency)",
-   "options": "local_currency",
-   "read_only": 1
+   "options": "local_currency"
   },
   {
    "fieldname": "remarks",
@@ -150,8 +152,8 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-25 11:36:37.446527",
- "modified_by": "Administrator",
+ "modified": "2026-01-22 10:32:13.253512",
+ "modified_by": "mezmure.dawit@vulero.et",
  "module": "PlasticFlow",
  "name": "Purchase Order",
  "naming_rule": "By \"Naming Series\" field",

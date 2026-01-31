@@ -1,10 +1,10 @@
 {
  "actions": [],
  "allow_import": 1,
+ "allow_rename": 1,
  "autoname": "field:item_code",
- "creation": "2024-01-01 00:00:00.000000",
+ "creation": "2024-01-01 00:00:00",
  "doctype": "DocType",
- "editable_grid": 0,
  "engine": "InnoDB",
  "field_order": [
   "item_code",
@@ -42,8 +42,8 @@
    "fieldname": "uom",
    "fieldtype": "Link",
    "label": "Stock UOM",
-   "reqd": 1,
-   "options": "Unit of Measurement"
+   "options": "Unit of Measurement",
+   "reqd": 1
   },
   {
    "fieldname": "default_warehouse",
@@ -59,7 +59,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-01 00:00:00.000000",
+ "modified": "2026-01-09 15:58:31.598359",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Product",
@@ -109,6 +109,7 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

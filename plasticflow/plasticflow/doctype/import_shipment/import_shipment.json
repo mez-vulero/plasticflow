@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_import": 1,
+ "allow_rename": 1,
  "autoname": "naming_series:",
  "creation": "2025-01-01 00:00:00",
  "default_view": "List",
@@ -356,7 +357,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-25 07:29:02.902677",
+ "modified": "2026-01-03 11:32:31.816761",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Import Shipment",

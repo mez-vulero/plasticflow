@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_rename": 1,
  "autoname": "naming_series:",
  "creation": "2025-01-01 00:00:00",
  "default_view": "Form",
@@ -370,7 +371,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-12-25 07:36:24.902386",
+ "modified": "2026-01-03 11:24:28.733250",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Landing Cost Worksheet",
