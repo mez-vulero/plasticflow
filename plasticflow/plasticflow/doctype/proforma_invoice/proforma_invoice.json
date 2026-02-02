@@ -24,6 +24,7 @@
   "total_amount",
   "total_vat",
   "total_gross_amount",
+  "in_words",
   "amended_from"
  ],
  "fields": [
@@ -126,6 +127,12 @@
    "fieldtype": "Currency",
    "label": "Total Sales (VAT Incl.)",
    "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "in_words",
+   "fieldtype": "Small Text",
+   "label": "In Words",
    "read_only": 1
   },
   {

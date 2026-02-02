@@ -1,7 +1,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, nowdate
+from frappe.utils import flt, money_in_words, nowdate
 
 VAT_RATE = 0.15
 
@@ -86,6 +86,7 @@ class ProformaInvoice(Document):
 		self.total_amount = sum((item.amount or 0) for item in self.items)
 		self.total_vat = sum((item.price_with_vat or 0) for item in self.items)
 		self.total_gross_amount = sum((item.gross_amount or 0) for item in self.items)
+		self.in_words = money_in_words(self.total_gross_amount or 0, self.currency)
 
 
 @frappe.whitelist()

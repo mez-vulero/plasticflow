@@ -74,4 +74,8 @@ function recompute_parent_totals(frm) {
 
 	frm.set_value(totals);
 	frm.refresh_fields(Object.keys(totals));
+
+	if (frappe.utils && frappe.utils.money_in_words) {
+		frm.set_value("in_words", frappe.utils.money_in_words(totals.total_gross_amount || 0, frm.doc.currency));
+	}
 }
