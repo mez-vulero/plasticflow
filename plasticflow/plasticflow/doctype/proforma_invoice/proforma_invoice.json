@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "format:PFI-{YYYY}-{#####}",
- "creation": "2026-01-31 00:00:00.000000",
+ "creation": "2026-01-31 00:00:00",
  "default_view": "List",
  "doctype": "DocType",
  "document_type": "Document",
@@ -43,11 +43,11 @@
    "reqd": 1
   },
   {
+   "fetch_from": "customer.tin",
    "fieldname": "customer_tin",
    "fieldtype": "Data",
    "label": "Customer TIN",
-   "read_only": 1,
-   "fetch_from": "customer.tin"
+   "read_only": 1
   },
   {
    "fieldname": "valid_until",
@@ -83,6 +83,7 @@
    "read_only": 1
   },
   {
+   "default": "Payment: 100% on delivery\nValidity: 3 Days",
    "fieldname": "terms_and_conditions",
    "fieldtype": "Small Text",
    "label": "Terms and Conditions"
@@ -133,8 +134,8 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-31 00:00:00.000000",
- "modified_by": "Administrator",
+ "modified": "2026-02-02 09:01:28.724182",
+ "modified_by": "mezmure.dawit@vulero.et",
  "module": "PlasticFlow",
  "name": "Proforma Invoice",
  "naming_rule": "Expression",

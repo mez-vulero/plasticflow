@@ -1,6 +1,6 @@
 {
  "actions": [],
- "creation": "2026-01-31 00:00:00.000000",
+ "creation": "2026-01-31 00:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -47,12 +47,15 @@
   {
    "fieldname": "uom",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "UOM",
    "options": "Unit of Measurement"
   },
   {
    "fieldname": "rate",
    "fieldtype": "Currency",
+   "in_list_view": 1,
+   "in_preview": 1,
    "label": "Rate",
    "options": "currency"
   },
@@ -86,8 +89,8 @@
  ],
  "istable": 1,
  "links": [],
- "modified": "2026-01-31 00:00:00.000000",
- "modified_by": "Administrator",
+ "modified": "2026-02-02 08:37:34.608590",
+ "modified_by": "mezmure.dawit@vulero.et",
  "module": "PlasticFlow",
  "name": "Proforma Invoice Item",
  "owner": "Administrator",
