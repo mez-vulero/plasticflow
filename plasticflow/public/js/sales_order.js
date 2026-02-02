@@ -111,7 +111,7 @@ function recompute_parent_totals(frm) {
 
 function set_import_shipment_query(frm) {
 	frm.set_query("import_shipment", () => ({
-		query: "plasticflow.plasticflow.doctype.sales_order.sales_order.get_fifo_import_shipments",
+		query: "plasticflow.queries.get_fifo_import_shipments",
 		filters: {
 			delivery_source: frm.doc.delivery_source || "Warehouse",
 		},
