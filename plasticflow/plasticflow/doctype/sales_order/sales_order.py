@@ -1,7 +1,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, nowdate
+from frappe.utils import cint, flt, nowdate
 
 from plasticflow.stock import ledger as stock_ledger
 from plasticflow.stock import uom as stock_uom
@@ -1046,3 +1046,51 @@ def create_sales_invoice(sales_order, amount=None):
 @frappe.whitelist()
 def create_sales_order_gate_pass(sales_order):
 	frappe.throw(_("Gate Pass is no longer used. Please create a Gate Pass Request via Loading Order."))
+
+
+@frappe.whitelist()
+def get_fifo_import_shipments(doctype, txt, searchfield, start, page_len, filters):
+	filters = frappe.parse_json(filters) if filters else {}
+	txt = txt or ""
+	delivery_source = (filters or {}).get("delivery_source") or "Warehouse"
+	location_type = "Customs" if delivery_source == "Direct from Customs" else "Warehouse"
+
+	status_filter = (
+		"se.status = 'At Customs'"
+		if location_type == "Customs"
+		else "se.status in ('Available', 'Reserved', 'Partially Issued')"
+	)
+
+	values = {
+		"location_type": location_type,
+		"txt": f"%{txt}%",
+		"start": cint(start) or 0,
+		"page_len": cint(page_len) or 20,
+	}
+
+	query = f"""
+		select
+			ish.name,
+			ish.import_reference
+		from `tabImport Shipment` ish
+		inner join `tabStock Ledger Entry` sle on sle.import_shipment = ish.name
+		left join `tabStock Entries` se on se.import_shipment = ish.name
+			and se.docstatus = 1
+			and {status_filter}
+		where ish.docstatus = 1
+			and sle.location_type = %(location_type)s
+			and (ish.name like %(txt)s or ish.import_reference like %(txt)s)
+		group by ish.name, ish.import_reference
+		having sum(coalesce(sle.available_qty, 0)) > 0
+		order by
+			coalesce(
+				min(coalesce(se.arrival_date, se.creation)),
+				ish.arrival_date,
+				ish.shipment_date,
+				ish.creation
+			),
+			ish.creation
+		limit %(page_len)s offset %(start)s
+	"""
+
+	return frappe.db.sql(query, values, as_list=True)

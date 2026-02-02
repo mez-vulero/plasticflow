@@ -1,6 +1,9 @@
 const VAT_RATE = 0.15;
 
 frappe.ui.form.on("Sales Order", {
+	setup(frm) {
+		set_import_shipment_query(frm);
+	},
 	refresh(frm) {
 		recompute_parent_totals(frm);
 
@@ -104,4 +107,13 @@ function recompute_parent_totals(frm) {
 
 	frm.set_value(totals);
 	frm.refresh_fields(Object.keys(totals));
+}
+
+function set_import_shipment_query(frm) {
+	frm.set_query("import_shipment", () => ({
+		query: "plasticflow.plasticflow.doctype.sales_order.sales_order.get_fifo_import_shipments",
+		filters: {
+			delivery_source: frm.doc.delivery_source || "Warehouse",
+		},
+	}));
 }
