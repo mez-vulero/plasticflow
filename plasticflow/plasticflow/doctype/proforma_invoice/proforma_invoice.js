@@ -37,9 +37,9 @@ function recompute_child(frm, cdt, cdn) {
 	const qty = flt(row.quantity || 0);
 	const rate = flt(row.rate || 0);
 
-	const gross_amount = qty * rate;
-	const base_amount = VAT_RATE ? gross_amount / (1 + VAT_RATE) : gross_amount;
-	const vat_total = gross_amount - base_amount;
+	const base_amount = qty * rate;
+	const vat_total = base_amount * VAT_RATE;
+	const gross_amount = base_amount + vat_total;
 
 	row.amount = base_amount;
 	row.price_with_vat = vat_total;
@@ -61,12 +61,14 @@ function recompute_parent_totals(frm) {
 	const totals = {
 		total_quantity: 0,
 		total_amount: 0,
+		total_vat: 0,
 		total_gross_amount: 0,
 	};
 
 	items.forEach((row) => {
 		totals.total_quantity += flt(row.quantity || 0);
 		totals.total_amount += flt(row.amount || 0);
+		totals.total_vat += flt(row.price_with_vat || 0);
 		totals.total_gross_amount += flt(row.gross_amount || 0);
 	});
 

@@ -56,8 +56,9 @@
    "fieldtype": "Currency",
    "in_list_view": 1,
    "in_preview": 1,
-   "label": "Rate",
-   "options": "currency"
+   "label": "Rate (Excl. VAT)",
+   "options": "currency",
+   "description": "Unit price before VAT"
   },
   {
    "fieldname": "amount",

@@ -22,6 +22,7 @@
   "items",
   "total_quantity",
   "total_amount",
+  "total_vat",
   "total_gross_amount",
   "amended_from"
  ],
@@ -110,6 +111,13 @@
    "fieldname": "total_amount",
    "fieldtype": "Currency",
    "label": "Total Amount",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_vat",
+   "fieldtype": "Currency",
+   "label": "Total VAT",
    "options": "currency",
    "read_only": 1
   },

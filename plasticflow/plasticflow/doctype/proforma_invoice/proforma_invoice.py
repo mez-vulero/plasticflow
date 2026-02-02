@@ -45,7 +45,7 @@ class ProformaInvoice(Document):
 					"description": item.description,
 					"quantity": item.quantity,
 					"uom": item.uom,
-					"rate": item.rate,
+					"rate": flt(item.rate or 0) * (1 + VAT_RATE),
 				},
 			)
 
@@ -73,9 +73,9 @@ class ProformaInvoice(Document):
 
 			quantity = flt(item.quantity or 0)
 			rate = flt(item.rate or 0)
-			gross_amount = quantity * rate
-			base_amount = gross_amount / (1 + VAT_RATE) if VAT_RATE else gross_amount
-			vat_total = gross_amount - base_amount
+			base_amount = quantity * rate
+			vat_total = base_amount * VAT_RATE
+			gross_amount = base_amount + vat_total
 
 			item.amount = flt(base_amount, item.precision("amount") or None)
 			item.price_with_vat = flt(vat_total, item.precision("price_with_vat") or None)
@@ -84,6 +84,7 @@ class ProformaInvoice(Document):
 	def _calculate_totals(self):
 		self.total_quantity = sum((item.quantity or 0) for item in self.items)
 		self.total_amount = sum((item.amount or 0) for item in self.items)
+		self.total_vat = sum((item.price_with_vat or 0) for item in self.items)
 		self.total_gross_amount = sum((item.gross_amount or 0) for item in self.items)
 
 
