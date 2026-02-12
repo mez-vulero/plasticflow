@@ -1,8 +1,6 @@
 import frappe
 from frappe.utils import cint
 
-from plasticflow.stock import fifo as stock_fifo
-
 
 @frappe.whitelist()
 def get_fifo_import_shipments(doctype, txt, searchfield, start, page_len=None, page_length=None, filters=None):
@@ -26,21 +24,6 @@ def get_fifo_import_shipments(doctype, txt, searchfield, start, page_len=None, p
 		"start": offset,
 		"page_len": limit,
 	}
-	fifo_enabled = stock_fifo.is_fifo_enabled()
-	order_clause = (
-		"""
-			coalesce(
-				min(coalesce(se.arrival_date, se.creation)),
-				ish.arrival_date,
-				ish.shipment_date,
-				ish.creation
-			),
-			ish.creation
-		"""
-		if fifo_enabled
-		else "ish.creation desc"
-	)
-
 	query = f"""
 		select
 			ish.name,
@@ -55,7 +38,14 @@ def get_fifo_import_shipments(doctype, txt, searchfield, start, page_len=None, p
 			and (ish.name like %(txt)s or ish.import_reference like %(txt)s)
 		group by ish.name, ish.import_reference
 		having sum(coalesce(sle.available_qty, 0)) > 0
-		order by {order_clause}
+		order by
+			coalesce(
+				min(coalesce(se.arrival_date, se.creation)),
+				ish.arrival_date,
+				ish.shipment_date,
+				ish.creation
+			),
+			ish.creation
 		limit %(page_len)s offset %(start)s
 	"""
 

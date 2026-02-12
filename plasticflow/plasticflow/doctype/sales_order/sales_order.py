@@ -51,6 +51,7 @@ class SalesOrder(Document):
 				"status": self.status,
 			}
 		)
+		self._notify_shipment_substitution()
 		self.update_invoicing_progress()
 
 	def on_update_after_submit(self):
@@ -376,6 +377,58 @@ class SalesOrder(Document):
 		gpr.insert(ignore_permissions=True)
 		return gpr.name
 
+	def _parse_alternate_shipments(self) -> list[str]:
+		value = (self.alternate_import_shipments or "").strip()
+		if not value:
+			return []
+		parts = []
+		for token in value.replace("\n", ",").split(","):
+			name = token.strip()
+			if name and name not in parts:
+				parts.append(name)
+		return parts
+
+	def _shipment_scope_for_release(self) -> list[str]:
+		shipments: list[str] = []
+		if self.import_shipment:
+			shipments.append(self.import_shipment)
+		for name in self._parse_alternate_shipments():
+			if name not in shipments:
+				shipments.append(name)
+		return shipments
+
+	def _build_shipment_substitution_notice(self, alternate_shipments, allocations) -> str:
+		requested = self.import_shipment or _("(not set)")
+		shipments_text = ", ".join(alternate_shipments)
+		message = _("Import Shipment {0} was short. Fulfilled remaining quantities from: {1}.").format(
+			requested, shipments_text
+		)
+		if allocations:
+			details = "; ".join(f"{product}: {qty:.3f}" for product, qty in allocations.items())
+			message = f"{message} " + _("Additional quantities: {0}.").format(details)
+		return message
+
+	def _notify_shipment_substitution(self):
+		notice = getattr(self, "_shipment_substitution_notice", None)
+		if not notice:
+			return
+		self.add_comment("Comment", notice)
+		frappe.msgprint(notice, indicator="orange", alert=True)
+		self._create_shipment_substitution_notification(notice)
+
+	def _create_shipment_substitution_notification(self, notice: str):
+		user = getattr(frappe.session, "user", None)
+		if not user or user == "Guest":
+			return
+		log = frappe.new_doc("Notification Log")
+		log.for_user = user
+		log.type = "Alert"
+		log.document_type = "Sales Order"
+		log.document_name = self.name
+		log.subject = _("Sales Order fulfilled from alternate shipments")
+		log.email_content = notice
+		log.insert(ignore_permissions=True)
+
 	# Compatibility shim for legacy notifications referencing payment_status
 	@property
 	def payment_status(self):
@@ -390,7 +443,19 @@ class SalesOrder(Document):
 		reservations: dict[str, dict[str, object]] = {}
 		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
 		target_warehouse = self._get_target_warehouse()
-		fifo_enabled = stock_fifo.is_fifo_enabled()
+		fifo_policy_enabled = stock_fifo.is_fifo_enabled()
+		fifo_ordering = True
+		alternate_shipments: list[str] = []
+		alternate_allocations: dict[str, float] = {}
+		shipments_for_release = self._shipment_scope_for_release() if for_release else None
+
+		def record_alternate(shipment, product, qty):
+			if not shipment or shipment == self.import_shipment:
+				return
+			if shipment not in alternate_shipments:
+				alternate_shipments.append(shipment)
+			if product:
+				alternate_allocations[product] = alternate_allocations.get(product, 0) + flt(qty or 0)
 
 		for item in self.items:
 			required_qty = self._to_stock_qty(item, flt(item.quantity or 0))
@@ -402,29 +467,83 @@ class SalesOrder(Document):
 					self._release_specific_batch(reservations, item, required_qty, location_type, target_warehouse)
 				else:
 					self._reserve_specific_batch(reservations, item, required_qty, location_type, target_warehouse)
+					parent = frappe.db.get_value("Stock Entry Items", item.batch_item, "parent")
+					if parent:
+						shipment = frappe.db.get_value("Stock Entries", parent, "import_shipment")
+						record_alternate(shipment, item.product, required_qty)
 				continue
 
-			for batch in self._iter_fifo_batches(
-				item.product,
-				location_type=location_type,
-				warehouse=target_warehouse,
-				for_release=for_release,
-				fifo_enabled=fifo_enabled,
-			):
-				batch_qty = flt(batch.reserved_qty if for_release else batch.available_qty or 0)
-				if batch_qty <= 0 or required_qty <= 0:
-					continue
-				allocate = min(required_qty, batch_qty)
-				self._add_reservation(
-					reservations,
-					batch.batch_name,
-					batch.child_name,
-					allocate,
-					from_customs=location_type == "Customs",
-				)
-				required_qty -= allocate
-				if required_qty <= QTY_TOLERANCE:
-					break
+			if for_release:
+				for batch in self._iter_fifo_batches(
+					item.product,
+					location_type=location_type,
+					warehouse=target_warehouse,
+					for_release=True,
+					fifo_enabled=fifo_ordering,
+					import_shipments=shipments_for_release,
+				):
+					batch_qty = flt(batch.reserved_qty or 0)
+					if batch_qty <= 0 or required_qty <= 0:
+						continue
+					allocate = min(required_qty, batch_qty)
+					self._add_reservation(
+						reservations,
+						batch.batch_name,
+						batch.child_name,
+						allocate,
+						from_customs=location_type == "Customs",
+					)
+					required_qty -= allocate
+					if required_qty <= QTY_TOLERANCE:
+						break
+			else:
+				for batch in self._iter_fifo_batches(
+					item.product,
+					location_type=location_type,
+					warehouse=target_warehouse,
+					for_release=False,
+					fifo_enabled=fifo_ordering,
+					import_shipments=[self.import_shipment] if self.import_shipment else None,
+				):
+					batch_qty = flt(batch.available_qty or 0)
+					if batch_qty <= 0 or required_qty <= 0:
+						continue
+					allocate = min(required_qty, batch_qty)
+					self._add_reservation(
+						reservations,
+						batch.batch_name,
+						batch.child_name,
+						allocate,
+						from_customs=location_type == "Customs",
+					)
+					required_qty -= allocate
+					if required_qty <= QTY_TOLERANCE:
+						break
+
+				if required_qty > QTY_TOLERANCE:
+					for batch in self._iter_fifo_batches(
+						item.product,
+						location_type=location_type,
+						warehouse=target_warehouse,
+						for_release=False,
+						fifo_enabled=fifo_ordering,
+						exclude_import_shipment=self.import_shipment,
+					):
+						batch_qty = flt(batch.available_qty or 0)
+						if batch_qty <= 0 or required_qty <= 0:
+							continue
+						allocate = min(required_qty, batch_qty)
+						self._add_reservation(
+							reservations,
+							batch.batch_name,
+							batch.child_name,
+							allocate,
+							from_customs=location_type == "Customs",
+						)
+						record_alternate(batch.import_shipment, item.product, allocate)
+						required_qty -= allocate
+						if required_qty <= QTY_TOLERANCE:
+							break
 
 			if required_qty > QTY_TOLERANCE:
 				if for_release:
@@ -435,10 +554,20 @@ class SalesOrder(Document):
 					)
 				message = (
 					_("Insufficient FIFO stock for {0}. Short by {1} units.")
-					if fifo_enabled
+					if fifo_policy_enabled
 					else _("Insufficient stock for {0}. Short by {1} units.")
 				)
 				frappe.throw(message.format(item.product, f"{required_qty:.3f}"))
+
+		if not for_release:
+			if alternate_shipments:
+				self.alternate_import_shipments = ", ".join(alternate_shipments)
+				self._shipment_substitution_notice = self._build_shipment_substitution_notice(
+					alternate_shipments, alternate_allocations
+				)
+			else:
+				self.alternate_import_shipments = None
+				self._shipment_substitution_notice = None
 
 		return reservations
 
@@ -462,10 +591,9 @@ class SalesOrder(Document):
 			qty = self._to_stock_qty(item, flt(item.quantity or 0))
 			if qty <= 0 or not item.product:
 				continue
-			available_qty = stock_ledger.get_available_quantity_by_shipment(
+			available_qty = stock_ledger.get_available_quantity(
 				item.product,
 				location_type=location_type,
-				import_shipment=self.import_shipment,
 				warehouse=warehouse if location_type == "Warehouse" else None,
 			)
 			if qty - available_qty > QTY_TOLERANCE:
@@ -746,7 +874,17 @@ class SalesOrder(Document):
 			from_customs=location_type == "Customs",
 		)
 
-	def _iter_fifo_batches(self, product, *, location_type, warehouse, for_release: bool = False, fifo_enabled: bool = True):
+	def _iter_fifo_batches(
+		self,
+		product,
+		*,
+		location_type,
+		warehouse,
+		for_release: bool = False,
+		fifo_enabled: bool = True,
+		import_shipments: list[str] | None = None,
+		exclude_import_shipment: str | None = None,
+	):
 		child_table = "`tabStock Entry Items`"
 		parent_table = "`tabStock Entries`"
 
@@ -755,7 +893,7 @@ class SalesOrder(Document):
 				_("Stock Entry tables are missing. Please run `bench migrate` to set up Stock Entries."),
 				title=_("Stock Entries Not Available"),
 			)
-		if not self.import_shipment:
+		if not self.import_shipment and not import_shipments and not exclude_import_shipment:
 			frappe.throw(_("Import Shipment is required to reserve stock."), title=_("Shipment Required"))
 
 		conditions = ["se.docstatus = 1", "sei.product = %s"]
@@ -769,8 +907,16 @@ class SalesOrder(Document):
 				conditions.append("se.warehouse = %s")
 				values.append(warehouse)
 
-		conditions.append("se.import_shipment = %s")
-		values.append(self.import_shipment)
+		if import_shipments:
+			placeholders = ", ".join(["%s"] * len(import_shipments))
+			conditions.append(f"se.import_shipment in ({placeholders})")
+			values.extend(import_shipments)
+		elif exclude_import_shipment:
+			conditions.append("se.import_shipment != %s")
+			values.append(exclude_import_shipment)
+		else:
+			conditions.append("se.import_shipment = %s")
+			values.append(self.import_shipment)
 
 		if for_release:
 			conditions.append("coalesce(sei.reserved_qty,0) > 0")
@@ -784,6 +930,7 @@ class SalesOrder(Document):
 			select
 				sei.name as child_name,
 				se.name as batch_name,
+				se.import_shipment as import_shipment,
 				se.status as status,
 				se.warehouse as warehouse,
 				coalesce(se.arrival_date, se.creation) as arrival_marker,
