@@ -502,7 +502,11 @@ class SalesOrder(Document):
 		def record_allocation(item, batch, qty):
 			if for_release or not track_allocations:
 				return
-			if not item.meta.has_field("allocations"):
+			meta = getattr(item, "meta", None)
+			if not meta:
+				return
+			field = meta.get_field("allocations")
+			if not field or field.fieldtype != "Table":
 				return
 			item.append(
 				"allocations",
@@ -517,8 +521,11 @@ class SalesOrder(Document):
 			)
 
 		for item in self.items:
-			if track_allocations and not for_release and item.meta.has_field("allocations"):
-				item.set("allocations", [])
+			if track_allocations and not for_release:
+				meta = getattr(item, "meta", None)
+				field = meta.get_field("allocations") if meta else None
+				if field and field.fieldtype == "Table":
+					item.set("allocations", [])
 
 			required_qty = self._to_stock_qty(item, flt(item.quantity or 0))
 			if required_qty <= 0 or not item.product:
