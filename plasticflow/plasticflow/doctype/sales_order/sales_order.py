@@ -3,6 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, nowdate
 
+from plasticflow.stock import fifo as stock_fifo
 from plasticflow.stock import ledger as stock_ledger
 from plasticflow.stock import uom as stock_uom
 
@@ -34,7 +35,7 @@ class SalesOrder(Document):
 		self._calculate_totals()
 		reservations = self._collect_batch_reservations()
 		self._validate_stock_availability(reservations)
-		if self.delivery_source == "Warehouse":
+		if stock_fifo.is_fifo_enabled() and self.delivery_source == "Warehouse":
 			self._enforce_fifo(reservations)
 
 		if self.sales_type == "Cash":
@@ -366,6 +367,7 @@ class SalesOrder(Document):
 		reservations: dict[str, dict[str, object]] = {}
 		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
 		target_warehouse = self._get_target_warehouse()
+		fifo_enabled = stock_fifo.is_fifo_enabled()
 
 		for item in self.items:
 			required_qty = self._to_stock_qty(item, flt(item.quantity or 0))
@@ -384,6 +386,7 @@ class SalesOrder(Document):
 				location_type=location_type,
 				warehouse=target_warehouse,
 				for_release=for_release,
+				fifo_enabled=fifo_enabled,
 			):
 				batch_qty = flt(batch.reserved_qty if for_release else batch.available_qty or 0)
 				if batch_qty <= 0 or required_qty <= 0:
@@ -407,11 +410,12 @@ class SalesOrder(Document):
 							item.product, f"{required_qty:.3f}"
 						)
 					)
-				frappe.throw(
-					_("Insufficient FIFO stock for {0}. Short by {1} units.").format(
-						item.product, f"{required_qty:.3f}"
-					)
+				message = (
+					_("Insufficient FIFO stock for {0}. Short by {1} units.")
+					if fifo_enabled
+					else _("Insufficient stock for {0}. Short by {1} units.")
 				)
+				frappe.throw(message.format(item.product, f"{required_qty:.3f}"))
 
 		return reservations
 
@@ -719,7 +723,7 @@ class SalesOrder(Document):
 			from_customs=location_type == "Customs",
 		)
 
-	def _iter_fifo_batches(self, product, *, location_type, warehouse, for_release: bool = False):
+	def _iter_fifo_batches(self, product, *, location_type, warehouse, for_release: bool = False, fifo_enabled: bool = True):
 		child_table = "`tabStock Entry Items`"
 		parent_table = "`tabStock Entries`"
 
@@ -752,6 +756,7 @@ class SalesOrder(Document):
 				"(coalesce(sei.received_qty,0) - coalesce(sei.reserved_qty,0) - coalesce(sei.issued_qty,0)) > 0"
 			)
 
+		order_clause = "arrival_marker, se.creation" if fifo_enabled else "se.creation desc"
 		query = f"""
 			select
 				sei.name as child_name,
@@ -765,7 +770,7 @@ class SalesOrder(Document):
 			from {child_table} sei
 			inner join {parent_table} se on se.name = sei.parent
 			where {" and ".join(conditions)}
-			order by arrival_marker, se.creation
+			order by {order_clause}
 		"""
 		return frappe.db.sql(query, tuple(values), as_dict=True)
 
