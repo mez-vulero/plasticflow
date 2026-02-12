@@ -20,3 +20,4 @@ plasticflow.patches.post_model_sync.landing_cost_tax_percentage_field
 plasticflow.patches.post_model_sync.update_collections_report_ref
 plasticflow.patches.post_model_sync.add_amended_from_to_import_shipment
 plasticflow.patches.post_model_sync.retire_customs_entry
+plasticflow.patches.post_model_sync.enable_sales_order_item_row_form
