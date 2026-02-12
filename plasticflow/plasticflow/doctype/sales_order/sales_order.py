@@ -213,30 +213,37 @@ class SalesOrder(Document):
 				allocated_total = 0.0
 				allocated_cost = 0.0
 				for row in allocation_rows:
-					alloc_qty = flt(row.quantity or 0)
+					if isinstance(row, dict):
+						alloc_qty = flt(row.get("quantity") or 0)
+						import_shipment_item = row.get("import_shipment_item")
+						import_shipment = row.get("import_shipment")
+					else:
+						alloc_qty = flt(row.quantity or 0)
+						import_shipment_item = row.import_shipment_item
+						import_shipment = row.import_shipment
 					if alloc_qty <= 0:
 						continue
 					allocated_total += alloc_qty
 
 					landed_rate = 0.0
-					if row.import_shipment_item:
-						if row.import_shipment_item not in rate_cache:
-							rate_cache[row.import_shipment_item] = flt(
+					if import_shipment_item:
+						if import_shipment_item not in rate_cache:
+							rate_cache[import_shipment_item] = flt(
 								frappe.db.get_value(
 									"Import Shipment Item",
-									row.import_shipment_item,
+									import_shipment_item,
 									"landed_cost_rate_local",
 								)
 								or 0
 							)
-						landed_rate = rate_cache[row.import_shipment_item]
-					elif row.import_shipment:
-						cache_key = (row.import_shipment, item.product)
+						landed_rate = rate_cache[import_shipment_item]
+					elif import_shipment:
+						cache_key = (import_shipment, item.product)
 						if cache_key not in rate_cache:
 							rate_cache[cache_key] = flt(
 								frappe.db.get_value(
 									"Import Shipment Item",
-									{"parent": row.import_shipment, "product": item.product},
+									{"parent": import_shipment, "product": item.product},
 									"landed_cost_rate_local",
 								)
 								or 0
