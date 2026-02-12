@@ -502,6 +502,8 @@ class SalesOrder(Document):
 		def record_allocation(item, batch, qty):
 			if for_release or not track_allocations:
 				return
+			if not item.meta.has_field("allocations"):
+				return
 			item.append(
 				"allocations",
 				{
@@ -515,7 +517,7 @@ class SalesOrder(Document):
 			)
 
 		for item in self.items:
-			if track_allocations and not for_release:
+			if track_allocations and not for_release and item.meta.has_field("allocations"):
 				item.set("allocations", [])
 
 			required_qty = self._to_stock_qty(item, flt(item.quantity or 0))
