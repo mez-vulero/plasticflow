@@ -35,6 +35,12 @@ class SalesOrder(Document):
 		self._calculate_totals()
 		reservations = self._collect_batch_reservations()
 		self._calculate_profitability_fields()
+		if getattr(self, "_allocations_missing", False):
+			frappe.msgprint(
+				_("Shipment allocations could not be stored. Please run `bench migrate` and retry."),
+				indicator="orange",
+				alert=True,
+			)
 		self._validate_stock_availability(reservations)
 		if stock_fifo.is_fifo_enabled() and self.delivery_source == "Warehouse":
 			self._enforce_fifo(reservations)
@@ -202,7 +208,7 @@ class SalesOrder(Document):
 			if quantity <= 0 or not item.product:
 				continue
 
-			allocation_rows = item.get("allocations") or []
+			allocation_rows = item.get("allocations") or getattr(item, "_allocation_rows", None) or []
 			if allocation_rows:
 				allocated_total = 0.0
 				allocated_cost = 0.0
@@ -502,27 +508,41 @@ class SalesOrder(Document):
 		def record_allocation(item, batch, qty):
 			if for_release or not track_allocations:
 				return
+			allocation = {
+				"import_shipment": batch.get("import_shipment"),
+				"import_shipment_item": batch.get("import_shipment_item"),
+				"stock_entry": batch.get("batch_name"),
+				"stock_entry_item": batch.get("child_name"),
+				"quantity": flt(qty or 0),
+				"uom": batch.get("uom"),
+			}
 			meta = getattr(item, "meta", None)
-			if not meta:
-				return
-			field = meta.get_field("allocations")
-			if not field or field.fieldtype != "Table":
-				return
-			item.append(
-				"allocations",
-				{
-					"import_shipment": batch.get("import_shipment"),
-					"import_shipment_item": batch.get("import_shipment_item"),
-					"stock_entry": batch.get("batch_name"),
-					"stock_entry_item": batch.get("child_name"),
-					"quantity": flt(qty or 0),
-					"uom": batch.get("uom"),
-				},
-			)
+			if meta and not meta.get_field("allocations"):
+				try:
+					item._meta = frappe.get_meta(item.doctype)
+					meta = item.meta
+				except Exception:
+					meta = None
+			field = meta.get_field("allocations") if meta else None
+			if field and field.fieldtype == "Table":
+				try:
+					item.append("allocations", allocation)
+					return
+				except AttributeError:
+					pass
+			item._allocation_rows = getattr(item, "_allocation_rows", [])
+			item._allocation_rows.append(allocation)
+			self._allocations_missing = True
 
 		for item in self.items:
 			if track_allocations and not for_release:
 				meta = getattr(item, "meta", None)
+				if meta and not meta.get_field("allocations"):
+					try:
+						item._meta = frappe.get_meta(item.doctype)
+						meta = item.meta
+					except Exception:
+						meta = None
 				field = meta.get_field("allocations") if meta else None
 				if field and field.fieldtype == "Table":
 					item.set("allocations", [])
