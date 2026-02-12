@@ -45,7 +45,7 @@ class ProformaInvoice(Document):
 					"description": item.description,
 					"quantity": item.quantity,
 					"uom": item.uom,
-					"rate": flt(item.rate or 0) * (1 + VAT_RATE),
+					"rate": flt(item.rate or 0),
 				},
 			)
 

@@ -61,9 +61,9 @@ function recompute_child(frm, cdt, cdn) {
 	let vat_total;
 	let gross_amount;
 
-	gross_amount = qty * rate;
-	base_amount = gross_amount / (1 + VAT_RATE);
-	vat_total = gross_amount - base_amount;
+	base_amount = qty * rate;
+	vat_total = base_amount * VAT_RATE;
+	gross_amount = base_amount + vat_total;
 
 	row.amount = base_amount;
 	row.price_with_vat = vat_total;

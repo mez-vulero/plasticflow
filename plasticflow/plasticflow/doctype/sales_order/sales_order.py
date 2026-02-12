@@ -138,9 +138,9 @@ class SalesOrder(Document):
 			item.quantity = quantity
 			item.rate = rate
 
-			gross_amount = quantity * rate
-			base_amount = gross_amount / (1 + VAT_RATE) if VAT_RATE else gross_amount
-			vat_total = gross_amount - base_amount
+			base_amount = quantity * rate
+			vat_total = base_amount * VAT_RATE if VAT_RATE else 0
+			gross_amount = base_amount + vat_total
 
 			item.amount = flt(base_amount, item.precision("amount") or None)
 			# VAT amount per line (field now represents total VAT for the row)
