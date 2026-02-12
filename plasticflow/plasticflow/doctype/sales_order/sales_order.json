@@ -12,6 +12,8 @@
   "order_date",
   "customer",
   "delivery_source",
+  "driver_name",
+  "plate_number",
   "import_shipment",
   "sales_type",
   "apply_withholding",
@@ -71,6 +73,16 @@
    "label": "Delivery Source",
    "options": "\nWarehouse\nDirect from Customs",
    "reqd": 1
+  },
+  {
+   "fieldname": "driver_name",
+   "fieldtype": "Data",
+   "label": "Driver(s) Name"
+  },
+  {
+   "fieldname": "plate_number",
+   "fieldtype": "Data",
+   "label": "Plate Number"
   },
   {
    "fieldname": "import_shipment",

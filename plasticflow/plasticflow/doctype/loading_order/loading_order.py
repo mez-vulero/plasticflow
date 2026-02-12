@@ -30,6 +30,20 @@ class LoadingOrder(Document):
 	def _ensure_gate_pass_request(self):
 		if self.status != "Completed":
 			return
+		so = None
+		if self.sales_order and frappe.db.exists("Sales Order", self.sales_order):
+			so = frappe.get_cached_doc("Sales Order", self.sales_order)
+			if so.gate_pass and frappe.db.exists("Gate Pass Request", so.gate_pass):
+				self.gate_pass_request = so.gate_pass
+				if not frappe.db.get_value("Gate Pass Request", so.gate_pass, "loading_order"):
+					frappe.db.set_value(
+						"Gate Pass Request",
+						so.gate_pass,
+						"loading_order",
+						self.name,
+						update_modified=False,
+					)
+				return
 		if self.gate_pass_request and frappe.db.exists("Gate Pass Request", self.gate_pass_request):
 			return
 
@@ -37,6 +51,11 @@ class LoadingOrder(Document):
 		gpr.sales_order = self.sales_order
 		gpr.loading_order = self.name
 		gpr.status = "Pending"
+		if so:
+			if so.driver_name:
+				gpr.driver_name = so.driver_name
+			if so.plate_number:
+				gpr.plate_number = so.plate_number
 		gpr.insert(ignore_permissions=True)
 		self.gate_pass_request = gpr.name
 		if self.sales_order and frappe.db.exists("Sales Order", self.sales_order):

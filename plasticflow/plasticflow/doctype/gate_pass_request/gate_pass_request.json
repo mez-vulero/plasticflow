@@ -9,6 +9,8 @@
  "field_order": [
   "sales_order",
   "loading_order",
+  "driver_name",
+  "plate_number",
   "status",
   "gate_pass",
   "dispatched_on",
@@ -27,6 +29,18 @@
    "fieldtype": "Link",
    "label": "Loading Order",
    "options": "Loading Order",
+   "read_only": 1
+  },
+  {
+   "fieldname": "driver_name",
+   "fieldtype": "Data",
+   "label": "Driver(s) Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "plate_number",
+   "fieldtype": "Data",
+   "label": "Plate Number",
    "read_only": 1
   },
   {

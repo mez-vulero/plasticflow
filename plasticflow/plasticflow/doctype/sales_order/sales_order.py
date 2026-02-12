@@ -353,6 +353,29 @@ class SalesOrder(Document):
 			return False
 		return frappe.db.get_value("Gate Pass Request", self.gate_pass, "status") == "Dispatched"
 
+	def _should_create_gate_pass_request(self) -> bool:
+		if self.docstatus != 1:
+			return False
+		if self.sales_type == "Cash":
+			return self.status == "Payment Verified"
+		return self.status == "Credit Sales"
+
+	def _ensure_gate_pass_request(self) -> str | None:
+		if not self.name or self.docstatus != 1:
+			return None
+		if self.gate_pass and frappe.db.exists("Gate Pass Request", self.gate_pass):
+			return self.gate_pass
+
+		gpr = frappe.new_doc("Gate Pass Request")
+		gpr.sales_order = self.name
+		gpr.status = "Pending"
+		if self.driver_name:
+			gpr.driver_name = self.driver_name
+		if self.plate_number:
+			gpr.plate_number = self.plate_number
+		gpr.insert(ignore_permissions=True)
+		return gpr.name
+
 	# Compatibility shim for legacy notifications referencing payment_status
 	@property
 	def payment_status(self):
@@ -917,6 +940,12 @@ class SalesOrder(Document):
 			else:
 				updates["status"] = "Credit Sales"
 				self.status = "Credit Sales"
+
+		if self._should_create_gate_pass_request():
+			gate_pass_name = self._ensure_gate_pass_request()
+			if gate_pass_name and gate_pass_name != self.gate_pass:
+				updates["gate_pass"] = gate_pass_name
+				self.gate_pass = gate_pass_name
 
 		frappe.db.set_value("Sales Order", self.name, updates, update_modified=False)
 		self.invoiced_amount = total_invoiced
