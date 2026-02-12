@@ -21,7 +21,6 @@
   "commission_amount",
   "import_shipment_item",
   "batch_item",
-  "allocations",
   "warehouse",
   "remarks"
 ],
@@ -136,14 +135,6 @@
    "fieldtype": "Link",
    "label": "Stock Entry Items",
    "options": "Stock Entry Items"
-  },
-  {
-   "fieldname": "allocations",
-   "fieldtype": "Table",
-   "label": "Shipment Allocations",
-   "options": "Sales Order Item Allocation",
-   "read_only": 1,
-   "allow_on_submit": 1
   },
   {
    "fieldname": "warehouse",

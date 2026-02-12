@@ -27,6 +27,7 @@
   "broker_commission_rate",
   "section_break_bfgg",
   "items",
+  "shipment_allocations",
   "section_break_items",
   "total_quantity",
   "total_amount",
@@ -170,6 +171,14 @@
    "label": "Order Items",
    "options": "Sales Order Item",
    "reqd": 1
+  },
+  {
+   "fieldname": "shipment_allocations",
+   "fieldtype": "Table",
+   "label": "Shipment Allocations",
+   "options": "Sales Order Item Allocation",
+   "read_only": 1,
+   "allow_on_submit": 1
   },
   {
    "fieldname": "total_quantity",

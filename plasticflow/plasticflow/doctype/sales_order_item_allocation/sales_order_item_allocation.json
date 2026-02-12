@@ -5,6 +5,10 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "sales_order_item",
+  "sales_order_item_idx",
+  "product",
+  "product_name",
   "import_shipment",
   "import_shipment_item",
   "stock_entry",
@@ -13,6 +17,31 @@
   "uom"
  ],
  "fields": [
+  {
+   "fieldname": "sales_order_item",
+   "fieldtype": "Data",
+   "label": "Sales Order Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sales_order_item_idx",
+   "fieldtype": "Int",
+   "label": "Item Row",
+   "read_only": 1
+  },
+  {
+   "fieldname": "product",
+   "fieldtype": "Link",
+   "label": "Product",
+   "options": "Product",
+   "read_only": 1
+  },
+  {
+   "fieldname": "product_name",
+   "fieldtype": "Data",
+   "label": "Product Name",
+   "read_only": 1
+  },
   {
    "fieldname": "import_shipment",
    "fieldtype": "Link",
