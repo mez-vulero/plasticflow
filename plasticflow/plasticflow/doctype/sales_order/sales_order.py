@@ -34,6 +34,7 @@ class SalesOrder(Document):
 	def before_submit(self):
 		self._calculate_totals()
 		reservations = self._collect_batch_reservations()
+		self._calculate_profitability_fields()
 		self._validate_stock_availability(reservations)
 		if stock_fifo.is_fifo_enabled() and self.delivery_source == "Warehouse":
 			self._enforce_fifo(reservations)
@@ -44,7 +45,7 @@ class SalesOrder(Document):
 			self.status = "Credit Sales"
 
 	def on_submit(self):
-		reservations = self._collect_batch_reservations()
+		reservations = self._collect_batch_reservations(track_allocations=False)
 		self._apply_reservations(reservations)
 		self.db_set(
 			{
@@ -62,7 +63,7 @@ class SalesOrder(Document):
 		self.update_invoicing_progress()
 
 	def on_cancel(self):
-		reservations = self._collect_batch_reservations(for_release=True)
+		reservations = self._collect_batch_reservations(for_release=True, track_allocations=False)
 		self._release_reservations(reservations)
 		self.db_set(
 			{
@@ -200,6 +201,47 @@ class SalesOrder(Document):
 			quantity = flt(item.quantity or 0)
 			if quantity <= 0 or not item.product:
 				continue
+
+			allocation_rows = item.get("allocations") or []
+			if allocation_rows:
+				allocated_total = 0.0
+				allocated_cost = 0.0
+				for row in allocation_rows:
+					alloc_qty = flt(row.quantity or 0)
+					if alloc_qty <= 0:
+						continue
+					allocated_total += alloc_qty
+
+					landed_rate = 0.0
+					if row.import_shipment_item:
+						if row.import_shipment_item not in rate_cache:
+							rate_cache[row.import_shipment_item] = flt(
+								frappe.db.get_value(
+									"Import Shipment Item",
+									row.import_shipment_item,
+									"landed_cost_rate_local",
+								)
+								or 0
+							)
+						landed_rate = rate_cache[row.import_shipment_item]
+					elif row.import_shipment:
+						cache_key = (row.import_shipment, item.product)
+						if cache_key not in rate_cache:
+							rate_cache[cache_key] = flt(
+								frappe.db.get_value(
+									"Import Shipment Item",
+									{"parent": row.import_shipment, "product": item.product},
+									"landed_cost_rate_local",
+								)
+								or 0
+							)
+						landed_rate = rate_cache[cache_key]
+
+					allocated_cost += alloc_qty * landed_rate
+
+				if allocated_total > 0:
+					total_landed += allocated_cost
+					continue
 
 			landed_rate = 0.0
 			if item.import_shipment_item:
@@ -439,7 +481,7 @@ class SalesOrder(Document):
 		# Intentionally ignore to keep status-driven flow
 		pass
 
-	def _collect_batch_reservations(self, *, for_release: bool = False):
+	def _collect_batch_reservations(self, *, for_release: bool = False, track_allocations: bool = True):
 		reservations: dict[str, dict[str, object]] = {}
 		location_type = "Customs" if self.delivery_source == "Direct from Customs" else "Warehouse"
 		target_warehouse = self._get_target_warehouse()
@@ -457,7 +499,25 @@ class SalesOrder(Document):
 			if product:
 				alternate_allocations[product] = alternate_allocations.get(product, 0) + flt(qty or 0)
 
+		def record_allocation(item, batch, qty):
+			if for_release or not track_allocations:
+				return
+			item.append(
+				"allocations",
+				{
+					"import_shipment": batch.get("import_shipment"),
+					"import_shipment_item": batch.get("import_shipment_item"),
+					"stock_entry": batch.get("batch_name"),
+					"stock_entry_item": batch.get("child_name"),
+					"quantity": flt(qty or 0),
+					"uom": batch.get("uom"),
+				},
+			)
+
 		for item in self.items:
+			if track_allocations and not for_release:
+				item.set("allocations", [])
+
 			required_qty = self._to_stock_qty(item, flt(item.quantity or 0))
 			if required_qty <= 0 or not item.product:
 				continue
@@ -467,10 +527,26 @@ class SalesOrder(Document):
 					self._release_specific_batch(reservations, item, required_qty, location_type, target_warehouse)
 				else:
 					self._reserve_specific_batch(reservations, item, required_qty, location_type, target_warehouse)
-					parent = frappe.db.get_value("Stock Entry Items", item.batch_item, "parent")
-					if parent:
-						shipment = frappe.db.get_value("Stock Entries", parent, "import_shipment")
+					row = frappe.db.get_value(
+						"Stock Entry Items",
+						item.batch_item,
+						["name", "parent", "import_shipment_item", "uom"],
+						as_dict=True,
+					)
+					if row and row.parent:
+						shipment = frappe.db.get_value("Stock Entries", row.parent, "import_shipment")
 						record_alternate(shipment, item.product, required_qty)
+						record_allocation(
+							item,
+							{
+								"import_shipment": shipment,
+								"import_shipment_item": row.import_shipment_item,
+								"batch_name": row.parent,
+								"child_name": row.name,
+								"uom": row.uom,
+							},
+							required_qty,
+						)
 				continue
 
 			if for_release:
@@ -493,6 +569,7 @@ class SalesOrder(Document):
 						allocate,
 						from_customs=location_type == "Customs",
 					)
+					record_allocation(item, batch, allocate)
 					required_qty -= allocate
 					if required_qty <= QTY_TOLERANCE:
 						break
@@ -516,6 +593,7 @@ class SalesOrder(Document):
 						allocate,
 						from_customs=location_type == "Customs",
 					)
+					record_allocation(item, batch, allocate)
 					required_qty -= allocate
 					if required_qty <= QTY_TOLERANCE:
 						break
@@ -541,6 +619,7 @@ class SalesOrder(Document):
 							from_customs=location_type == "Customs",
 						)
 						record_alternate(batch.import_shipment, item.product, allocate)
+						record_allocation(item, batch, allocate)
 						required_qty -= allocate
 						if required_qty <= QTY_TOLERANCE:
 							break
@@ -559,7 +638,7 @@ class SalesOrder(Document):
 				)
 				frappe.throw(message.format(item.product, f"{required_qty:.3f}"))
 
-		if not for_release:
+		if not for_release and track_allocations:
 			if alternate_shipments:
 				self.alternate_import_shipments = ", ".join(alternate_shipments)
 				self._shipment_substitution_notice = self._build_shipment_substitution_notice(
@@ -931,6 +1010,8 @@ class SalesOrder(Document):
 				sei.name as child_name,
 				se.name as batch_name,
 				se.import_shipment as import_shipment,
+				sei.import_shipment_item as import_shipment_item,
+				sei.uom as uom,
 				se.status as status,
 				se.warehouse as warehouse,
 				coalesce(se.arrival_date, se.creation) as arrival_marker,
