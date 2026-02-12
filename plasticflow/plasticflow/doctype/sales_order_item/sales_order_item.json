@@ -2,7 +2,7 @@
  "actions": [],
  "creation": "2024-01-01 00:00:00",
  "doctype": "DocType",
- "editable_grid": 1,
+ "editable_grid": 0,
  "engine": "InnoDB",
  "field_order": [
   "product",
