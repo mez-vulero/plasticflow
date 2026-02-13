@@ -141,3 +141,21 @@ def execute():
 
 	for gpr in gpr_rows:
 		frappe.db.delete("Gate Pass Request", {"name": gpr.name})
+
+	# Clear orphan links that still point to missing gate passes
+	for doctype, field in [
+		("Sales Order", "gate_pass"),
+		("Loading Order", "gate_pass_request"),
+		("Invoice", "gate_pass"),
+		("Delivery Note", "gate_pass"),
+	]:
+		if not frappe.db.table_exists(doctype):
+			continue
+		frappe.db.sql(
+			f"""
+			update `tab{doctype}`
+			set `{field}` = NULL
+			where `{field}` is not null
+				and `{field}` not in (select name from `tabGate Pass`)
+			"""
+		)

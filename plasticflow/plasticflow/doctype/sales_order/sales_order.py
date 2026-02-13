@@ -461,6 +461,10 @@ class SalesOrder(Document):
 		doc.insert(ignore_permissions=True)
 		return doc.name
 
+	# Backward-compat shim for any custom code still calling the old helper.
+	def _ensure_gate_pass_request(self) -> str | None:
+		return self._ensure_loading_order()
+
 	def _parse_alternate_shipments(self) -> list[str]:
 		value = (self.alternate_import_shipments or "").strip()
 		if not value:
