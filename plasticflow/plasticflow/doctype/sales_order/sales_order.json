@@ -11,6 +11,7 @@
  "field_order": [
   "order_date",
   "customer",
+  "customer_name",
   "customer_tin",
   "delivery_source",
   "driver_name",
@@ -107,11 +108,11 @@
    "options": "Import Shipment"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "alternate_import_shipments",
    "fieldtype": "Small Text",
    "label": "Alternate Shipments Used",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
    "default": "Cash",
@@ -187,12 +188,12 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "shipment_allocations",
    "fieldtype": "Table",
    "label": "Shipment Allocations",
    "options": "Sales Order Item Allocation",
-   "read_only": 1,
-   "allow_on_submit": 1
+   "read_only": 1
   },
   {
    "fieldname": "total_quantity",
@@ -250,10 +251,10 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "margin_percent",
    "fieldtype": "Percent",
    "label": "Margin %",
-   "allow_on_submit": 1,
    "precision": "2",
    "read_only": 1
   },
@@ -283,8 +284,7 @@
    "fieldtype": "Link",
    "label": "Proforma Invoice",
    "options": "Proforma Invoice",
-   "read_only": 1,
-   "set_null_on_delete": 1
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
@@ -292,8 +292,7 @@
    "fieldtype": "Link",
    "label": "Invoice",
    "options": "Invoice",
-   "read_only": 1,
-   "set_null_on_delete": 1
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
@@ -301,8 +300,7 @@
    "fieldtype": "Link",
    "label": "Gate Pass",
    "options": "Gate Pass",
-   "read_only": 1,
-   "set_null_on_delete": 1
+   "read_only": 1
   },
   {
    "allow_on_submit": 1,
@@ -341,13 +339,20 @@
   {
    "fieldname": "column_break_zymo",
    "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-24 09:21:07.086635",
- "modified_by": "Administrator",
+ "modified": "2026-02-13 12:55:12.854236",
+ "modified_by": "mezmure.dawit@vulero.et",
  "module": "PlasticFlow",
  "name": "Sales Order",
  "naming_rule": "Expression",

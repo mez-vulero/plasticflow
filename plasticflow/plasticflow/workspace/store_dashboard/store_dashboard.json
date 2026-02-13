@@ -4,21 +4,9 @@
   {
    "chart_name": "Stock Value by Location",
    "label": "Stock Value by Location"
-  },
-  {
-   "chart_name": "Stock by Location (Qty)",
-   "label": "Stock by Location (Qty)"
-  },
-  {
-   "chart_name": "Stock Ageing Value",
-   "label": "Stock Ageing Value"
-  },
-  {
-   "chart_name": "Stock Value by Product",
-   "label": "Stock Value by Product"
   }
  ],
- "content": "[{\"id\":\"hdr_store\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Store Dashboard</b></span>\",\"col\":12}},{\"id\":\"card_total_value\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Inventory Value\",\"col\":3}},{\"id\":\"card_customs_value\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Customs Stock Value\",\"col\":3}},{\"id\":\"card_warehouse_value\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Warehouse Stock Value\",\"col\":3}},{\"id\":\"card_customs_qty\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Customs Stock On Hand\",\"col\":3}},{\"id\":\"card_warehouse_qty\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Warehouse Stock On Hand\",\"col\":3}},{\"id\":\"chart_qty\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Stock by Location (Qty)\",\"col\":12}},{\"id\":\"chart_value\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Stock Value by Location\",\"col\":12}},{\"id\":\"chart_ageing\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Stock Ageing Value\",\"col\":12}},{\"id\":\"chart_shipment\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Stock Value by Product\",\"col\":12}},{\"id\":\"shortcut_import_shipments\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Import Shipments\",\"col\":3}},{\"id\":\"shortcut_stock_entries\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Entries\",\"col\":3}},{\"id\":\"shortcut_stock_adjustments\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Adjustments\",\"col\":3}},{\"id\":\"shortcut_stock_ledger\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Ledger\",\"col\":3}},{\"id\":\"shortcut_stock_balance\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Balance\",\"col\":3}},{\"id\":\"shortcut_stock_value\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Value Report\",\"col\":3}}]",
+ "content": "[{\"id\":\"hdr_store\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Store Dashboard</b></span>\",\"col\":12}},{\"id\":\"card_total_value\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Inventory Value\",\"col\":3}},{\"id\":\"card_customs_value\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Customs Stock Value\",\"col\":3}},{\"id\":\"card_warehouse_value\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Warehouse Stock Value\",\"col\":3}},{\"id\":\"card_customs_qty\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Customs Stock On Hand\",\"col\":3}},{\"id\":\"card_warehouse_qty\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Warehouse Stock On Hand\",\"col\":3}},{\"id\":\"chart_value\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Stock Value by Location\",\"col\":12}},{\"id\":\"shortcut_import_shipments\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Import Shipments\",\"col\":3}},{\"id\":\"shortcut_stock_entries\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Entries\",\"col\":3}},{\"id\":\"shortcut_stock_ledger\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Ledger\",\"col\":3}},{\"id\":\"shortcut_stock_value\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Value Report\",\"col\":3}},{\"id\":\"shortcut_stock_balance\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stock Balance\",\"col\":3}}]",
  "creation": "2025-01-01 00:00:00",
  "custom_blocks": [],
  "docstatus": 0,
@@ -30,7 +18,7 @@
  "is_hidden": 0,
  "label": "Store Dashboard",
  "links": [],
- "modified": "2025-12-06 11:34:41.671277",
+ "modified": "2026-02-13 06:24:57.054059",
  "modified_by": "mezmure.dawit@vulero.et",
  "module": "PlasticFlow",
  "name": "Store Dashboard",
@@ -85,24 +73,20 @@
    "type": "DocType"
   },
   {
-   "label": "Stock Adjustments",
-   "link_to": "Stock Adjustment",
-   "type": "DocType"
-  },
-  {
    "label": "Stock Ledger",
    "link_to": "Stock Ledger Entry",
    "type": "DocType"
   },
   {
-   "label": "Stock Balance",
-   "link_to": "Stock Balance",
+   "label": "Stock Value Report",
+   "link_to": "Plasticflow Stock Value",
    "report_ref_doctype": "Stock Ledger Entry",
    "type": "Report"
   },
   {
-   "label": "Stock Value Report",
-   "link_to": "Plasticflow Stock Value",
+   "doc_view": "",
+   "label": "Stock Balance",
+   "link_to": "Stock Balance",
    "report_ref_doctype": "Stock Ledger Entry",
    "type": "Report"
   }
