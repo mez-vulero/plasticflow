@@ -31,17 +31,14 @@ def execute(filters=None):
 				f"""
 				select
 					product,
-					import_shipment,
-					location_type,
-					warehouse,
 					sum(available_delta) as available_qty,
 					sum(reserved_delta) as reserved_qty,
 					sum(issued_delta) as issued_qty,
 					max(movement_datetime) as last_movement
 				from `tabStock Ledger Movement`
 				where {where_clause}
-				group by product, import_shipment, location_type, warehouse
-				order by product, import_shipment, location_type, warehouse
+				group by product
+				order by product
 				""",
 				params,
 				as_dict=True,
@@ -53,17 +50,14 @@ def execute(filters=None):
 				f"""
 				select
 					product,
-					import_shipment,
-					location_type,
-					warehouse,
 					sum(available_qty) as available_qty,
 					sum(reserved_qty) as reserved_qty,
 					sum(issued_qty) as issued_qty,
 					max(last_movement) as last_movement
 				from `tabStock Ledger Entry`
 				where {where_clause}
-				group by product, import_shipment, location_type, warehouse
-				order by product, import_shipment, location_type, warehouse
+				group by product
+				order by product
 				""",
 				params,
 				as_dict=True,
@@ -74,17 +68,14 @@ def execute(filters=None):
 			f"""
 			select
 				product,
-				import_shipment,
-				location_type,
-				warehouse,
 				sum(available_qty) as available_qty,
 				sum(reserved_qty) as reserved_qty,
 				sum(issued_qty) as issued_qty,
 				max(last_movement) as last_movement
 			from `tabStock Ledger Entry`
 			where {where_clause}
-			group by product, import_shipment, location_type, warehouse
-			order by product, import_shipment, location_type, warehouse
+			group by product
+			order by product
 			""",
 			params,
 			as_dict=True,
@@ -92,15 +83,6 @@ def execute(filters=None):
 
 	columns = [
 		{"label": _("Product"), "fieldname": "product", "fieldtype": "Link", "options": "Product", "width": 200},
-		{
-			"label": _("Import Shipment"),
-			"fieldname": "import_shipment",
-			"fieldtype": "Link",
-			"options": "Import Shipment",
-			"width": 160,
-		},
-		{"label": _("Location Type"), "fieldname": "location_type", "fieldtype": "Data", "width": 120},
-		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 160},
 		{"label": _("Available Qty"), "fieldname": "available_qty", "fieldtype": "Float", "width": 130},
 		{"label": _("Reserved Qty"), "fieldname": "reserved_qty", "fieldtype": "Float", "width": 130},
 		{"label": _("Issued Qty"), "fieldname": "issued_qty", "fieldtype": "Float", "width": 120},
