@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, get_datetime
+from frappe.utils import add_days, get_datetime, flt
+
+from plasticflow.stock import uom as stock_uom
 
 
 def execute(filters=None):
@@ -10,6 +12,7 @@ def execute(filters=None):
 	import_shipment = filters.get("import_shipment")
 	warehouse = filters.get("warehouse")
 	as_of_date = filters.get("as_of_date")
+	display_uom = (filters.get("display_uom") or "Kg").strip()
 
 	conditions = ["1=1"]
 	params = {}
@@ -83,10 +86,35 @@ def execute(filters=None):
 
 	columns = [
 		{"label": _("Product"), "fieldname": "product", "fieldtype": "Link", "options": "Product", "width": 200},
+		{"label": _("UOM"), "fieldname": "uom", "fieldtype": "Data", "width": 90},
 		{"label": _("Available Qty"), "fieldname": "available_qty", "fieldtype": "Float", "width": 130},
 		{"label": _("Reserved Qty"), "fieldname": "reserved_qty", "fieldtype": "Float", "width": 130},
 		{"label": _("Issued Qty"), "fieldname": "issued_qty", "fieldtype": "Float", "width": 120},
 		{"label": _("Last Movement"), "fieldname": "last_movement", "fieldtype": "Datetime", "width": 170},
 	]
+
+	if not rows:
+		return columns, rows, None, None
+
+	product_codes = [row.product for row in rows if row.get("product")]
+	product_uoms = {}
+	if product_codes:
+		for prod in frappe.db.get_all("Product", filters={"name": ["in", product_codes]}, fields=["name", "uom"]):
+			product_uoms[prod.name] = prod.uom
+
+	for row in rows:
+		product = row.get("product")
+		stock_uom_name = product_uoms.get(product)
+		row_uom = display_uom
+		if stock_uom_name and not (
+			stock_uom.is_kg_uom(stock_uom_name) or stock_uom.is_ton_uom(stock_uom_name)
+		):
+			row_uom = stock_uom_name
+		factor = stock_uom.conversion_factor(stock_uom_name, row_uom)
+		if factor and factor != 1:
+			row["available_qty"] = flt(row.get("available_qty")) * factor
+			row["reserved_qty"] = flt(row.get("reserved_qty")) * factor
+			row["issued_qty"] = flt(row.get("issued_qty")) * factor
+		row["uom"] = row_uom or stock_uom_name
 
 	return columns, rows, None, None

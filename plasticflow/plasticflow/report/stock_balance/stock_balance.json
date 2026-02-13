@@ -18,6 +18,13 @@
    "options": "Warehouse"
   },
   {
+   "default": "Kg",
+   "fieldname": "display_uom",
+   "fieldtype": "Select",
+   "label": "Display UOM",
+   "options": "\nKg\nTon"
+  },
+  {
    "fieldname": "as_of_date",
    "fieldtype": "Date",
    "label": "As Of Date"
