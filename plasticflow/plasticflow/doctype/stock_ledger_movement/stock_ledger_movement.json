@@ -1,0 +1,172 @@
+{
+ "actions": [],
+ "autoname": "format:SLM-{YYYY}-{#####}",
+ "creation": "2026-02-13 00:00:00",
+ "default_view": "List",
+ "doctype": "DocType",
+ "document_type": "System",
+ "engine": "InnoDB",
+ "field_order": [
+  "product",
+  "location_type",
+  "location_reference",
+  "warehouse",
+  "stock_entry",
+  "import_shipment",
+  "movement_datetime",
+  "available_delta",
+  "reserved_delta",
+  "issued_delta",
+  "balance_available",
+  "balance_reserved",
+  "balance_issued",
+  "remarks",
+  "source_doctype",
+  "source_name"
+ ],
+ "fields": [
+  {
+   "fieldname": "product",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Product",
+   "options": "Product",
+   "reqd": 1
+  },
+  {
+   "default": "Customs",
+   "fieldname": "location_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Location Type",
+   "options": "\nCustoms\nWarehouse",
+   "reqd": 1
+  },
+  {
+   "fieldname": "location_reference",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Location Reference"
+  },
+  {
+   "depends_on": "eval:doc.location_type===\"Warehouse\"",
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "stock_entry",
+   "fieldtype": "Link",
+   "label": "Stock Entries",
+   "options": "Stock Entries"
+  },
+  {
+   "fieldname": "import_shipment",
+   "fieldtype": "Link",
+   "label": "Import Shipment",
+   "options": "Import Shipment"
+  },
+  {
+   "default": "Now",
+   "fieldname": "movement_datetime",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Movement Date"
+  },
+  {
+   "default": "0",
+   "fieldname": "available_delta",
+   "fieldtype": "Float",
+   "label": "Available Delta"
+  },
+  {
+   "default": "0",
+   "fieldname": "reserved_delta",
+   "fieldtype": "Float",
+   "label": "Reserved Delta"
+  },
+  {
+   "default": "0",
+   "fieldname": "issued_delta",
+   "fieldtype": "Float",
+   "label": "Issued Delta"
+  },
+  {
+   "default": "0",
+   "fieldname": "balance_available",
+   "fieldtype": "Float",
+   "label": "Balance Available"
+  },
+  {
+   "default": "0",
+   "fieldname": "balance_reserved",
+   "fieldtype": "Float",
+   "label": "Balance Reserved"
+  },
+  {
+   "default": "0",
+   "fieldname": "balance_issued",
+   "fieldtype": "Float",
+   "label": "Balance Issued"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "source_doctype",
+   "fieldtype": "Link",
+   "label": "Source DocType",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "source_name",
+   "fieldtype": "Data",
+   "label": "Source Name"
+  }
+ ],
+ "links": [],
+ "modified": "2026-02-13 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Stock Ledger Movement",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Management",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

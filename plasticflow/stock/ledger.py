@@ -2,6 +2,8 @@ import frappe
 from frappe.utils import flt, now_datetime
 
 LEDGER_DOCTYPE = "Stock Ledger Entry"
+MOVEMENT_DOCTYPE = "Stock Ledger Movement"
+MOVEMENT_TOLERANCE = 0.0001
 
 
 def _get_filters(
@@ -90,6 +92,8 @@ def set_balances(
 	landed_cost_rate=None,
 	landed_cost_amount=None,
 	remarks=None,
+	source_doctype=None,
+	source_name=None,
 ):
 	"""Set absolute balances for a ledger slot."""
 	doc = _get_or_create(
@@ -100,12 +104,17 @@ def set_balances(
 		stock_entry,
 		import_shipment,
 	)
-	if available is not None:
-		doc.available_qty = available
-	if reserved is not None:
-		doc.reserved_qty = reserved
-	if issued is not None:
-		doc.issued_qty = issued
+	old_available = flt(doc.available_qty or 0)
+	old_reserved = flt(doc.reserved_qty or 0)
+	old_issued = flt(doc.issued_qty or 0)
+
+	new_available = old_available if available is None else flt(available)
+	new_reserved = old_reserved if reserved is None else flt(reserved)
+	new_issued = old_issued if issued is None else flt(issued)
+
+	doc.available_qty = new_available
+	doc.reserved_qty = new_reserved
+	doc.issued_qty = new_issued
 	if remarks is not None:
 		doc.remarks = remarks
 	if landed_cost_rate is not None:
@@ -117,6 +126,23 @@ def set_balances(
 		doc.insert(ignore_permissions=True)
 	else:
 		doc.save(ignore_permissions=True)
+	_log_movement(
+		product,
+		location_type,
+		location_reference,
+		warehouse=warehouse,
+		stock_entry=stock_entry,
+		import_shipment=import_shipment,
+		available_delta=new_available - old_available,
+		reserved_delta=new_reserved - old_reserved,
+		issued_delta=new_issued - old_issued,
+		balance_available=new_available,
+		balance_reserved=new_reserved,
+		balance_issued=new_issued,
+		remarks=remarks,
+		source_doctype=source_doctype,
+		source_name=source_name,
+	)
 	return doc
 
 
@@ -132,6 +158,8 @@ def apply_delta(
 	stock_entry=None,
 	import_shipment=None,
 	remarks=None,
+	source_doctype=None,
+	source_name=None,
 ):
 	"""Adjust balances by delta values."""
 	doc = _get_or_create(
@@ -142,9 +170,17 @@ def apply_delta(
 		stock_entry,
 		import_shipment,
 	)
-	doc.available_qty = max((doc.available_qty or 0) + available_delta, 0)
-	doc.reserved_qty = max((doc.reserved_qty or 0) + reserved_delta, 0)
-	doc.issued_qty = max((doc.issued_qty or 0) + issued_delta, 0)
+	old_available = flt(doc.available_qty or 0)
+	old_reserved = flt(doc.reserved_qty or 0)
+	old_issued = flt(doc.issued_qty or 0)
+
+	new_available = max(old_available + flt(available_delta or 0), 0)
+	new_reserved = max(old_reserved + flt(reserved_delta or 0), 0)
+	new_issued = max(old_issued + flt(issued_delta or 0), 0)
+
+	doc.available_qty = new_available
+	doc.reserved_qty = new_reserved
+	doc.issued_qty = new_issued
 	if remarks is not None:
 		doc.remarks = remarks
 	doc.last_movement = now_datetime()
@@ -152,7 +188,73 @@ def apply_delta(
 		doc.insert(ignore_permissions=True)
 	else:
 		doc.save(ignore_permissions=True)
+	_log_movement(
+		product,
+		location_type,
+		location_reference,
+		warehouse=warehouse,
+		stock_entry=stock_entry,
+		import_shipment=import_shipment,
+		available_delta=new_available - old_available,
+		reserved_delta=new_reserved - old_reserved,
+		issued_delta=new_issued - old_issued,
+		balance_available=new_available,
+		balance_reserved=new_reserved,
+		balance_issued=new_issued,
+		remarks=remarks,
+		source_doctype=source_doctype,
+		source_name=source_name,
+	)
 	return doc
+
+
+def _log_movement(
+	product,
+	location_type,
+	location_reference,
+	*,
+	warehouse=None,
+	stock_entry=None,
+	import_shipment=None,
+	available_delta=0.0,
+	reserved_delta=0.0,
+	issued_delta=0.0,
+	balance_available=0.0,
+	balance_reserved=0.0,
+	balance_issued=0.0,
+	remarks=None,
+	source_doctype=None,
+	source_name=None,
+):
+	if (
+		abs(available_delta) < MOVEMENT_TOLERANCE
+		and abs(reserved_delta) < MOVEMENT_TOLERANCE
+		and abs(issued_delta) < MOVEMENT_TOLERANCE
+	):
+		return
+	if not frappe.db.table_exists(MOVEMENT_DOCTYPE):
+		return
+
+	doc = frappe.new_doc(MOVEMENT_DOCTYPE)
+	doc.product = product
+	doc.location_type = location_type
+	doc.location_reference = location_reference
+	doc.warehouse = warehouse
+	doc.stock_entry = stock_entry
+	doc.import_shipment = import_shipment
+	doc.available_delta = available_delta
+	doc.reserved_delta = reserved_delta
+	doc.issued_delta = issued_delta
+	doc.balance_available = balance_available
+	doc.balance_reserved = balance_reserved
+	doc.balance_issued = balance_issued
+	if remarks is not None:
+		doc.remarks = remarks
+	if source_doctype:
+		doc.source_doctype = source_doctype
+	if source_name:
+		doc.source_name = source_name
+	doc.insert(ignore_permissions=True)
 
 
 def clear_slot(
@@ -164,13 +266,48 @@ def clear_slot(
 	import_shipment=None,
 ):
 	base_filters = _get_filters(product, location_type, location_reference, warehouse, None, import_shipment)
-	names = frappe.db.get_all(
+	entries = frappe.db.get_all(
 		LEDGER_DOCTYPE,
 		filters=base_filters,
-		pluck="name",
+		fields=[
+			"name",
+			"product",
+			"location_type",
+			"location_reference",
+			"warehouse",
+			"stock_entry",
+			"import_shipment",
+			"available_qty",
+			"reserved_qty",
+			"issued_qty",
+		],
 	)
-	for name in names:
-		frappe.delete_doc(LEDGER_DOCTYPE, name, ignore_permissions=True, force=1, delete_permanently=True)
+	for entry in entries:
+		available = flt(entry.available_qty or 0)
+		reserved = flt(entry.reserved_qty or 0)
+		issued = flt(entry.issued_qty or 0)
+		_log_movement(
+			entry.product,
+			entry.location_type,
+			entry.location_reference,
+			warehouse=entry.warehouse,
+			stock_entry=entry.stock_entry,
+			import_shipment=entry.import_shipment,
+			available_delta=-available,
+			reserved_delta=-reserved,
+			issued_delta=-issued,
+			balance_available=0,
+			balance_reserved=0,
+			balance_issued=0,
+			remarks="Cleared ledger slot",
+		)
+		frappe.delete_doc(
+			LEDGER_DOCTYPE,
+			entry.name,
+			ignore_permissions=True,
+			force=1,
+			delete_permanently=True,
+		)
 
 
 # Convenience helpers -----------------------------------------------------
