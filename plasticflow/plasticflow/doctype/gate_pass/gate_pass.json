@@ -1,23 +1,21 @@
 {
  "actions": [],
  "allow_import": 1,
- "autoname": "format:LOAD-{YYYY}-{#####}",
- "creation": "2025-12-01 00:00:00.000000",
- "default_view": "Form",
+ "autoname": "format:GP-{YYYY}-{#####}",
+ "creation": "2026-02-13 00:00:00.000000",
+ "default_view": "List",
  "doctype": "DocType",
  "document_type": "Document",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "sales_order",
+  "loading_order",
   "customer",
   "destination",
-  "import_shipment",
   "driver_name",
-  "vehicle_plate",
-  "status",
-  "loading_date",
-  "gate_pass_request",
+  "plate_number",
+  "generated_on",
   "section_break_items",
   "items",
   "remarks"
@@ -28,8 +26,14 @@
    "fieldtype": "Link",
    "label": "Sales Order",
    "options": "Sales Order",
-   "reqd": 1,
-   "in_list_view": 1
+   "read_only": 1
+  },
+  {
+   "fieldname": "loading_order",
+   "fieldtype": "Link",
+   "label": "Loading Order",
+   "options": "Loading Order",
+   "read_only": 1
   },
   {
    "fieldname": "customer",
@@ -44,44 +48,21 @@
    "label": "Destination"
   },
   {
-   "fieldname": "import_shipment",
-   "fieldtype": "Link",
-   "label": "Import Shipment",
-   "options": "Import Shipment",
-   "read_only": 1
-  },
-  {
    "fieldname": "driver_name",
    "fieldtype": "Data",
-   "label": "Driver Name"
+   "label": "Driver(s) Name"
   },
   {
-   "fieldname": "vehicle_plate",
+   "fieldname": "plate_number",
    "fieldtype": "Data",
-   "label": "Vehicle Plate"
+   "label": "Plate Number"
   },
   {
-   "default": "New Order",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "\nNew Order\nLoading\nCompleted",
-   "in_list_view": 1,
-   "reqd": 1
-  },
-  {
-   "default": "Today",
-   "fieldname": "loading_date",
-   "fieldtype": "Date",
-   "label": "Loading Date"
-  },
-  {
-   "fieldname": "gate_pass_request",
-   "fieldtype": "Link",
-   "label": "Gate Pass",
-   "options": "Gate Pass",
-   "read_only": 1,
-   "set_null_on_delete": 1
+   "default": "Now",
+   "fieldname": "generated_on",
+   "fieldtype": "Datetime",
+   "label": "Generated On",
+   "read_only": 1
   },
   {
    "fieldname": "section_break_items",
@@ -91,8 +72,8 @@
   {
    "fieldname": "items",
    "fieldtype": "Table",
-   "label": "Loading Items",
-   "options": "Loading Order Item",
+   "label": "Items",
+   "options": "Gate Pass Item",
    "reqd": 1
   },
   {
@@ -103,11 +84,10 @@
  ],
  "is_submittable": 0,
  "links": [],
- "modified": "2025-12-01 00:00:00.000000",
+ "modified": "2026-02-13 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
- "name": "Loading Order",
- "naming_rule": "Expression",
+ "name": "Gate Pass",
  "owner": "Administrator",
  "permissions": [
   {
@@ -142,7 +122,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Stock Manager",
+   "role": "Finance Officer",
    "share": 1,
    "write": 1
   },
@@ -154,7 +134,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Finance Officer",
+   "role": "Store Manager",
    "share": 1,
    "write": 1
   }

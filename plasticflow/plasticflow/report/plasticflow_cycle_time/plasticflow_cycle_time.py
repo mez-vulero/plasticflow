@@ -27,11 +27,10 @@ def execute(filters=None):
 
 	fulfillment_days = frappe.db.sql(
 		"""
-		select avg(datediff(coalesce(gpr.dispatched_on, gpr.modified), so.order_date))
-		from `tabGate Pass Request` gpr
-		inner join `tabSales Order` so on gpr.sales_order = so.name
-		where gpr.status = 'Dispatched'
-			and so.order_date is not null
+		select avg(datediff(coalesce(gp.generated_on, gp.modified), so.order_date))
+		from `tabGate Pass` gp
+		inner join `tabSales Order` so on gp.sales_order = so.name
+		where so.order_date is not null
 		"""
 	)[0][0]
 

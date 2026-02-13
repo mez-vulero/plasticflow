@@ -285,8 +285,8 @@
    "allow_on_submit": 1,
    "fieldname": "gate_pass",
    "fieldtype": "Link",
-   "label": "Gate Pass Request",
-   "options": "Gate Pass Request",
+   "label": "Gate Pass",
+   "options": "Gate Pass",
    "read_only": 1,
    "set_null_on_delete": 1
   },

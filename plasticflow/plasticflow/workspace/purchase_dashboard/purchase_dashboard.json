@@ -95,7 +95,7 @@
   {
    "label": "Cycle Time",
    "link_to": "Plasticflow Cycle Time",
-   "report_ref_doctype": "Gate Pass Request",
+   "report_ref_doctype": "Gate Pass",
    "type": "Report"
   }
  ],

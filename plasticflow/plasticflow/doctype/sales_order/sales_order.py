@@ -413,32 +413,53 @@ class SalesOrder(Document):
 		return f"{location_type}::{warehouse or 'GLOBAL'}"
 
 	def _gate_pass_dispatched(self) -> bool:
-		if not self.gate_pass or not frappe.db.exists("Gate Pass Request", self.gate_pass):
+		if not self.gate_pass or not frappe.db.exists("Gate Pass", self.gate_pass):
 			return False
-		return frappe.db.get_value("Gate Pass Request", self.gate_pass, "status") == "Dispatched"
+		return True
 
-	def _should_create_gate_pass_request(self) -> bool:
+	def _should_create_loading_order(self) -> bool:
 		if self.docstatus != 1:
 			return False
 		if self.sales_type == "Cash":
 			return self.status == "Payment Verified"
 		return self.status == "Credit Sales"
 
-	def _ensure_gate_pass_request(self) -> str | None:
+	def _ensure_loading_order(self) -> str | None:
 		if not self.name or self.docstatus != 1:
 			return None
-		if self.gate_pass and frappe.db.exists("Gate Pass Request", self.gate_pass):
-			return self.gate_pass
+		existing = frappe.db.get_value(
+			"Loading Order",
+			{"sales_order": self.name},
+			"name",
+			order_by="creation desc",
+		)
+		if existing:
+			return existing
 
-		gpr = frappe.new_doc("Gate Pass Request")
-		gpr.sales_order = self.name
-		gpr.status = "Pending"
-		if self.driver_name:
-			gpr.driver_name = self.driver_name
-		if self.plate_number:
-			gpr.plate_number = self.plate_number
-		gpr.insert(ignore_permissions=True)
-		return gpr.name
+		doc = frappe.new_doc("Loading Order")
+		doc.sales_order = self.name
+		doc.customer = self.customer
+		doc.destination = self.customer
+		doc.import_shipment = self.import_shipment
+		doc.loading_date = nowdate()
+		doc.status = "New Order"
+		doc.driver_name = self.driver_name
+		doc.vehicle_plate = self.plate_number
+
+		for item in self.items:
+			doc.append(
+				"items",
+				{
+					"product": item.product,
+					"product_name": item.product_name,
+					"quantity": item.quantity,
+					"uom": item.uom,
+					"import_shipment_item": item.import_shipment_item,
+				},
+			)
+
+		doc.insert(ignore_permissions=True)
+		return doc.name
 
 	def _parse_alternate_shipments(self) -> list[str]:
 		value = (self.alternate_import_shipments or "").strip()
@@ -1205,11 +1226,8 @@ class SalesOrder(Document):
 				updates["status"] = "Credit Sales"
 				self.status = "Credit Sales"
 
-		if self._should_create_gate_pass_request():
-			gate_pass_name = self._ensure_gate_pass_request()
-			if gate_pass_name and gate_pass_name != self.gate_pass:
-				updates["gate_pass"] = gate_pass_name
-				self.gate_pass = gate_pass_name
+		if self._should_create_loading_order():
+			self._ensure_loading_order()
 
 		frappe.db.set_value("Sales Order", self.name, updates, update_modified=False)
 		self.invoiced_amount = total_invoiced
@@ -1330,7 +1348,7 @@ class SalesOrder(Document):
 			row.invoice = invoice.name
 
 	def create_gate_pass(self, allow_partial: bool = False):
-		frappe.throw(_("Gate Pass is no longer used. Please create a Gate Pass Request via Loading Order."))
+		frappe.throw(_("Gate Pass is auto-generated when the Loading Order is completed."))
 
 
 @frappe.whitelist()
@@ -1343,7 +1361,7 @@ def create_sales_invoice(sales_order, amount=None):
 
 @frappe.whitelist()
 def create_sales_order_gate_pass(sales_order):
-	frappe.throw(_("Gate Pass is no longer used. Please create a Gate Pass Request via Loading Order."))
+	frappe.throw(_("Gate Pass is auto-generated when the Loading Order is completed."))
 
 
 @frappe.whitelist()

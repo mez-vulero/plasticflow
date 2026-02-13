@@ -183,10 +183,8 @@ class DeliveryNote(Document):
 			return
 		so = frappe.get_doc("Sales Order", self.sales_order)
 		target_status = so.status
-		if so.gate_pass and frappe.db.exists("Gate Pass Request", so.gate_pass):
-			gp_status = frappe.db.get_value("Gate Pass Request", so.gate_pass, "status")
-			if gp_status == "Dispatched":
-				target_status = "Completed"
+		if so.gate_pass and frappe.db.exists("Gate Pass", so.gate_pass):
+			target_status = "Completed"
 		if target_status != so.status:
 			so.db_set("status", target_status, update_modified=False)
 
