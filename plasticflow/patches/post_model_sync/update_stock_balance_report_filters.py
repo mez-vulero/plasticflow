@@ -25,7 +25,7 @@ def execute():
 			"fieldname": "display_uom",
 			"fieldtype": "Select",
 			"label": "Display UOM",
-			"options": "\nKg\nTon",
+			"options": "Kg\nTon",
 		},
 		{
 			"fieldname": "as_of_date",
