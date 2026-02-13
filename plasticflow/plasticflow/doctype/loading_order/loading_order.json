@@ -11,6 +11,7 @@
  "field_order": [
   "sales_order",
   "customer",
+  "customer_name",
   "destination",
   "import_shipment",
   "driver_name",
@@ -37,6 +38,13 @@
    "fieldtype": "Link",
    "label": "Customer",
    "options": "Customer",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
    "read_only": 1
   },
   {
