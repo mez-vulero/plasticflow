@@ -15,6 +15,7 @@
   "destination",
   "driver_name",
   "plate_number",
+  "driver_phone",
   "generated_on",
   "section_break_items",
   "items",
@@ -56,6 +57,11 @@
    "fieldname": "plate_number",
    "fieldtype": "Data",
    "label": "Plate Number"
+  },
+  {
+   "fieldname": "driver_phone",
+   "fieldtype": "Data",
+   "label": "Driver Phone"
   },
   {
    "default": "Now",

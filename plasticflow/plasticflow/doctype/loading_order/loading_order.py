@@ -25,6 +25,8 @@ class LoadingOrder(Document):
 			self.driver_name = so.driver_name
 		if so.plate_number and not self.vehicle_plate:
 			self.vehicle_plate = so.plate_number
+		if so.driver_phone and not self.driver_phone:
+			self.driver_phone = so.driver_phone
 		if so.import_shipment:
 			self.import_shipment = so.import_shipment
 
@@ -52,6 +54,7 @@ class LoadingOrder(Document):
 		gp.destination = self.destination or (so.customer if so else None)
 		gp.driver_name = self.driver_name or (so.driver_name if so else None)
 		gp.plate_number = self.vehicle_plate or (so.plate_number if so else None)
+		gp.driver_phone = self.driver_phone or (so.driver_phone if so else None)
 		gp.generated_on = now_datetime()
 		for row in self.items:
 			gp.append(
@@ -99,6 +102,7 @@ def create_loading_order(sales_order: str):
 	doc.status = "New Order"
 	doc.driver_name = so.driver_name
 	doc.vehicle_plate = so.plate_number
+	doc.driver_phone = so.driver_phone
 
 	for item in so.items:
 		doc.append(
