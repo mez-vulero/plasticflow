@@ -11,6 +11,7 @@
  "field_order": [
   "order_date",
   "customer",
+  "customer_tin",
   "delivery_source",
   "driver_name",
   "plate_number",
@@ -67,6 +68,13 @@
    "label": "Customer",
    "options": "Customer",
    "reqd": 1
+  },
+  {
+   "fetch_from": "customer.tin",
+   "fieldname": "customer_tin",
+   "fieldtype": "Data",
+   "label": "TIN",
+   "read_only": 1
   },
   {
    "default": "Warehouse",
