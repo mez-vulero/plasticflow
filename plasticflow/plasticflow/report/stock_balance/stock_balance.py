@@ -102,19 +102,23 @@ def execute(filters=None):
 		for prod in frappe.db.get_all("Product", filters={"name": ["in", product_codes]}, fields=["name", "uom"]):
 			product_uoms[prod.name] = prod.uom
 
+	display_is_kg_ton = stock_uom.is_kg_uom(display_uom) or stock_uom.is_ton_uom(display_uom)
+
 	for row in rows:
 		product = row.get("product")
 		stock_uom_name = product_uoms.get(product)
-		row_uom = display_uom
-		if stock_uom_name and not (
+		row_uom = stock_uom_name or display_uom
+
+		if stock_uom_name and display_is_kg_ton and (
 			stock_uom.is_kg_uom(stock_uom_name) or stock_uom.is_ton_uom(stock_uom_name)
 		):
-			row_uom = stock_uom_name
-		factor = stock_uom.conversion_factor(stock_uom_name, row_uom)
-		if factor and factor != 1:
-			row["available_qty"] = flt(row.get("available_qty")) * factor
-			row["reserved_qty"] = flt(row.get("reserved_qty")) * factor
-			row["issued_qty"] = flt(row.get("issued_qty")) * factor
-		row["uom"] = row_uom or stock_uom_name
+			row_uom = display_uom
+			factor = stock_uom.conversion_factor(stock_uom_name, row_uom)
+			if factor and factor != 1:
+				row["available_qty"] = flt(row.get("available_qty")) * factor
+				row["reserved_qty"] = flt(row.get("reserved_qty")) * factor
+				row["issued_qty"] = flt(row.get("issued_qty")) * factor
+
+		row["uom"] = row_uom
 
 	return columns, rows, None, None
