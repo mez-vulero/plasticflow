@@ -6,7 +6,8 @@ def execute():
 		return
 
 	report = frappe.get_doc("Report", "Stock Balance")
-	report.filters = [
+	report.set("filters", [])
+	for row in [
 		{
 			"fieldname": "import_shipment",
 			"fieldtype": "Link",
@@ -31,5 +32,6 @@ def execute():
 			"fieldtype": "Date",
 			"label": "As Of Date",
 		},
-	]
+	]:
+		report.append("filters", row)
 	report.save(ignore_permissions=True)
