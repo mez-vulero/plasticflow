@@ -29,8 +29,7 @@
    "fieldname": "import_shipment",
    "fieldtype": "Link",
    "label": "Import Shipment",
-   "options": "Import Shipment",
-   "reqd": 1
+   "options": "Import Shipment"
   },
   {
    "default": "Warehouse",
