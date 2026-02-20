@@ -44,7 +44,7 @@
  "name": "Sales Dashboard",
  "number_cards": [
   {
-   "label": "Sales Value Today",
+   "label": "Total Sales Value",
    "number_card_name": "Sales Value Today"
   },
   {
@@ -52,7 +52,7 @@
    "number_card_name": "Total Revenue"
   },
   {
-   "label": "Invoices Last 30 Days",
+   "label": "Total Invoices",
    "number_card_name": "Invoices Last 30 Days"
   },
   {

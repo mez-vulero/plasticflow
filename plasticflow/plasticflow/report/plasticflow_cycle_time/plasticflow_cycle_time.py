@@ -5,33 +5,65 @@ from frappe import _
 
 
 def execute(filters=None):
+	filters = filters or {}
+	from_date = filters.get("from_date")
+	to_date = filters.get("to_date")
+	params = {}
+
+	clearance_conditions = [
+		"clearance_status in ('Cleared', 'At Warehouse')",
+		"arrival_date is not null",
+		"cleared_on is not null",
+	]
+	if from_date:
+		clearance_conditions.append("arrival_date >= %(from_date)s")
+		params["from_date"] = from_date
+	if to_date:
+		clearance_conditions.append("arrival_date <= %(to_date)s")
+		params["to_date"] = to_date
+
 	clearance_days = frappe.db.sql(
-		"""
+		f"""
 		select avg(datediff(cleared_on, arrival_date))
 		from `tabImport Shipment`
-		where clearance_status in ('Cleared', 'At Warehouse')
-			and arrival_date is not null
-			and cleared_on is not null
-		"""
+		where {" and ".join(clearance_conditions)}
+		""",
+		params,
 	)[0][0]
 
+	transfer_conditions = [
+		"se.docstatus = 1",
+		"ce.cleared_on is not null",
+	]
+	if from_date:
+		transfer_conditions.append("date(se.creation) >= %(from_date)s")
+	if to_date:
+		transfer_conditions.append("date(se.creation) <= %(to_date)s")
+
 	transfer_days = frappe.db.sql(
-		"""
+		f"""
 		select avg(datediff(date(se.creation), ce.cleared_on))
 		from `tabStock Entries` se
 		inner join `tabImport Shipment` ce on se.import_shipment = ce.name
-		where se.docstatus = 1
-			and ce.cleared_on is not null
-		"""
+		where {" and ".join(transfer_conditions)}
+		""",
+		params,
 	)[0][0]
 
+	fulfillment_conditions = ["so.order_date is not null"]
+	if from_date:
+		fulfillment_conditions.append("so.order_date >= %(from_date)s")
+	if to_date:
+		fulfillment_conditions.append("so.order_date <= %(to_date)s")
+
 	fulfillment_days = frappe.db.sql(
-		"""
+		f"""
 		select avg(datediff(coalesce(gp.generated_on, gp.modified), so.order_date))
 		from `tabGate Pass` gp
 		inner join `tabSales Order` so on gp.sales_order = so.name
-		where so.order_date is not null
-		"""
+		where {" and ".join(fulfillment_conditions)}
+		""",
+		params,
 	)[0][0]
 
 	metrics = [

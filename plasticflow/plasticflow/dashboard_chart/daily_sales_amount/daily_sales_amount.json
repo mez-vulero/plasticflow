@@ -4,7 +4,7 @@
  "custom_options": "{\"type\": \"line\"}",
  "docstatus": 0,
  "doctype": "Dashboard Chart",
- "dynamic_filters_json": "{\"from_date\":\"frappe.datetime.add_days(frappe.datetime.nowdate(), -30)\",\"to_date\":\"frappe.datetime.nowdate()\"}",
+ "dynamic_filters_json": "{}",
  "filters_json": "{}",
  "idx": 0,
  "is_public": 0,

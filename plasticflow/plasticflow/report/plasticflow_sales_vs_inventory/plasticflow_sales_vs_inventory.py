@@ -4,12 +4,58 @@ from datetime import timedelta
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, getdate, nowdate
+from frappe.utils import getdate, nowdate
+
+
+def _get_date_bounds():
+	invoice_bounds = frappe.db.sql(
+		"""
+		select min(invoice_date) as min_date, max(invoice_date) as max_date
+		from `tabInvoice`
+		where docstatus = 1
+		""",
+		as_dict=True,
+	)
+	stock_bounds = frappe.db.sql(
+		"""
+		select min(date(coalesce(last_movement, creation))) as min_date,
+		       max(date(coalesce(last_movement, creation))) as max_date
+		from `tabStock Ledger Entry`
+		""",
+		as_dict=True,
+	)
+
+	invoice_min = getdate(invoice_bounds[0].min_date) if invoice_bounds and invoice_bounds[0].min_date else None
+	invoice_max = getdate(invoice_bounds[0].max_date) if invoice_bounds and invoice_bounds[0].max_date else None
+	stock_min = getdate(stock_bounds[0].min_date) if stock_bounds and stock_bounds[0].min_date else None
+	stock_max = getdate(stock_bounds[0].max_date) if stock_bounds and stock_bounds[0].max_date else None
+
+	min_candidates = [d for d in (invoice_min, stock_min) if d]
+	max_candidates = [d for d in (invoice_max, stock_max) if d]
+
+	min_date = min(min_candidates) if min_candidates else None
+	max_date = max(max_candidates) if max_candidates else None
+
+	return min_date, max_date
 
 
 def execute(filters=None):
-	end_date = getdate(filters.get("to_date")) if filters and filters.get("to_date") else getdate(nowdate())
-	start_date = getdate(filters.get("from_date")) if filters and filters.get("from_date") else add_days(end_date, -29)
+	filters = filters or {}
+	start_date = getdate(filters.get("from_date")) if filters.get("from_date") else None
+	end_date = getdate(filters.get("to_date")) if filters.get("to_date") else None
+
+	if not start_date or not end_date:
+		min_date, max_date = _get_date_bounds()
+		if not start_date:
+			start_date = min_date or end_date
+		if not end_date:
+			end_date = max_date or start_date
+
+	if not start_date or not end_date:
+		start_date = end_date = getdate(nowdate())
+
+	if start_date > end_date:
+		start_date, end_date = end_date, start_date
 
 	invoice_rows = frappe.db.sql(
 		"""
