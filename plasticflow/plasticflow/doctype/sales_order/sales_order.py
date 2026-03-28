@@ -113,6 +113,12 @@ class SalesOrder(Document):
 		lo = frappe.get_doc("Loading Order", lo_name)
 		lo.save(ignore_permissions=True)
 
+		# Reload gate_pass and status set by _ensure_gate_pass
+		updated = frappe.db.get_value("Sales Order", self.name, ["gate_pass", "status"], as_dict=True)
+		if updated:
+			self.gate_pass = updated.gate_pass
+			self.status = updated.status
+
 	def _get_product_uom(self, product: str | None) -> str | None:
 		if not product:
 			return None
@@ -1256,12 +1262,11 @@ class SalesOrder(Document):
 			updates["status"] = "Settled"
 
 		gate_pass_dispatched = self._gate_pass_dispatched()
-		if gate_pass_dispatched and self.sales_type == "Credit":
-			# Credit orders complete only when dispatch is done and balance is cleared
+		if gate_pass_dispatched:
 			if outstanding <= PAYMENT_TOLERANCE:
 				updates["status"] = "Completed"
 				self.status = "Completed"
-			else:
+			elif self.sales_type == "Credit":
 				updates["status"] = "Credit Sales"
 				self.status = "Credit Sales"
 

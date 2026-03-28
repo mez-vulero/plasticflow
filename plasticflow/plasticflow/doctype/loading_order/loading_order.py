@@ -83,7 +83,11 @@ class LoadingOrder(Document):
 		gp.insert(ignore_permissions=True)
 		self.gate_pass_request = gp.name
 		if self.sales_order and frappe.db.exists("Sales Order", self.sales_order):
-			frappe.db.set_value("Sales Order", self.sales_order, "gate_pass", gp.name, update_modified=False)
+			so = frappe.get_doc("Sales Order", self.sales_order)
+			updates = {"gate_pass": gp.name}
+			if so.outstanding_amount <= 0.01:
+				updates["status"] = "Completed"
+			frappe.db.set_value("Sales Order", self.sales_order, updates, update_modified=False)
 		frappe.msgprint(
 			_("Gate Pass {0} generated.").format(gp.name),
 			indicator="green",
