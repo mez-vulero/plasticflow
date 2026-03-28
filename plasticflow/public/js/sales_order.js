@@ -8,20 +8,6 @@ frappe.ui.form.on("Sales Order", {
 		recompute_parent_totals(frm);
 
 		if (frm.doc.docstatus === 1) {
-			frm.add_custom_button(__("Create Loading Order"), () => {
-				frappe.call({
-					method: "plasticflow.plasticflow.doctype.loading_order.loading_order.create_loading_order",
-					args: { sales_order: frm.doc.name },
-					freeze: true,
-					freeze_message: __("Preparing Loading Order..."),
-					callback: ({ message }) => {
-						if (message && message.name) {
-							frappe.set_route("Form", "Loading Order", message.name);
-						}
-					},
-				});
-			});
-
 			frm.add_custom_button(__("Create Invoice"), () => {
 				frappe.call({
 					method: "plasticflow.plasticflow.doctype.sales_order.sales_order.create_sales_invoice",

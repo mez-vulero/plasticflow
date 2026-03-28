@@ -50,6 +50,9 @@
   },
   {
    "role": "Management"
+  },
+  {
+   "role": "Finance User"
   }
  ]
 }

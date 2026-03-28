@@ -120,6 +120,8 @@ class StockAdjustment(Document):
 		)
 
 	def _remaining_capacity(self, batch, stock_uom_name):
+		if self.allow_over_capacity:
+			return None
 		original_qty = batch.get("original_qty")
 		if original_qty is None:
 			return None

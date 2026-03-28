@@ -44,6 +44,7 @@
  "roles": [
   {"role": "System Manager"},
   {"role": "Stock Manager"},
-  {"role": "Management"}
+  {"role": "Management"},
+  {"role": "Finance User"}
  ]
 }

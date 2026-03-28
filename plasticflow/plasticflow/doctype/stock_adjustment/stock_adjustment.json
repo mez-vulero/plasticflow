@@ -13,6 +13,7 @@
   "location_type",
   "warehouse",
   "column_break_meta",
+  "allow_over_capacity",
   "reason",
   "section_break_items",
   "items"
@@ -49,6 +50,13 @@
   {
    "fieldname": "column_break_meta",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "When checked, stock can be added beyond the original Import Shipment quantity.",
+   "fieldname": "allow_over_capacity",
+   "fieldtype": "Check",
+   "label": "Allow Over-Capacity"
   },
   {
    "fieldname": "reason",

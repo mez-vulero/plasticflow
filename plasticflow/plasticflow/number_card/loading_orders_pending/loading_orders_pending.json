@@ -1,0 +1,19 @@
+{
+ "aggregate_function_based_on": "",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Loading Order",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[[\"Loading Order\",\"status\",\"in\",[\"New Order\",\"Loading\"]]]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 0,
+ "is_standard": 1,
+ "label": "Pending Loading Orders",
+ "module": "PlasticFlow",
+ "name": "Pending Loading Orders",
+ "show_full_number": 0,
+ "show_percentage_stats": 1,
+ "stats_time_interval": "Daily",
+ "type": "Document Type"
+}

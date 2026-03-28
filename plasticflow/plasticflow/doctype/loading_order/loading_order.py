@@ -47,6 +47,20 @@ class LoadingOrder(Document):
 		if self.gate_pass_request and frappe.db.exists("Gate Pass", self.gate_pass_request):
 			return
 
+		# Cash sales require payment verification before gate pass
+		if so and so.sales_type == "Cash":
+			if so.status not in ("Payment Verified", "Settled"):
+				frappe.msgprint(
+					_("Gate Pass cannot be generated yet. Sales Order {0} is a Cash sale "
+					  "with status \"{1}\". Payment must be verified first.").format(
+						so.name, so.status
+					),
+					indicator="orange",
+					alert=True,
+				)
+				return
+		# Credit sales: no payment check needed, proceed directly
+
 		gp = frappe.new_doc("Gate Pass")
 		gp.sales_order = self.sales_order
 		gp.loading_order = self.name

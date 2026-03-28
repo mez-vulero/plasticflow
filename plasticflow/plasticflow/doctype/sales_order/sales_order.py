@@ -60,6 +60,7 @@ class SalesOrder(Document):
 		)
 		self._notify_shipment_substitution()
 		self.update_invoicing_progress()
+		self._auto_create_loading_order()
 
 	def on_update_after_submit(self):
 		self._set_item_defaults()
@@ -67,6 +68,7 @@ class SalesOrder(Document):
 		self._sync_payment_tracking()
 		self._set_invoice_progress_fields()
 		self.update_invoicing_progress()
+		self._try_generate_gate_pass()
 
 	def on_cancel(self):
 		reservations = self._collect_batch_reservations(for_release=True, track_allocations=False)
@@ -77,6 +79,39 @@ class SalesOrder(Document):
 			}
 		)
 		self._clear_links()
+
+	def _auto_create_loading_order(self):
+		from plasticflow.plasticflow.doctype.loading_order.loading_order import create_loading_order
+
+		try:
+			result = create_loading_order(self.name)
+			if result and result.get("name"):
+				frappe.msgprint(
+					_("Loading Order {0} created automatically.").format(result["name"]),
+					indicator="green",
+					alert=True,
+				)
+		except Exception:
+			frappe.log_error("Auto Loading Order Creation Failed")
+
+	def _try_generate_gate_pass(self):
+		"""Trigger gate pass generation if Loading Order is complete and payment conditions are met."""
+		if self.gate_pass and frappe.db.exists("Gate Pass", self.gate_pass):
+			return
+
+		lo_name = frappe.db.get_value(
+			"Loading Order",
+			{"sales_order": self.name, "status": "Completed"},
+			"name",
+		)
+		if not lo_name:
+			return
+
+		if self.sales_type == "Cash" and self.status not in ("Payment Verified", "Settled"):
+			return
+
+		lo = frappe.get_doc("Loading Order", lo_name)
+		lo.save(ignore_permissions=True)
 
 	def _get_product_uom(self, product: str | None) -> str | None:
 		if not product:

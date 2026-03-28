@@ -12,6 +12,8 @@ def _create_roles():
 		"Stock Manager",
 		"Driver",
 		"Management",
+		"Warehouse Dispatcher",
+		"Finance User",
 	]
 	for role_name in required_roles:
 		if not frappe.db.exists("Role", role_name):
