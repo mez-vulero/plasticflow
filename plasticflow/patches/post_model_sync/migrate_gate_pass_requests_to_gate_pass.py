@@ -41,6 +41,12 @@ def execute():
 		return
 	if not frappe.db.exists("DocType", "Gate Pass Request"):
 		return
+	if not frappe.db.table_exists("tabGate Pass Request"):
+		return
+	# Skip if the old table schema has already been altered (columns removed)
+	columns = frappe.db.get_table_columns("Gate Pass Request")
+	if "driver_name" not in columns:
+		return
 
 	gpr_rows = frappe.db.get_all(
 		"Gate Pass Request",

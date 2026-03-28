@@ -1,0 +1,17 @@
+{
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "dynamic_filters_json": "{}",
+ "filters_json": "{}",
+ "function": "Custom",
+ "is_public": 0,
+ "is_standard": 1,
+ "label": "Cash Collected This Month",
+ "method": "plasticflow.dashboard.metrics.get_cash_collected_this_month",
+ "module": "PlasticFlow",
+ "name": "Cash Collected This Month",
+ "show_full_number": 0,
+ "show_percentage_stats": 0,
+ "stats_time_interval": "Monthly",
+ "type": "Custom"
+}

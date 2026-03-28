@@ -5,7 +5,7 @@
  "doctype": "Number Card",
  "document_type": "Invoice",
  "dynamic_filters_json": "[]",
- "filters_json": "[[\"Invoice\",\"docstatus\",\"=\",\"1\"],[\"Invoice\",\"outstanding_amount\",\">\",0]]",
+ "filters_json": "[[\"Invoice\",\"docstatus\",\"=\",1],[\"Invoice\",\"outstanding_amount\",\">\",0]]",
  "function": "Sum",
  "idx": 0,
  "is_public": 0,
