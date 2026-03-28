@@ -19,19 +19,18 @@ def execute():
 	frappe.db.commit()
 
 	# Re-import from JSON files
+	# Workspace JSONs live under plasticflow/plasticflow/plasticflow/workspace/
 	workspace_dir = os.path.join(
-		os.path.dirname(os.path.abspath(__file__)),
-		"..",
-		"..",
+		frappe.get_app_path("plasticflow"),
+		"plasticflow",
 		"plasticflow",
 		"workspace",
 	)
-	workspace_dir = os.path.normpath(workspace_dir)
 
 	if not os.path.isdir(workspace_dir):
 		return
 
-	for folder in os.listdir(workspace_dir):
+	for folder in sorted(os.listdir(workspace_dir)):
 		json_path = os.path.join(workspace_dir, folder, f"{folder}.json")
 		if not os.path.isfile(json_path):
 			continue
@@ -40,15 +39,10 @@ def execute():
 			doc_data = json.load(f)
 
 		doc_data["doctype"] = "Workspace"
-		if frappe.db.exists("Workspace", doc_data.get("name")):
-			existing = frappe.get_doc("Workspace", doc_data["name"])
-			existing.update(doc_data)
-			existing.flags.ignore_permissions = True
-			existing.save()
-		else:
-			doc = frappe.get_doc(doc_data)
-			doc.flags.ignore_permissions = True
-			doc.flags.ignore_links = True
-			doc.insert()
+		doc = frappe.get_doc(doc_data)
+		doc.flags.ignore_permissions = True
+		doc.flags.ignore_links = True
+		doc.flags.ignore_mandatory = True
+		doc.insert()
 
 	frappe.db.commit()
