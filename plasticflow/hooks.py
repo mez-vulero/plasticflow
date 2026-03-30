@@ -173,6 +173,7 @@ doc_events = {
 		"after_insert": "plasticflow.notifications.push.handle_notification_log",
 	},
     "Gate Pass": {
+        "after_insert": "plasticflow.utils.send_pdf_on_save",
         "on_update": "plasticflow.utils.send_pdf_on_save"
     }
 }
