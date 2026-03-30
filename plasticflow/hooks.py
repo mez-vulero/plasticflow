@@ -171,7 +171,10 @@ after_install = "plasticflow.install.after_install"
 doc_events = {
 	"Notification Log": {
 		"after_insert": "plasticflow.notifications.push.handle_notification_log",
-	}
+	},
+    "Gate Pass": {
+        "after_insert": "plasticflow.utils.send_file_to_telegram"
+    }
 }
 
 # Scheduled Tasks
