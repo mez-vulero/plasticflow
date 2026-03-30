@@ -173,7 +173,7 @@ doc_events = {
 		"after_insert": "plasticflow.notifications.push.handle_notification_log",
 	},
     "Gate Pass": {
-        "after_insert": "plasticflow.utils.send_file_to_telegram"
+        "on_update": "plasticflow.utils.send_file_to_telegram"
     }
 }
 
