@@ -19,8 +19,6 @@ class LoadingOrder(Document):
 			return
 		so = frappe.get_cached_doc("Sales Order", self.sales_order)
 		self.customer = so.customer
-		if not self.destination:
-			self.destination = so.customer
 		if so.driver_name and not self.driver_name:
 			self.driver_name = so.driver_name
 		if so.plate_number and not self.vehicle_plate:
@@ -65,7 +63,7 @@ class LoadingOrder(Document):
 		gp.sales_order = self.sales_order
 		gp.loading_order = self.name
 		gp.customer = self.customer or (so.customer if so else None)
-		gp.destination = self.destination or (so.customer if so else None)
+		gp.destination = self.destination
 		gp.driver_name = self.driver_name or (so.driver_name if so else None)
 		gp.plate_number = self.vehicle_plate or (so.plate_number if so else None)
 		gp.driver_phone = self.driver_phone or (so.driver_phone if so else None)
@@ -114,7 +112,6 @@ def create_loading_order(sales_order: str):
 	doc = frappe.new_doc("Loading Order")
 	doc.sales_order = so.name
 	doc.customer = so.customer
-	doc.destination = so.customer
 	doc.import_shipment = so.import_shipment
 	doc.loading_date = nowdate()
 	doc.status = "New Order"
