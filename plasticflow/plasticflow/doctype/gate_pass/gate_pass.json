@@ -2,7 +2,7 @@
  "actions": [],
  "allow_import": 1,
  "autoname": "format:GP-{YYYY}-{#####}",
- "creation": "2026-02-13 00:00:00.000000",
+ "creation": "2026-02-13 00:00:00",
  "default_view": "List",
  "doctype": "DocType",
  "document_type": "Document",
@@ -19,7 +19,8 @@
   "generated_on",
   "section_break_items",
   "items",
-  "remarks"
+  "remarks",
+  "customer_name"
  ],
  "fields": [
   {
@@ -86,14 +87,21 @@
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Name of Customer"
   }
  ],
- "is_submittable": 0,
  "links": [],
- "modified": "2026-02-13 00:00:00.000000",
+ "modified": "2026-03-30 12:25:43.228802",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Gate Pass",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -154,6 +162,7 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
