@@ -19,6 +19,18 @@ class StockReconciliation(StockAdjustmentMixin, Document):
 
 	def before_submit(self):
 		self._compute_differences()
+		has_changes = any(
+			abs(flt(item.difference)) >= QTY_TOLERANCE
+			for item in self.items
+			if item.product
+		)
+		if not has_changes:
+			frappe.msgprint(
+				_("No differences found. Current stock already matches target quantities."),
+				indicator="orange",
+				alert=True,
+			)
+			return
 		self._apply_reconciliation()
 
 	def on_cancel(self):

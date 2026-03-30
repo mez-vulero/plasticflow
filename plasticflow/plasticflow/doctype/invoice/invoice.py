@@ -22,9 +22,28 @@ class Invoice(Document):
 		self._sync_sales_order_progress()
 
 	def on_cancel(self):
+		self._clear_upstream_links()
 		self._sync_sales_order_progress()
-		frappe.db.set_value("Invoice", self.name, "sales_order", None, update_modified=False)
-		self.sales_order = None
+
+	def on_trash(self):
+		self._clear_upstream_links()
+
+	def _clear_upstream_links(self):
+		if not self.sales_order:
+			return
+		# Clear Sales Order invoice reference if it points to this invoice
+		so_invoice = frappe.db.get_value("Sales Order", self.sales_order, "invoice")
+		if so_invoice == self.name:
+			frappe.db.set_value("Sales Order", self.sales_order, "invoice", None, update_modified=False)
+		# Clear Payment Slips invoice references
+		frappe.db.sql(
+			"""
+			update `tabPayment Slips`
+			set invoice = NULL
+			where invoice = %s and parent = %s
+			""",
+			(self.name, self.sales_order),
+		)
 
 	def _set_item_defaults(self):
 		for item in self.items:
