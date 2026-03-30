@@ -27,7 +27,8 @@ def send_pdf_on_save(doc, method=None):
         }
         
         
-        caption = f"*Gate Pass for:* {doc.customer}"
+        caption = f"*Gate Pass for:* {doc.customer_name}"
+        caption += f"*Plate Number:* {doc.plate_number}\n"
 
         data = {
             'chat_id': CHAT_ID,
