@@ -1398,7 +1398,8 @@ class SalesOrder(Document):
 @frappe.whitelist()
 def create_sales_invoice(sales_order, amount=None):
 	so = frappe.get_doc("Sales Order", sales_order)
-	so.check_permission("submit")
+	so.check_permission("read")
+	frappe.has_permission("Invoice", "create", throw=True)
 	invoice = so.create_invoice(invoice_amount=amount)
 	return invoice.as_dict()
 
