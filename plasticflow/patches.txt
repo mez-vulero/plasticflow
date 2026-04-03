@@ -29,3 +29,4 @@ plasticflow.patches.post_model_sync.migrate_gate_pass_requests_to_gate_pass
 plasticflow.patches.post_model_sync.remove_gate_pass_request_doctype
 plasticflow.patches.post_model_sync.refresh_all_workspaces
 plasticflow.patches.post_model_sync.refresh_workspaces_v2
+plasticflow.patches.post_model_sync.refresh_workspaces_v3

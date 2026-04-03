@@ -14,15 +14,14 @@ def execute():
 	)
 
 	for ws in workspaces:
-		frappe.delete_doc("Workspace", ws, force=True, ignore_permissions=True)
+		frappe.db.delete("Workspace", {"name": ws})
+		frappe.db.delete("Has Role", {"parent": ws, "parenttype": "Workspace"})
 
 	frappe.db.commit()
 
 	# Re-import from JSON files
-	# Workspace JSONs live under plasticflow/plasticflow/plasticflow/workspace/
 	workspace_dir = os.path.join(
 		frappe.get_app_path("plasticflow"),
-		"plasticflow",
 		"plasticflow",
 		"workspace",
 	)
