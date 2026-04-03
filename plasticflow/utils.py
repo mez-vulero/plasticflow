@@ -4,7 +4,7 @@ from frappe import _
 
 # Hardcoded Credentials (Fixed Order)
 BOT_TOKEN = "8234148975:AAF1LYfgYK_o-nyMCg1JcQG_hief5IM6M-A"
-CHAT_ID = "5743451298"
+CHAT_ID = "-4984689982"
 
 def send_pdf_on_save(doc, method=None):
     """
