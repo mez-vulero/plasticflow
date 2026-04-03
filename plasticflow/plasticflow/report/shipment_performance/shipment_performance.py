@@ -22,7 +22,7 @@ def execute(filters=None):
 
 
 def _get_summary_columns():
-	currency = frappe.get_default_currency()
+	currency = frappe.db.get_default("currency") or "ETB"
 	return [
 		{"label": _("Import Shipment"), "fieldname": "import_shipment", "fieldtype": "Link", "options": "Import Shipment", "width": 150},
 		{"label": _("Supplier"), "fieldname": "supplier", "fieldtype": "Data", "width": 120},
@@ -45,7 +45,7 @@ def _get_summary_columns():
 
 
 def _get_detail_columns():
-	currency = frappe.get_default_currency()
+	currency = frappe.db.get_default("currency") or "ETB"
 	return [
 		{"label": _("Import Shipment"), "fieldname": "import_shipment", "fieldtype": "Link", "options": "Import Shipment", "width": 150},
 		{"label": _("Sales Order"), "fieldname": "sales_order", "fieldtype": "Link", "options": "Sales Order", "width": 140},

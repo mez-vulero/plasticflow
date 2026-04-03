@@ -14,7 +14,7 @@ def execute(filters=None):
 
 
 def _get_columns():
-	currency = frappe.get_default_currency()
+	currency = frappe.db.get_default("currency") or "ETB"
 	return [
 		{"label": _("Import Shipment"), "fieldname": "import_shipment", "fieldtype": "Link", "options": "Import Shipment", "width": 160},
 		{"label": _("Product"), "fieldname": "product", "fieldtype": "Link", "options": "Product", "width": 160},
