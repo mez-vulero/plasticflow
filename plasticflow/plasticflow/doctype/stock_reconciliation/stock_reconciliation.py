@@ -19,6 +19,8 @@ class StockReconciliation(StockAdjustmentMixin, Document):
 
 	def before_submit(self):
 		self._compute_differences()
+
+	def on_submit(self):
 		has_changes = any(
 			abs(flt(item.difference)) >= QTY_TOLERANCE
 			for item in self.items

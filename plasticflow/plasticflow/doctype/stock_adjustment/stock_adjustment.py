@@ -15,7 +15,7 @@ class StockAdjustment(StockAdjustmentMixin, Document):
 			self.posting_date = nowdate()
 		self._set_item_defaults()
 
-	def before_submit(self):
+	def on_submit(self):
 		self._apply_adjustments()
 
 	def on_cancel(self):

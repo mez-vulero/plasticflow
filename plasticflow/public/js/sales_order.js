@@ -30,6 +30,12 @@ frappe.ui.form.on("Sales Order", {
 });
 
 frappe.ui.form.on("Sales Order Item", {
+	product(frm) {
+		set_import_shipment_query(frm);
+	},
+	items_remove(frm) {
+		set_import_shipment_query(frm);
+	},
 	rate: recompute_child,
 	quantity: recompute_child,
 	price_with_vat: recompute_child,
@@ -96,10 +102,16 @@ function recompute_parent_totals(frm) {
 }
 
 function set_import_shipment_query(frm) {
-	frm.set_query("import_shipment", () => ({
-		query: "plasticflow.queries.get_fifo_import_shipments",
-		filters: {
-			delivery_source: frm.doc.delivery_source || "Warehouse",
-		},
-	}));
+	frm.set_query("import_shipment", () => {
+		const products = (frm.doc.items || [])
+			.map((r) => r.product)
+			.filter(Boolean);
+		return {
+			query: "plasticflow.queries.get_fifo_import_shipments",
+			filters: {
+				delivery_source: frm.doc.delivery_source || "Warehouse",
+				products: products,
+			},
+		};
+	});
 }
