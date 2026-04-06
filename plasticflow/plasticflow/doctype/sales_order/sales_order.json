@@ -66,7 +66,6 @@
    "fieldname": "customer",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Customer",
    "options": "Customer",
    "reqd": 1
@@ -105,7 +104,6 @@
   {
    "fieldname": "import_shipment",
    "fieldtype": "Link",
-   "in_standard_filter": 1,
    "label": "Import Shipment",
    "options": "Import Shipment"
   },
@@ -121,7 +119,6 @@
    "fieldname": "sales_type",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Sales Type",
    "options": "\nCash\nCredit",
    "reqd": 1
@@ -150,7 +147,6 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Order Status",
    "options": "Draft\nPayment Pending\nPayment Verified\nSettled\nCredit Sales\nCompleted\nCancelled\nHeld",
    "reqd": 1
