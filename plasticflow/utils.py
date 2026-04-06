@@ -4,9 +4,9 @@ from frappe import _
 
 
 def _get_telegram_config():
-	"""Return (bot_token, chat_id) from Telegram Settings or None if disabled."""
+	"""Return (bot_token, chat_id) from PlasticFlow Telegram Settings or None if disabled."""
 	try:
-		settings = frappe.get_cached_doc("Telegram Settings")
+		settings = frappe.get_cached_doc("PlasticFlow Telegram Settings")
 	except frappe.DoesNotExistError:
 		return None
 
