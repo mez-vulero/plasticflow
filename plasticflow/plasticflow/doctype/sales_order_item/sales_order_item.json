@@ -2,7 +2,6 @@
  "actions": [],
  "creation": "2024-01-01 00:00:00",
  "doctype": "DocType",
- "editable_grid": 0,
  "engine": "InnoDB",
  "field_order": [
   "product",
@@ -23,9 +22,10 @@
   "batch_item",
   "warehouse",
   "remarks"
-],
+ ],
  "fields": [
   {
+   "allow_on_submit": 1,
    "fieldname": "product",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -34,6 +34,7 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "product_name",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -41,11 +42,13 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "quantity",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -53,26 +56,30 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "uom",
    "fieldtype": "Link",
    "label": "UOM",
    "options": "Unit of Measurement"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "rate",
    "fieldtype": "Currency",
    "label": "Rate",
    "options": "currency"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "amount",
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Amount",
    "options": "currency",
    "read_only": 1
- },
+  },
   {
+   "allow_on_submit": 1,
    "fieldname": "price_with_vat",
    "fieldtype": "Currency",
    "label": "VAT",
@@ -80,6 +87,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "gross_amount",
    "fieldtype": "Currency",
    "label": "Gross Amount",
@@ -87,14 +95,16 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
+   "fetch_from": "parent.withholding_rate",
    "fieldname": "withholding_rate",
    "fieldtype": "Percent",
    "label": "Withholding %",
    "precision": "2",
-   "read_only": 1,
-   "fetch_from": "parent.withholding_rate"
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "withholding_amount",
    "fieldtype": "Currency",
    "label": "Withholding Amount",
@@ -102,6 +112,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "net_amount",
    "fieldtype": "Currency",
    "label": "Net Amount",
@@ -109,14 +120,16 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
+   "fetch_from": "parent.broker_commission_rate",
    "fieldname": "commission_rate",
    "fieldtype": "Percent",
    "label": "Commission %",
    "precision": "2",
-   "read_only": 1,
-   "fetch_from": "parent.broker_commission_rate"
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "commission_amount",
    "fieldtype": "Currency",
    "label": "Commission Amount",
@@ -124,6 +137,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "import_shipment_item",
    "fieldtype": "Link",
    "label": "Import Shipment Item",
@@ -131,18 +145,21 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "batch_item",
    "fieldtype": "Link",
    "label": "Stock Entry Items",
    "options": "Stock Entry Items"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "warehouse",
    "fieldtype": "Link",
    "label": "Delivery Warehouse",
    "options": "Warehouse"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
@@ -150,7 +167,7 @@
  ],
  "istable": 1,
  "links": [],
- "modified": "2025-10-28 14:28:51.421654",
+ "modified": "2026-04-06 16:21:18.471764",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
  "name": "Sales Order Item",
