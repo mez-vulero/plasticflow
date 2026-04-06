@@ -1,0 +1,131 @@
+{
+ "actions": [],
+ "creation": "2026-04-06 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_filters",
+  "sales_type_filter",
+  "current_status_filter",
+  "customer_filter",
+  "column_break_filters",
+  "from_date",
+  "to_date",
+  "import_shipment_filter",
+  "section_action",
+  "new_status",
+  "reason",
+  "column_break_action",
+  "apply_button",
+  "section_preview",
+  "preview_html"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_filters",
+   "fieldtype": "Section Break",
+   "label": "Filters"
+  },
+  {
+   "default": "Cash",
+   "fieldname": "sales_type_filter",
+   "fieldtype": "Select",
+   "label": "Sales Type",
+   "options": "\nCash\nCredit",
+   "reqd": 1
+  },
+  {
+   "fieldname": "current_status_filter",
+   "fieldtype": "Select",
+   "label": "Current Status",
+   "options": "\nPayment Pending\nPayment Verified\nSettled\nCredit Sales\nCompleted\nHeld"
+  },
+  {
+   "fieldname": "customer_filter",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "column_break_filters",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date"
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date"
+  },
+  {
+   "fieldname": "import_shipment_filter",
+   "fieldtype": "Link",
+   "label": "Import Shipment",
+   "options": "Import Shipment"
+  },
+  {
+   "fieldname": "section_action",
+   "fieldtype": "Section Break",
+   "label": "Action"
+  },
+  {
+   "fieldname": "new_status",
+   "fieldtype": "Select",
+   "label": "Set Status To",
+   "options": "\nPayment Pending\nPayment Verified\nSettled\nCredit Sales\nCompleted\nHeld",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Small Text",
+   "label": "Reason"
+  },
+  {
+   "fieldname": "column_break_action",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "apply_button",
+   "fieldtype": "Button",
+   "label": "Apply Status Change"
+  },
+  {
+   "fieldname": "section_preview",
+   "fieldtype": "Section Break",
+   "label": "Matching Orders"
+  },
+  {
+   "fieldname": "preview_html",
+   "fieldtype": "HTML",
+   "label": ""
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-04-06 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Sales Order Status Update",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}
