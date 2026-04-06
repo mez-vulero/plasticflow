@@ -6,16 +6,26 @@ import frappe
 
 def execute():
 	"""Delete and re-import all PlasticFlow workspaces so dashboard changes take effect."""
-	# Delete existing workspaces
-	workspaces = frappe.get_all(
+
+	# Clear any user default_workspace references to PlasticFlow workspaces
+	# so users don't get locked out during the refresh
+	pf_workspaces = frappe.get_all(
 		"Workspace",
 		filters={"module": "PlasticFlow"},
 		pluck="name",
 	)
+	if pf_workspaces:
+		placeholders = ", ".join(["%s"] * len(pf_workspaces))
+		frappe.db.sql(
+			f"""update `tabUser` set default_workspace = NULL
+			where default_workspace in ({placeholders})""",
+			tuple(pf_workspaces),
+		)
 
-	for ws in workspaces:
-		frappe.db.delete("Workspace", {"name": ws})
+	# Delete existing workspaces and their child roles
+	for ws in pf_workspaces:
 		frappe.db.delete("Has Role", {"parent": ws, "parenttype": "Workspace"})
+		frappe.db.delete("Workspace", {"name": ws})
 
 	frappe.db.commit()
 
