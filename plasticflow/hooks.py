@@ -174,7 +174,6 @@ doc_events = {
 	},
     "Gate Pass": {
         "after_insert": "plasticflow.utils.send_pdf_on_save",
-        "on_update": "plasticflow.utils.send_pdf_on_save"
     }
 }
 

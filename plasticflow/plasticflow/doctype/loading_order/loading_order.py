@@ -83,7 +83,7 @@ class LoadingOrder(Document):
 		if self.sales_order and frappe.db.exists("Sales Order", self.sales_order):
 			so = frappe.get_doc("Sales Order", self.sales_order)
 			updates = {"gate_pass": gp.name}
-			if so.outstanding_amount <= 0.01:
+			if so.outstanding_amount <= 200:
 				updates["status"] = "Completed"
 			frappe.db.set_value("Sales Order", self.sales_order, updates, update_modified=False)
 		frappe.msgprint(

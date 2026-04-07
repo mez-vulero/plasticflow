@@ -8,6 +8,7 @@ from plasticflow.stock import ledger as stock_ledger
 from plasticflow.stock import uom as stock_uom
 
 PAYMENT_TOLERANCE = 0.01
+SETTLEMENT_TOLERANCE = 200
 QTY_TOLERANCE = 0.0001
 VAT_RATE = 0.15
 WITHHOLDING_RATE_DEFAULT = 3.0
@@ -384,7 +385,7 @@ class SalesOrder(Document):
 
 		if not is_cash:
 			# Credit sales: skip verification gating, track settlement when fully paid
-			if expected_payment <= PAYMENT_TOLERANCE or abs(expected_payment - total_paid) <= PAYMENT_TOLERANCE:
+			if expected_payment <= SETTLEMENT_TOLERANCE or abs(expected_payment - total_paid) <= SETTLEMENT_TOLERANCE:
 				self.status = "Settled"
 			else:
 				if self.status not in {"Completed", "Settled"}:
@@ -397,7 +398,7 @@ class SalesOrder(Document):
 				self.status = "Payment Pending"
 			return
 
-		if abs(expected_payment - total_paid) <= PAYMENT_TOLERANCE:
+		if abs(expected_payment - total_paid) <= SETTLEMENT_TOLERANCE:
 			if self.status in {"Draft", "Payment Pending", "Payment Verified"}:
 				self.status = "Settled"
 			self._maybe_mark_settled(
@@ -435,8 +436,8 @@ class SalesOrder(Document):
 			return False
 
 		if (
-			outstanding <= PAYMENT_TOLERANCE
-			and abs(total_paid - expected_payment) <= PAYMENT_TOLERANCE
+			outstanding <= SETTLEMENT_TOLERANCE
+			and abs(total_paid - expected_payment) <= SETTLEMENT_TOLERANCE
 			and invoice_coverage
 		):
 			self.status = "Settled"
@@ -1236,7 +1237,7 @@ class SalesOrder(Document):
 				outstanding=outstanding,
 				total_invoiced=total_invoiced,
 			)
-			if outstanding <= PAYMENT_TOLERANCE:
+			if outstanding <= SETTLEMENT_TOLERANCE:
 				if invoice_coverage:
 					updates["status"] = "Settled"
 					self.status = "Settled"
@@ -1263,7 +1264,7 @@ class SalesOrder(Document):
 
 		gate_pass_dispatched = self._gate_pass_dispatched()
 		if gate_pass_dispatched:
-			if outstanding <= PAYMENT_TOLERANCE:
+			if outstanding <= SETTLEMENT_TOLERANCE:
 				updates["status"] = "Completed"
 				self.status = "Completed"
 			elif self.sales_type == "Credit":
