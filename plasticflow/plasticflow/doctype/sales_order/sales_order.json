@@ -55,6 +55,7 @@
  ],
  "fields": [
   {
+   "allow_on_submit": 1,
    "default": "Today",
    "fieldname": "order_date",
    "fieldtype": "Date",
@@ -63,6 +64,7 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "customer",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -72,6 +74,7 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "customer.tin",
    "fieldname": "customer_tin",
    "fieldtype": "Data",
@@ -79,6 +82,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "Warehouse",
    "fieldname": "delivery_source",
    "fieldtype": "Select",
@@ -88,21 +92,25 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "driver_name",
    "fieldtype": "Data",
    "label": "Driver(s) Name"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "plate_number",
    "fieldtype": "Data",
    "label": "Plate Number"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "driver_phone",
    "fieldtype": "Data",
    "label": "Driver Phone"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "import_shipment",
    "fieldtype": "Link",
    "label": "Import Shipment",
@@ -116,6 +124,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "Cash",
    "fieldname": "sales_type",
    "fieldtype": "Select",
@@ -157,24 +166,28 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "ETB",
    "fieldname": "currency",
    "fieldtype": "Data",
    "label": "Currency"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "sales_manager",
    "fieldtype": "Link",
    "label": "Sales Manager",
    "options": "User"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "broker",
    "fieldtype": "Link",
    "label": "Broker",
    "options": "Broker"
   },
   {
+   "allow_on_submit": 1,
    "default": "0",
    "fieldname": "broker_commission_rate",
    "fieldtype": "Percent",
@@ -202,12 +215,14 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_quantity",
    "fieldtype": "Float",
    "label": "Total Quantity",
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_amount",
    "fieldtype": "Currency",
    "label": "Total Amount",
@@ -215,6 +230,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_gross_amount",
    "fieldtype": "Currency",
    "label": "Total Sales (VAT Incl.)",
@@ -238,6 +254,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_commission",
    "fieldtype": "Currency",
    "label": "Total Commission",
@@ -245,6 +262,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "landed_cost_total",
    "fieldtype": "Currency",
    "label": "Total Landed Cost",
@@ -252,6 +270,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "profit_before_tax",
    "fieldtype": "Currency",
    "label": "Profit Before Tax",
@@ -267,6 +286,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "invoiced_amount",
    "fieldtype": "Currency",
    "label": "Invoiced Amount",
@@ -274,6 +294,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "outstanding_amount",
    "fieldtype": "Currency",
    "label": "Outstanding Amount",
@@ -319,6 +340,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "notes",
    "fieldtype": "Small Text",
    "label": "Internal Notes"
@@ -349,6 +371,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fetch_from": "customer.customer_name",
    "fieldname": "customer_name",
    "fieldtype": "Data",
