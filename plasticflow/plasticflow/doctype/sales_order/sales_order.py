@@ -1285,15 +1285,19 @@ class SalesOrder(Document):
 
 	def _send_payment_verified_notification(self):
 		try:
-			doc = frappe.get_doc("Sales Order", self.name)  # reload to get fresh values
+			from erpnext_telegram_integration.erpnext_telegram_integration.doctype.telegram_notification.telegram_notification import evaluate_alert
+
+			# Reload doc so notification sees the freshly saved values
+			doc = frappe.get_doc("Sales Order", self.name)
+
 			notifications = frappe.get_all(
 				"Telegram Notification",
-				filters={"document_type": "Sales Order", "enabled": 1}
+				filters={"document_type": "Sales Order", "enabled": 1},
+				fields=["name", "event"],
 			)
 			for n in notifications:
 				alert = frappe.get_doc("Telegram Notification", n.name)
-				from frappe.email.doctype.notification.notification import evaluate_alert
-				evaluate_alert(doc, alert, alert.event)
+				evaluate_alert(doc, alert, "Save")
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), "Payment Verified Telegram Notification Failed")
 
