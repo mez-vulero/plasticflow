@@ -1285,11 +1285,14 @@ class SalesOrder(Document):
 
 	def _send_payment_verified_notification(self):
 		try:
+			# Prevent sending more than once per request cycle
+			if frappe.flags.get("payment_verified_notification_sent_" + self.name):
+				return
+			frappe.flags["payment_verified_notification_sent_" + self.name] = True
+
 			from erpnext_telegram_integration.erpnext_telegram_integration.doctype.telegram_notification.telegram_notification import evaluate_alert
 
-			# Reload doc so notification sees the freshly saved values
 			doc = frappe.get_doc("Sales Order", self.name)
-
 			notifications = frappe.get_all(
 				"Telegram Notification",
 				filters={"document_type": "Sales Order", "enabled": 1},
@@ -1300,7 +1303,6 @@ class SalesOrder(Document):
 				evaluate_alert(doc, alert, "Save")
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), "Payment Verified Telegram Notification Failed")
-
 	def create_invoice(self, invoice_amount=None):
 		if self.docstatus != 1:
 			frappe.throw(_("Submit the sales order before creating invoices."))
