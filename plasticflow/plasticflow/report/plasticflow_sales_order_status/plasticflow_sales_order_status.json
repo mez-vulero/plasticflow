@@ -19,7 +19,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Order Status",
-   "options": "\nDraft\nPayment Pending\nPayment Verified\nSettled\nCredit Sales\nCompleted\nCancelled\nHeld"
+   "options": "\nDraft\nPayment Pending\nPayment Verified\nInvoiced\nCredit Sales\nCompleted\nCancelled\nHeld"
   }
  ],
  "idx": 0,

@@ -38,7 +38,7 @@
    "fieldname": "current_status_filter",
    "fieldtype": "Select",
    "label": "Current Status",
-   "options": "\nPayment Pending\nPayment Verified\nSettled\nCredit Sales\nCompleted\nHeld"
+   "options": "\nPayment Pending\nPayment Verified\nInvoiced\nCredit Sales\nCompleted\nHeld"
   },
   {
    "fieldname": "customer_filter",
@@ -75,7 +75,7 @@
    "fieldname": "new_status",
    "fieldtype": "Select",
    "label": "Set Status To",
-   "options": "\nPayment Pending\nPayment Verified\nSettled\nCredit Sales\nCompleted\nHeld",
+   "options": "\nPayment Pending\nPayment Verified\nInvoiced\nCredit Sales\nCompleted\nHeld",
    "reqd": 1
   },
   {

@@ -47,7 +47,7 @@ class LoadingOrder(Document):
 
 		# Cash sales require payment verification before gate pass
 		if so and so.sales_type == "Cash":
-			if so.status not in ("Payment Verified", "Settled"):
+			if so.status not in ("Payment Verified", "Invoiced"):
 				frappe.msgprint(
 					_("Gate Pass cannot be generated yet. Sales Order {0} is a Cash sale "
 					  "with status \"{1}\". Payment must be verified first.").format(

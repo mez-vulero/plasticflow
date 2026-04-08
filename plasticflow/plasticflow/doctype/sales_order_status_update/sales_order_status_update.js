@@ -83,7 +83,7 @@ frappe.ui.form.on("Sales Order Status Update", {
 					const status_color = {
 						"Payment Pending": "orange",
 						"Payment Verified": "blue",
-						"Settled": "green",
+						"Invoiced": "green",
 						"Credit Sales": "blue",
 						"Completed": "green",
 						"Held": "red",

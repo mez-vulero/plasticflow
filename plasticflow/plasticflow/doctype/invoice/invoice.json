@@ -14,7 +14,6 @@
   "currency",
   "invoice_type",
   "total_amount",
-  "status",
   "column_break_meta",
   "due_date",
   "outstanding_amount",
@@ -112,15 +111,6 @@
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
-  },
-  {
-   "allow_on_submit": 1,
-   "default": "Pending",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Payment Status",
-   "options": "\nPending\nPaid\nOverdue",
-   "reqd": 1
   },
   {
    "fieldname": "amended_from",
@@ -223,19 +213,6 @@
  "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [
-  {
-   "color": "Yellow",
-   "title": "Pending"
-  },
-  {
-   "color": "Green",
-   "title": "Paid"
-  },
-  {
-   "color": "Red",
-   "title": "Overdue"
-  }
- ],
+ "states": [],
  "track_changes": 1
 }

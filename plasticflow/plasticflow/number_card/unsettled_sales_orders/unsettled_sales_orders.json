@@ -5,7 +5,7 @@
  "doctype": "Number Card",
  "document_type": "Sales Order",
  "dynamic_filters_json": "[]",
- "filters_json": "[[\"Sales Order\",\"docstatus\",\"=\",1],[\"Sales Order\",\"status\",\"not in\",[\"Settled\",\"Completed\",\"Cancelled\"]]]",
+ "filters_json": "[[\"Sales Order\",\"docstatus\",\"=\",1],[\"Sales Order\",\"status\",\"not in\",[\"Invoiced\",\"Completed\",\"Cancelled\"]]]",
  "function": "Count",
  "is_public": 0,
  "is_standard": 1,

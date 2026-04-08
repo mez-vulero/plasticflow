@@ -108,7 +108,7 @@ class SalesOrder(Document):
 		if not lo_name:
 			return
 
-		if self.sales_type == "Cash" and self.status not in ("Payment Verified", "Settled"):
+		if self.sales_type == "Cash" and self.status not in ("Payment Verified", "Invoiced"):
 			return
 
 		lo = frappe.get_doc("Loading Order", lo_name)
@@ -386,28 +386,28 @@ class SalesOrder(Document):
 		if not is_cash:
 			# Credit sales: skip verification gating, track settlement when fully paid
 			if expected_payment <= SETTLEMENT_TOLERANCE or abs(expected_payment - total_paid) <= SETTLEMENT_TOLERANCE:
-				self.status = "Settled"
+				self.status = "Invoiced"
 			else:
-				if self.status not in {"Completed", "Settled"}:
+				if self.status not in {"Completed", "Invoiced"}:
 					self.status = "Credit Sales"
 			return
 
 		# Cash sales: require at least one verified slip to move forward
 		if not has_verified:
-			if self.status in {"Draft", "Payment Pending", "Payment Verified", "Settled"}:
+			if self.status in {"Draft", "Payment Pending", "Payment Verified", "Invoiced"}:
 				self.status = "Payment Pending"
 			return
 
 		if abs(expected_payment - total_paid) <= SETTLEMENT_TOLERANCE:
 			if self.status in {"Draft", "Payment Pending", "Payment Verified"}:
-				self.status = "Settled"
+				self.status = "Invoiced"
 			self._maybe_mark_settled(
 				total_paid=total_paid,
 				expected_payment=expected_payment,
 				outstanding=max(expected_payment - total_paid, 0),
 			)
 		else:
-			if self.status in {"Draft", "Payment Pending", "Payment Verified", "Settled"}:
+			if self.status in {"Draft", "Payment Pending", "Payment Verified", "Invoiced"}:
 				self.status = "Payment Pending"
 
 	def _sum_payment_slips(self, verified_only: bool = False):
@@ -440,7 +440,7 @@ class SalesOrder(Document):
 			and abs(total_paid - expected_payment) <= SETTLEMENT_TOLERANCE
 			and invoice_coverage
 		):
-			self.status = "Settled"
+			self.status = "Invoiced"
 			return True
 		return False
 
@@ -1239,8 +1239,8 @@ class SalesOrder(Document):
 			)
 			if outstanding <= SETTLEMENT_TOLERANCE:
 				if invoice_coverage:
-					updates["status"] = "Settled"
-					self.status = "Settled"
+					updates["status"] = "Invoiced"
+					self.status = "Invoiced"
 					self._finalize_reservations()
 				else:
 					updates["status"] = "Payment Verified"
@@ -1259,8 +1259,8 @@ class SalesOrder(Document):
 				total_invoiced=total_invoiced,
 			)
 
-		if self.status == "Settled":
-			updates["status"] = "Settled"
+		if self.status == "Invoiced":
+			updates["status"] = "Invoiced"
 
 		gate_pass_dispatched = self._gate_pass_dispatched()
 		if gate_pass_dispatched:
@@ -1280,6 +1280,22 @@ class SalesOrder(Document):
 		self.invoice = latest_invoice
 		if "gate_pass" in updates:
 			self.gate_pass = updates["gate_pass"]
+		if updates.get("status") == "Payment Verified":
+			self._send_payment_verified_notification()
+
+	def _send_payment_verified_notification(self):
+		try:
+			doc = frappe.get_doc("Sales Order", self.name)  # reload to get fresh values
+			notifications = frappe.get_all(
+				"Telegram Notification",
+				filters={"document_type": "Sales Order", "enabled": 1}
+			)
+			for n in notifications:
+				alert = frappe.get_doc("Telegram Notification", n.name)
+				from frappe.email.doctype.notification.notification import evaluate_alert
+				evaluate_alert(doc, alert, alert.event)
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "Payment Verified Telegram Notification Failed")
 
 	def create_invoice(self, invoice_amount=None):
 		if self.docstatus != 1:
@@ -1321,7 +1337,6 @@ class SalesOrder(Document):
 		invoice.currency = self.currency
 		invoice.invoice_date = nowdate()
 		invoice.invoice_type = "Cash" if self.sales_type == "Cash" else "Credit"
-		invoice.payment_status = "Pending"
 
 		total_gross = flt(self.total_gross_amount or self.total_amount)
 		ratio = 1 if total_gross <= PAYMENT_TOLERANCE else min(1, flt(amount) / total_gross)

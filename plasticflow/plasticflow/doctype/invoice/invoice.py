@@ -12,8 +12,6 @@ class Invoice(Document):
 	def validate(self):
 		self._set_item_defaults()
 		self._calculate_totals()
-		if not self.status:
-			self.status = "Pending"
 		if not self.due_date:
 			self.due_date = self.invoice_date or nowdate()
 		self._ensure_alignment_with_sales_order()
@@ -54,10 +52,7 @@ class Invoice(Document):
 
 	def _calculate_totals(self):
 		self.total_amount = sum((item.amount or 0) for item in self.items)
-		if (self.status or "Pending") == "Paid":
-			self.outstanding_amount = 0
-		else:
-			self.outstanding_amount = self.total_amount
+		self.outstanding_amount = self.total_amount
 
 	def _ensure_alignment_with_sales_order(self):
 		sales_order = frappe.get_doc("Sales Order", self.sales_order)
