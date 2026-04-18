@@ -49,7 +49,7 @@ def _get_detail_columns():
 	return [
 		{"label": _("Import Shipment"), "fieldname": "import_shipment", "fieldtype": "Link", "options": "Import Shipment", "width": 150},
 		{"label": _("Sales Order"), "fieldname": "sales_order", "fieldtype": "Link", "options": "Sales Order", "width": 140},
-		{"label": _("Customer"), "fieldname": "customer", "fieldtype": "Link", "options": "Customer", "width": 130},
+		{"label": _("Customer"), "fieldname": "customer_name", "fieldtype": "Data", "width": 180},
 		{"label": _("Order Date"), "fieldname": "order_date", "fieldtype": "Date", "width": 100},
 		{"label": _("Sales Type"), "fieldname": "sales_type", "fieldtype": "Data", "width": 90},
 		{"label": _("SO Status"), "fieldname": "so_status", "fieldtype": "Data", "width": 110},
@@ -224,6 +224,7 @@ def _get_detail_data(filters):
 			so.import_shipment,
 			so.name as sales_order,
 			so.customer,
+			coalesce(c.customer_name, so.customer) as customer_name,
 			so.order_date,
 			so.sales_type,
 			so.status as so_status,
@@ -236,6 +237,7 @@ def _get_detail_data(filters):
 			so.invoiced_amount,
 			so.outstanding_amount as total_outstanding
 		from `tabSales Order` so
+		left join `tabCustomer` c on c.name = so.customer
 		where {where_clause}
 		order by so.order_date, so.creation
 		""",
@@ -271,6 +273,7 @@ def _get_detail_data(filters):
 				"import_shipment": o.import_shipment,
 				"sales_order": o.sales_order,
 				"customer": o.customer,
+				"customer_name": o.customer_name,
 				"order_date": o.order_date,
 				"sales_type": o.sales_type,
 				"so_status": o.so_status,
