@@ -45,6 +45,7 @@ doctype_js = {
 	"Purchase Order": "public/js/purchase_order.js",
 	"Import Shipment": "public/js/import_shipment.js",
 	"Landing Cost Worksheet": "public/js/landing_cost_worksheet.js",
+	"Landing Cost Calculator": "public/js/landing_cost_calculator.js",
 	"Sales Order": "public/js/sales_order.js",
 }
 

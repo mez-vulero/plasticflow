@@ -1,0 +1,380 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-04-18 00:00:00",
+ "default_view": "Form",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "title",
+  "column_break_header",
+  "posting_date",
+  "section_break_overview",
+  "supplier_name",
+  "country_of_origin",
+  "column_break_overview",
+  "currency",
+  "import_currency",
+  "exchange_rate",
+  "settings_section",
+  "default_selling_price_per_kg",
+  "default_profit_tax_percent",
+  "column_break_settings",
+  "allocation_method",
+  "notes_section",
+  "notes",
+  "items_tab",
+  "items_section",
+  "items",
+  "costs_tab",
+  "costs_section",
+  "costs",
+  "taxes_section",
+  "taxes",
+  "totals_tab",
+  "totals_section",
+  "total_quantity",
+  "total_base_amount_local",
+  "total_foreign_cost",
+  "total_local_cost",
+  "total_tax_cost",
+  "total_landed_cost",
+  "avg_landed_cost_per_ton",
+  "avg_landed_cost_per_kg",
+  "column_break_totals",
+  "total_base_amount_import",
+  "total_landed_cost_import",
+  "avg_landed_cost_per_ton_import",
+  "estimated_total_net_profit"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "LCC-.YYYY.-.####"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_header",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Posting Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_overview",
+   "fieldtype": "Section Break",
+   "label": "Overview"
+  },
+  {
+   "fieldname": "supplier_name",
+   "fieldtype": "Data",
+   "label": "Supplier Name"
+  },
+  {
+   "fieldname": "country_of_origin",
+   "fieldtype": "Data",
+   "label": "Country of Origin"
+  },
+  {
+   "fieldname": "column_break_overview",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Local Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "import_currency",
+   "fieldtype": "Link",
+   "label": "Import Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "exchange_rate",
+   "fieldtype": "Float",
+   "label": "Exchange Rate (Import \u2192 Local)",
+   "precision": "6",
+   "reqd": 1
+  },
+  {
+   "fieldname": "settings_section",
+   "fieldtype": "Section Break",
+   "label": "Settings"
+  },
+  {
+   "fieldname": "default_selling_price_per_kg",
+   "fieldtype": "Currency",
+   "label": "Default Selling Price / Kg",
+   "options": "currency"
+  },
+  {
+   "default": "30",
+   "fieldname": "default_profit_tax_percent",
+   "fieldtype": "Percent",
+   "label": "Default Profit Tax %",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_settings",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "By Value",
+   "fieldname": "allocation_method",
+   "fieldtype": "Select",
+   "label": "Allocation Method",
+   "options": "\nBy Value\nBy Quantity"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "items_tab",
+   "fieldtype": "Tab Break",
+   "label": "Items"
+  },
+  {
+   "fieldname": "items_section",
+   "fieldtype": "Section Break",
+   "label": "Products"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Landing Cost Calculator Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "costs_tab",
+   "fieldtype": "Tab Break",
+   "label": "Costs & Taxes"
+  },
+  {
+   "fieldname": "costs_section",
+   "fieldtype": "Section Break",
+   "label": "Additional Costs"
+  },
+  {
+   "fieldname": "costs",
+   "fieldtype": "Table",
+   "label": "Costs",
+   "options": "Landing Cost Calculator Cost"
+  },
+  {
+   "fieldname": "taxes_section",
+   "fieldtype": "Section Break",
+   "label": "Taxes"
+  },
+  {
+   "fieldname": "taxes",
+   "fieldtype": "Table",
+   "label": "Taxes",
+   "options": "Landing Cost Calculator Tax"
+  },
+  {
+   "fieldname": "totals_tab",
+   "fieldtype": "Tab Break",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "totals_section",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "total_quantity",
+   "fieldtype": "Float",
+   "label": "Total Quantity (Tons)",
+   "precision": "3",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_base_amount_local",
+   "fieldtype": "Currency",
+   "label": "Total Base Amount (Local)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_foreign_cost",
+   "fieldtype": "Currency",
+   "label": "Total Foreign Cost (Local)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_local_cost",
+   "fieldtype": "Currency",
+   "label": "Total Local Cost",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_tax_cost",
+   "fieldtype": "Currency",
+   "label": "Total Tax Cost (Local)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_landed_cost",
+   "fieldtype": "Currency",
+   "label": "Total Landed Cost (Local)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "avg_landed_cost_per_ton",
+   "fieldtype": "Currency",
+   "label": "Avg Landed Cost / Ton (Local)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "avg_landed_cost_per_kg",
+   "fieldtype": "Currency",
+   "label": "Avg Landed Cost / Kg (Local)",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_totals",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_base_amount_import",
+   "fieldtype": "Currency",
+   "label": "Total Base Amount (Import)",
+   "options": "import_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_landed_cost_import",
+   "fieldtype": "Currency",
+   "label": "Total Landed Cost (Import)",
+   "options": "import_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "avg_landed_cost_per_ton_import",
+   "fieldtype": "Currency",
+   "label": "Avg Landed Cost / Ton (Import)",
+   "options": "import_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "estimated_total_net_profit",
+   "fieldtype": "Currency",
+   "label": "Estimated Total Net Profit",
+   "options": "currency",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 0,
+ "links": [],
+ "modified": "2026-04-18 00:00:00",
+ "modified_by": "Administrator",
+ "module": "PlasticFlow",
+ "name": "Landing Cost Calculator",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Finance Officer",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Management",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}
