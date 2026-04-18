@@ -27,11 +27,11 @@
  "modified": "2026-04-18 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "PlasticFlow",
- "name": "Shipment P/L Summary",
+ "name": "Shipment PL Summary",
  "owner": "Administrator",
  "prepared_report": 0,
  "ref_doctype": "Import Shipment",
- "report_name": "Shipment P/L Summary",
+ "report_name": "Shipment PL Summary",
  "report_type": "Script Report",
  "roles": [
   {"role": "System Manager"},
