@@ -5,7 +5,7 @@
  "doctype": "Number Card",
  "document_type": "Invoice",
  "dynamic_filters_json": "[]",
- "filters_json": "[[\"Invoice\",\"docstatus\",\"=\",1],[\"Invoice\",\"invoice_type\",\"=\",\"Credit\"],[\"Invoice\",\"status\",\"=\",\"Pending\"]]",
+ "filters_json": "[[\"Invoice\",\"docstatus\",\"=\",1],[\"Invoice\",\"invoice_type\",\"=\",\"Credit\"],[\"Invoice\",\"outstanding_amount\",\">\",0]]",
  "function": "Count",
  "is_public": 0,
  "is_standard": 1,
