@@ -6,6 +6,7 @@ from frappe.utils import flt
 
 
 WITHHOLDING_TAX_TYPE = "Withholding Tax 3%"
+DEFAULT_PROFIT_TAX_PERCENT = 30.0
 
 
 def execute(filters=None):
@@ -61,6 +62,33 @@ def _get_columns():
 			"fieldtype": "Currency",
 			"options": currency,
 			"width": 150,
+		},
+		{
+			"label": _("Profit Tax %"),
+			"fieldname": "profit_tax_percent",
+			"fieldtype": "Percent",
+			"width": 100,
+		},
+		{
+			"label": _("Profit Tax"),
+			"fieldname": "profit_tax",
+			"fieldtype": "Currency",
+			"options": currency,
+			"width": 130,
+		},
+		{
+			"label": _("Net Tax"),
+			"fieldname": "net_tax",
+			"fieldtype": "Currency",
+			"options": currency,
+			"width": 130,
+		},
+		{
+			"label": _("Net Profit After Taxes"),
+			"fieldname": "net_profit_after_taxes",
+			"fieldtype": "Currency",
+			"options": currency,
+			"width": 170,
 		},
 	]
 
@@ -136,18 +164,46 @@ def _get_data(filters):
 	)
 	withholding_map = {r.import_shipment: flt(r.withholding_paid) for r in withholding_rows}
 
+	profit_tax_rate_rows = frappe.db.sql(
+		f"""
+		select
+			lcw.import_shipment,
+			max(lcw.profit_tax_percent) as profit_tax_percent
+		from `tabLanding Cost Worksheet` lcw
+		where lcw.docstatus = 1
+			and lcw.import_shipment in ({placeholders})
+		group by lcw.import_shipment
+		""",
+		tuple(shipment_names),
+		as_dict=True,
+	)
+	profit_tax_map = {
+		r.import_shipment: flt(r.profit_tax_percent) for r in profit_tax_rate_rows
+	}
+
 	data = []
 	for s in shipments:
 		sale = sales_map.get(s.import_shipment) or {}
+		total_profit = flt(sale.get("total_profit") or 0)
+		withholding = withholding_map.get(s.import_shipment, 0)
+		profit_tax_percent = profit_tax_map.get(s.import_shipment) or DEFAULT_PROFIT_TAX_PERCENT
+		profit_tax = total_profit * profit_tax_percent / 100 if total_profit > 0 else 0
+		net_tax = profit_tax - withholding
+		net_profit_after_taxes = total_profit - net_tax
+
 		data.append(
 			{
 				"import_shipment": s.import_shipment,
 				"arrival_date": s.arrival_date,
 				"landed_cost_total": flt(s.landed_cost_total),
 				"total_sales": flt(sale.get("total_sales") or 0),
-				"total_profit": flt(sale.get("total_profit") or 0),
+				"total_profit": total_profit,
 				"total_outstanding": flt(sale.get("total_outstanding") or 0),
-				"withholding_paid": withholding_map.get(s.import_shipment, 0),
+				"withholding_paid": withholding,
+				"profit_tax_percent": profit_tax_percent,
+				"profit_tax": profit_tax,
+				"net_tax": net_tax,
+				"net_profit_after_taxes": net_profit_after_taxes,
 			}
 		)
 
@@ -163,6 +219,7 @@ def _build_chart(data):
 				{"name": _("Landed Cost"), "values": [flt(r["landed_cost_total"]) for r in data]},
 				{"name": _("Sales"), "values": [flt(r["total_sales"]) for r in data]},
 				{"name": _("Profit"), "values": [flt(r["total_profit"]) for r in data]},
+				{"name": _("Net Profit After Taxes"), "values": [flt(r["net_profit_after_taxes"]) for r in data]},
 			],
 		},
 		"type": "bar",
