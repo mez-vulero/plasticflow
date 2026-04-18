@@ -11,13 +11,22 @@ DEFAULT_PROFIT_TAX_PERCENT = 30.0
 
 def execute(filters=None):
 	filters = filters or {}
-	columns = _get_columns()
-	data = _get_data(filters)
-	chart = _build_chart(data) if data else None
+	if filters.get("import_shipment"):
+		columns = _get_subledger_columns()
+		data = _get_subledger_data(filters)
+		chart = _build_subledger_chart(data) if data else None
+	else:
+		columns = _get_summary_columns()
+		data = _get_summary_data(filters)
+		chart = _build_summary_chart(data) if data else None
 	return columns, data, None, chart
 
 
-def _get_columns():
+# =============================================================================
+# Summary view — one row per shipment
+# =============================================================================
+
+def _get_summary_columns():
 	currency = frappe.db.get_default("currency") or "ETB"
 	return [
 		{
@@ -93,13 +102,10 @@ def _get_columns():
 	]
 
 
-def _get_data(filters):
+def _get_summary_data(filters):
 	conditions = ["ish.docstatus = 1"]
 	params = {}
 
-	if filters.get("import_shipment"):
-		conditions.append("ish.name = %(import_shipment)s")
-		params["import_shipment"] = filters["import_shipment"]
 	if filters.get("from_date"):
 		conditions.append("ish.shipment_date >= %(from_date)s")
 		params["from_date"] = filters["from_date"]
@@ -210,7 +216,7 @@ def _get_data(filters):
 	return data
 
 
-def _build_chart(data):
+def _build_summary_chart(data):
 	labels = [row["import_shipment"] for row in data]
 	return {
 		"data": {
@@ -220,6 +226,129 @@ def _build_chart(data):
 				{"name": _("Sales"), "values": [flt(r["total_sales"]) for r in data]},
 				{"name": _("Profit"), "values": [flt(r["total_profit"]) for r in data]},
 				{"name": _("Net Profit After Taxes"), "values": [flt(r["net_profit_after_taxes"]) for r in data]},
+			],
+		},
+		"type": "bar",
+	}
+
+
+# =============================================================================
+# Subledger view — one row per product when a specific shipment is selected
+# =============================================================================
+
+def _get_subledger_columns():
+	currency = frappe.db.get_default("currency") or "ETB"
+	return [
+		{"label": _("Product"), "fieldname": "product", "fieldtype": "Link", "options": "Product", "width": 140},
+		{"label": _("Product Name"), "fieldname": "product_name", "fieldtype": "Data", "width": 200},
+		{"label": _("Quantity"), "fieldname": "quantity", "fieldtype": "Float", "width": 100, "precision": 3},
+		{
+			"label": _("Landed Cost"),
+			"fieldname": "landed_cost_amount",
+			"fieldtype": "Currency",
+			"options": currency,
+			"width": 140,
+		},
+		{"label": _("Cost Share %"), "fieldname": "cost_share_percent", "fieldtype": "Percent", "width": 110},
+		{"label": _("Qty Sold"), "fieldname": "qty_sold", "fieldtype": "Float", "width": 100, "precision": 3},
+		{
+			"label": _("Sales"),
+			"fieldname": "sales_amount",
+			"fieldtype": "Currency",
+			"options": currency,
+			"width": 140,
+		},
+		{"label": _("Sales Share %"), "fieldname": "sales_share_percent", "fieldtype": "Percent", "width": 110},
+		{
+			"label": _("Profit"),
+			"fieldname": "profit",
+			"fieldtype": "Currency",
+			"options": currency,
+			"width": 140,
+		},
+		{"label": _("Margin %"), "fieldname": "margin_percent", "fieldtype": "Percent", "width": 100},
+	]
+
+
+def _get_subledger_data(filters):
+	shipment_name = filters["import_shipment"]
+
+	items = frappe.db.sql(
+		"""
+		select
+			isi.product,
+			coalesce(isi.product_name, p.product_name, isi.product) as product_name,
+			coalesce(sum(isi.quantity), 0) as quantity,
+			coalesce(sum(isi.landed_cost_amount_local), 0) as landed_cost_amount
+		from `tabImport Shipment Item` isi
+		left join `tabProduct` p on p.name = isi.product
+		where isi.parent = %s
+		group by isi.product, coalesce(isi.product_name, p.product_name, isi.product)
+		order by isi.product
+		""",
+		(shipment_name,),
+		as_dict=True,
+	)
+
+	if not items:
+		return []
+
+	sales_rows = frappe.db.sql(
+		"""
+		select
+			soi.product,
+			coalesce(sum(soi.quantity), 0) as qty_sold,
+			coalesce(sum(soi.net_amount), 0) as sales_amount
+		from `tabSales Order Item` soi
+		inner join `tabSales Order` so on so.name = soi.parent
+		where so.import_shipment = %s
+			and so.docstatus = 1
+			and so.status != 'Cancelled'
+		group by soi.product
+		""",
+		(shipment_name,),
+		as_dict=True,
+	)
+	sales_map = {r.product: r for r in sales_rows}
+
+	total_landed = sum(flt(r["landed_cost_amount"]) for r in items) or 0
+	total_sales = sum(flt(r.sales_amount) for r in sales_rows) or 0
+
+	data = []
+	for row in items:
+		landed = flt(row["landed_cost_amount"])
+		sale = sales_map.get(row["product"]) or {}
+		sales_amount = flt(sale.get("sales_amount") or 0)
+		qty_sold = flt(sale.get("qty_sold") or 0)
+		profit = sales_amount - landed
+
+		data.append(
+			{
+				"product": row["product"],
+				"product_name": row["product_name"],
+				"quantity": flt(row["quantity"]),
+				"landed_cost_amount": landed,
+				"cost_share_percent": (landed / total_landed * 100) if total_landed else 0,
+				"qty_sold": qty_sold,
+				"sales_amount": sales_amount,
+				"sales_share_percent": (sales_amount / total_sales * 100) if total_sales else 0,
+				"profit": profit,
+				"margin_percent": (profit / sales_amount * 100) if sales_amount else 0,
+			}
+		)
+
+	return data
+
+
+def _build_subledger_chart(data):
+	labels = [row["product_name"] or row["product"] for row in data]
+	return {
+		"data": {
+			"labels": labels,
+			"datasets": [
+				{"name": _("Landed Cost"), "values": [flt(r["landed_cost_amount"]) for r in data]},
+				{"name": _("Sales"), "values": [flt(r["sales_amount"]) for r in data]},
+				{"name": _("Profit"), "values": [flt(r["profit"]) for r in data]},
 			],
 		},
 		"type": "bar",
