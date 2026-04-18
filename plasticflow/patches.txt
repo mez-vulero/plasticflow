@@ -33,3 +33,4 @@ plasticflow.patches.post_model_sync.refresh_workspaces_v3
 plasticflow.patches.post_model_sync.refresh_workspaces_v4
 plasticflow.patches.post_model_sync.rename_settled_to_invoiced
 plasticflow.patches.post_model_sync.remove_invoice_status_field
+plasticflow.patches.post_model_sync.add_landing_cost_calculator_shortcut

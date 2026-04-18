@@ -25,9 +25,6 @@
   "default_profit_tax_percent",
   "column_break_settings",
   "allocation_method",
-  "notes_section",
-  "notes",
-  "items_tab",
   "items_section",
   "items",
   "costs_tab",
@@ -35,7 +32,6 @@
   "costs",
   "taxes_section",
   "taxes",
-  "totals_tab",
   "totals_section",
   "total_quantity",
   "total_base_amount_local",
@@ -150,22 +146,6 @@
    "options": "\nBy Value\nBy Quantity"
   },
   {
-   "collapsible": 1,
-   "fieldname": "notes_section",
-   "fieldtype": "Section Break",
-   "label": "Notes"
-  },
-  {
-   "fieldname": "notes",
-   "fieldtype": "Small Text",
-   "label": "Notes"
-  },
-  {
-   "fieldname": "items_tab",
-   "fieldtype": "Tab Break",
-   "label": "Items"
-  },
-  {
    "fieldname": "items_section",
    "fieldtype": "Section Break",
    "label": "Products"
@@ -205,14 +185,9 @@
    "options": "Landing Cost Calculator Tax"
   },
   {
-   "fieldname": "totals_tab",
-   "fieldtype": "Tab Break",
-   "label": "Summary"
-  },
-  {
    "fieldname": "totals_section",
    "fieldtype": "Section Break",
-   "label": "Totals"
+   "label": "Summary"
   },
   {
    "fieldname": "total_quantity",
