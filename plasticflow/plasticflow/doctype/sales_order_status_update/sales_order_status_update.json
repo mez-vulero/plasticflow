@@ -122,6 +122,12 @@
    "read": 1,
    "role": "Sales Manager",
    "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Sales User",
+   "write": 1
   }
  ],
  "sort_field": "modified",

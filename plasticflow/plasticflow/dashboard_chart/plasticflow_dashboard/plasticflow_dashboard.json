@@ -20,6 +20,7 @@
  "roles": [
   {"role": "System Manager"},
   {"role": "Sales Manager"},
+  {"role": "Sales User"},
   {"role": "Finance Officer"},
   {"role": "Management"}
  ]

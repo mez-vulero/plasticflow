@@ -8,6 +8,7 @@ def after_install():
 def _create_roles():
 	required_roles = [
 		"Sales Manager",
+		"Sales User",
 		"Finance Officer",
 		"Stock Manager",
 		"Driver",

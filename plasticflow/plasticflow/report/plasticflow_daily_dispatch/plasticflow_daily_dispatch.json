@@ -32,6 +32,7 @@
  "roles": [
   {"role": "System Manager"},
   {"role": "Sales Manager"},
+  {"role": "Sales User"},
   {"role": "Stock Manager"},
   {"role": "Warehouse Dispatcher"},
   {"role": "Management"}

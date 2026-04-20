@@ -40,7 +40,7 @@
  "public": 1,
  "quick_lists": [],
  "restrict_to_domain": "",
- "roles": [{"role": "System Manager"}, {"role": "Sales Manager"}, {"role": "Management"}],
+ "roles": [{"role": "System Manager"}, {"role": "Sales Manager"}, {"role": "Sales User"}, {"role": "Management"}],
  "sequence_id": 1.0,
  "shortcuts": [
   {"doc_view": "List", "label": "Sales Orders", "link_to": "Sales Order", "type": "DocType"},

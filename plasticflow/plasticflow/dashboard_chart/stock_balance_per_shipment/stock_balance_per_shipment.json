@@ -22,6 +22,7 @@
   {"role": "Stock Manager"},
   {"role": "Management"},
   {"role": "Sales Manager"},
+  {"role": "Sales User"},
   {"role": "Finance Officer"}
  ]
 }
