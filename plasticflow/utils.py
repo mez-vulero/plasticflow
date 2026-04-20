@@ -13,7 +13,13 @@ def _get_telegram_config():
 	if not settings.enabled:
 		return None
 
-	bot_token = settings.get_password("bot_token")
+	try:
+		bot_token = settings.get_password("bot_token")
+	except Exception:
+		# Encryption key mismatch or other decryption failure — disable silently.
+		frappe.log_error(frappe.get_traceback(), "PlasticFlow Telegram bot_token decrypt failed")
+		return None
+
 	chat_id = settings.chat_id
 
 	if not bot_token or not chat_id:
