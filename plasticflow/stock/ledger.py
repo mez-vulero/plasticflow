@@ -94,8 +94,14 @@ def set_balances(
 	remarks=None,
 	source_doctype=None,
 	source_name=None,
+	skip_movement_log=False,
 ):
-	"""Set absolute balances for a ledger slot."""
+	"""Set absolute balances for a ledger slot.
+
+	skip_movement_log: when rebuilding the ledger cache from the canonical
+	Stock Entry Items truth, we don't want to emit synthetic movement rows
+	dated today — the historical audit log stays untouched.
+	"""
 	doc = _get_or_create(
 		product,
 		location_type,
@@ -126,23 +132,24 @@ def set_balances(
 		doc.insert(ignore_permissions=True)
 	else:
 		doc.save(ignore_permissions=True)
-	_log_movement(
-		product,
-		location_type,
-		location_reference,
-		warehouse=warehouse,
-		stock_entry=stock_entry,
-		import_shipment=import_shipment,
-		available_delta=new_available - old_available,
-		reserved_delta=new_reserved - old_reserved,
-		issued_delta=new_issued - old_issued,
-		balance_available=new_available,
-		balance_reserved=new_reserved,
-		balance_issued=new_issued,
-		remarks=remarks,
-		source_doctype=source_doctype,
-		source_name=source_name,
-	)
+	if not skip_movement_log:
+		_log_movement(
+			product,
+			location_type,
+			location_reference,
+			warehouse=warehouse,
+			stock_entry=stock_entry,
+			import_shipment=import_shipment,
+			available_delta=new_available - old_available,
+			reserved_delta=new_reserved - old_reserved,
+			issued_delta=new_issued - old_issued,
+			balance_available=new_available,
+			balance_reserved=new_reserved,
+			balance_issued=new_issued,
+			remarks=remarks,
+			source_doctype=source_doctype,
+			source_name=source_name,
+		)
 	return doc
 
 
@@ -160,6 +167,7 @@ def apply_delta(
 	remarks=None,
 	source_doctype=None,
 	source_name=None,
+	skip_movement_log=False,
 ):
 	"""Adjust balances by delta values."""
 	doc = _get_or_create(
@@ -188,23 +196,24 @@ def apply_delta(
 		doc.insert(ignore_permissions=True)
 	else:
 		doc.save(ignore_permissions=True)
-	_log_movement(
-		product,
-		location_type,
-		location_reference,
-		warehouse=warehouse,
-		stock_entry=stock_entry,
-		import_shipment=import_shipment,
-		available_delta=new_available - old_available,
-		reserved_delta=new_reserved - old_reserved,
-		issued_delta=new_issued - old_issued,
-		balance_available=new_available,
-		balance_reserved=new_reserved,
-		balance_issued=new_issued,
-		remarks=remarks,
-		source_doctype=source_doctype,
-		source_name=source_name,
-	)
+	if not skip_movement_log:
+		_log_movement(
+			product,
+			location_type,
+			location_reference,
+			warehouse=warehouse,
+			stock_entry=stock_entry,
+			import_shipment=import_shipment,
+			available_delta=new_available - old_available,
+			reserved_delta=new_reserved - old_reserved,
+			issued_delta=new_issued - old_issued,
+			balance_available=new_available,
+			balance_reserved=new_reserved,
+			balance_issued=new_issued,
+			remarks=remarks,
+			source_doctype=source_doctype,
+			source_name=source_name,
+		)
 	return doc
 
 
@@ -313,39 +322,30 @@ def clear_slot(
 # Convenience helpers -----------------------------------------------------
 
 def get_available_quantity(product, *, location_type, warehouse=None):
-	"""Return aggregated available quantity for a product at a location type."""
-	filters = {
-		"product": product,
-		"location_type": location_type,
-	}
-	if warehouse:
-		filters["warehouse"] = warehouse
-	rows = frappe.db.get_all(
-		LEDGER_DOCTYPE,
-		filters=filters,
-		fields=["coalesce(sum(available_qty), 0) as available"],
+	"""Return aggregated available quantity for a product at a location type.
+
+	Delegates to the canonical reader so callers get the same answer the
+	Sales Order FIFO walker uses.
+	"""
+	from plasticflow.stock import availability as stock_availability
+
+	return stock_availability.get_available_quantity(
+		product,
+		location_type=location_type,
+		warehouse=warehouse,
 	)
-	return flt(rows[0].available) if rows else 0.0
 
 
 def get_available_quantity_by_shipment(product, *, location_type, import_shipment, warehouse=None):
 	"""Return available qty for a product filtered by shipment."""
-	if not import_shipment:
-		return get_available_quantity(product, location_type=location_type, warehouse=warehouse)
+	from plasticflow.stock import availability as stock_availability
 
-	filters = {
-		"product": product,
-		"location_type": location_type,
-		"import_shipment": import_shipment,
-	}
-	if warehouse:
-		filters["warehouse"] = warehouse
-	rows = frappe.db.get_all(
-		LEDGER_DOCTYPE,
-		filters=filters,
-		fields=["coalesce(sum(available_qty), 0) as available"],
+	return stock_availability.get_available_quantity(
+		product,
+		location_type=location_type,
+		warehouse=warehouse,
+		import_shipment=import_shipment,
 	)
-	return flt(rows[0].available) if rows else 0.0
 
 
 def _get_transferred_totals_by_shipment_item(import_shipment_name):

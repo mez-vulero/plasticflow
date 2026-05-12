@@ -4,6 +4,7 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, get_datetime, flt
 
+from plasticflow.stock import availability as stock_availability
 from plasticflow.stock import uom as stock_uom
 
 
@@ -14,17 +15,17 @@ def execute(filters=None):
 	as_of_date = filters.get("as_of_date")
 	display_uom = (filters.get("display_uom") or "Kg").strip()
 
-	conditions = ["1=1"]
-	params = {}
-
-	if import_shipment:
-		conditions.append("import_shipment = %(import_shipment)s")
-		params["import_shipment"] = import_shipment
-	if warehouse:
-		conditions.append("warehouse = %(warehouse)s")
-		params["warehouse"] = warehouse
-
 	if as_of_date:
+		# Time-travel reads still walk the audit log — Stock Ledger Movement
+		# is unaffected by the rollup-cache rebuild.
+		conditions = ["1=1"]
+		params: dict = {}
+		if import_shipment:
+			conditions.append("import_shipment = %(import_shipment)s")
+			params["import_shipment"] = import_shipment
+		if warehouse:
+			conditions.append("warehouse = %(warehouse)s")
+			params["warehouse"] = warehouse
 		as_of_end = add_days(get_datetime(as_of_date), 1)
 		params["as_of_end"] = as_of_end
 		if frappe.db.table_exists("Stock Ledger Movement"):
@@ -66,22 +67,12 @@ def execute(filters=None):
 				as_dict=True,
 			)
 	else:
-		where_clause = " and ".join(conditions)
-		rows = frappe.db.sql(
-			f"""
-			select
-				product,
-				sum(available_qty) as available_qty,
-				sum(reserved_qty) as reserved_qty,
-				sum(issued_qty) as issued_qty,
-				max(last_movement) as last_movement
-			from `tabStock Ledger Entry`
-			where {where_clause}
-			group by product
-			order by product
-			""",
-			params,
-			as_dict=True,
+		# Current snapshot reads the canonical truth (Stock Entry Items),
+		# so the figures here always match the Sales Order FIFO walker
+		# and the Stock Reconciliation "current quantity" view.
+		rows = stock_availability.get_product_balances(
+			import_shipment=import_shipment,
+			warehouse=warehouse,
 		)
 
 	columns = [

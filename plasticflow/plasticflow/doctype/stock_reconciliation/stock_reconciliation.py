@@ -3,6 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, nowdate
 
+from plasticflow.stock import availability as stock_availability
 from plasticflow.stock import uom as stock_uom
 from plasticflow.stock.adjustment import QTY_TOLERANCE, StockAdjustmentMixin
 
@@ -93,28 +94,8 @@ class StockReconciliation(StockAdjustmentMixin, Document):
 @frappe.whitelist()
 def get_current_stock(product, location_type="Warehouse", warehouse=None):
 	"""Return total available_qty for a product at the given location."""
-	conditions = ["se.docstatus = 1", "sei.product = %s"]
-	values = [product]
-
-	if location_type == "Customs":
-		conditions.append("se.status = 'At Customs'")
-	else:
-		conditions.append("se.status in ('Available', 'Reserved', 'Partially Issued', 'Depleted')")
-		if warehouse:
-			conditions.append("se.warehouse = %s")
-			values.append(warehouse)
-
-	result = frappe.db.sql(
-		f"""
-		select coalesce(sum(
-			coalesce(sei.received_qty, 0) - coalesce(sei.reserved_qty, 0) - coalesce(sei.issued_qty, 0)
-		), 0) as total_available
-		from `tabStock Entry Items` sei
-		inner join `tabStock Entries` se on se.name = sei.parent
-		where {" and ".join(conditions)}
-		""",
-		tuple(values),
-		as_dict=True,
+	return stock_availability.get_available_quantity(
+		product,
+		location_type=location_type,
+		warehouse=warehouse,
 	)
-
-	return flt(result[0].total_available) if result else 0.0

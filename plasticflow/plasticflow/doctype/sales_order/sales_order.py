@@ -3,6 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, nowdate
 
+from plasticflow.stock import availability as stock_availability
 from plasticflow.stock import fifo as stock_fifo
 from plasticflow.stock import ledger as stock_ledger
 from plasticflow.stock import uom as stock_uom
@@ -773,7 +774,7 @@ class SalesOrder(Document):
 			qty = self._to_stock_qty(item, flt(item.quantity or 0))
 			if qty <= 0 or not item.product:
 				continue
-			available_qty = stock_ledger.get_available_quantity(
+			available_qty = stock_availability.get_available_quantity(
 				item.product,
 				location_type=location_type,
 				warehouse=warehouse if location_type == "Warehouse" else None,
@@ -1067,9 +1068,6 @@ class SalesOrder(Document):
 		import_shipments: list[str] | None = None,
 		exclude_import_shipment: str | None = None,
 	):
-		child_table = "`tabStock Entry Items`"
-		parent_table = "`tabStock Entries`"
-
 		if not frappe.db.table_exists("Stock Entries") or not frappe.db.table_exists("Stock Entry Items"):
 			frappe.throw(
 				_("Stock Entry tables are missing. Please run `bench migrate` to set up Stock Entries."),
@@ -1078,55 +1076,21 @@ class SalesOrder(Document):
 		if not self.import_shipment and not import_shipments and not exclude_import_shipment:
 			frappe.throw(_("Import Shipment is required to reserve stock."), title=_("Shipment Required"))
 
-		conditions = ["se.docstatus = 1", "sei.product = %s"]
-		values: list = [product]
+		shipments = import_shipments
+		single_shipment = None
+		if not shipments and not exclude_import_shipment:
+			single_shipment = self.import_shipment
 
-		if location_type == "Customs":
-			conditions.append("se.status = 'At Customs'")
-		else:
-			conditions.append("se.status in ('Available', 'Reserved', 'Partially Issued')")
-			if warehouse:
-				conditions.append("se.warehouse = %s")
-				values.append(warehouse)
-
-		if import_shipments:
-			placeholders = ", ".join(["%s"] * len(import_shipments))
-			conditions.append(f"se.import_shipment in ({placeholders})")
-			values.extend(import_shipments)
-		elif exclude_import_shipment:
-			conditions.append("se.import_shipment != %s")
-			values.append(exclude_import_shipment)
-		else:
-			conditions.append("se.import_shipment = %s")
-			values.append(self.import_shipment)
-
-		if for_release:
-			conditions.append("coalesce(sei.reserved_qty,0) > 0")
-		else:
-			conditions.append(
-				"(coalesce(sei.received_qty,0) - coalesce(sei.reserved_qty,0) - coalesce(sei.issued_qty,0)) > 0"
-			)
-
-		order_clause = "arrival_marker, se.creation" if fifo_enabled else "se.creation desc"
-		query = f"""
-			select
-				sei.name as child_name,
-				se.name as batch_name,
-				se.import_shipment as import_shipment,
-				sei.import_shipment_item as import_shipment_item,
-				sei.uom as uom,
-				se.status as status,
-				se.warehouse as warehouse,
-				coalesce(se.arrival_date, se.creation) as arrival_marker,
-				se.creation as creation,
-				coalesce(sei.reserved_qty,0) as reserved_qty,
-				(coalesce(sei.received_qty,0) - coalesce(sei.reserved_qty,0) - coalesce(sei.issued_qty,0)) as available_qty
-			from {child_table} sei
-			inner join {parent_table} se on se.name = sei.parent
-			where {" and ".join(conditions)}
-			order by {order_clause}
-		"""
-		return frappe.db.sql(query, tuple(values), as_dict=True)
+		return stock_availability.get_available_batches(
+			product,
+			location_type=location_type,
+			warehouse=warehouse,
+			import_shipment=single_shipment,
+			import_shipments=shipments,
+			exclude_import_shipment=exclude_import_shipment,
+			fifo=fifo_enabled,
+			for_release=for_release,
+		)
 
 	def _enforce_fifo(self, reservations):
 		for batch_name, payload in reservations.items():

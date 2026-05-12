@@ -2,6 +2,7 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
+from plasticflow.stock import availability as stock_availability
 from plasticflow.stock import ledger as stock_ledger
 from plasticflow.stock import uom as stock_uom
 
@@ -90,44 +91,16 @@ class StockAdjustmentMixin:
 		child.received_qty = max(flt(child.received_qty or 0) + flt(delta_qty or 0), 0)
 
 	def _get_adjustment_batches(self, product, location_type, warehouse):
-		child_table = "`tabStock Entry Items`"
-		parent_table = "`tabStock Entries`"
-		shipment_item_table = "`tabImport Shipment Item`"
-
-		conditions = ["se.docstatus = 1", "sei.product = %s"]
-		values: list = [product]
-
-		if location_type == "Customs":
-			conditions.append("se.status = 'At Customs'")
-		else:
-			conditions.append("se.status in ('Available', 'Reserved', 'Partially Issued', 'Depleted')")
-			if warehouse:
-				conditions.append("se.warehouse = %s")
-				values.append(warehouse)
-
-		query = f"""
-			select
-				sei.name as child_name,
-				se.name as batch_name,
-				se.import_shipment as import_shipment,
-				sei.import_shipment_item as import_shipment_item,
-				sei.uom as uom,
-				se.status as status,
-				se.warehouse as warehouse,
-				coalesce(se.arrival_date, se.creation) as arrival_marker,
-				se.creation as creation,
-				coalesce(sei.received_qty,0) as received_qty,
-				isi.quantity as original_qty,
-				isi.uom as original_uom,
-				coalesce(sei.reserved_qty,0) as reserved_qty,
-				(coalesce(sei.received_qty,0) - coalesce(sei.reserved_qty,0) - coalesce(sei.issued_qty,0)) as available_qty
-			from {child_table} sei
-			inner join {parent_table} se on se.name = sei.parent
-			left join {shipment_item_table} isi on isi.name = sei.import_shipment_item
-			where {" and ".join(conditions)}
-			order by arrival_marker, se.creation
-		"""
-		return frappe.db.sql(query, tuple(values), as_dict=True)
+		# Adjustment tools need every in-status batch, including ones with
+		# zero available stock — they may still have headroom against the
+		# Import Shipment master quantity that we can top up into.
+		return stock_availability.get_available_batches(
+			product,
+			location_type=location_type,
+			warehouse=warehouse,
+			fifo=True,
+			include_zero=True,
+		)
 
 	def _save_touched_batches(self, touched):
 		for batch_doc in touched.values():
